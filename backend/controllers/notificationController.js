@@ -1,15 +1,11 @@
 const Notification = require('../models/notificationModel');
 const User = require('../models/userModel');
-
-// This is a placeholder for a real push notification service
-// In a real application, you would integrate a service like Firebase Cloud Messaging (FCM)
-const sendPushNotification = async (message, target) => {
-    console.log(`Sending push notification to target ${target}: ${message}`);
-};
+const { sendFcmNotification } = require('../utils/fcmManager'); // ADDED: Import the FCM manager
 
 /**
  * Creates and saves a notification.
  * Can target a specific user, a role, or all users.
+ * Also sends an OS-level push notification via FCM.
  */
 exports.sendNotification = async (req, res) => {
     const { message, userId, role, ttlMinutes = 1440 } = req.body; // Default TTL is 24 hours
@@ -20,49 +16,50 @@ exports.sendNotification = async (req, res) => {
         }
 
         const ttlDate = new Date(Date.now() + ttlMinutes * 60 * 1000);
-        const target = (userId || role) ? 'user' : 'admin'; // Basic target logic
+        
+        let targetUsers = [];
+        let title = "Adarsh Dham: New Update";
+        let body = message;
 
-        // Handle sending to a specific user
+        // Handle finding target users based on the request
         if (userId) {
+            const user = await User.findById(userId);
+            if (user) {
+                targetUsers.push(user);
+            }
+        } else if (role) {
+            targetUsers = await User.find({ roles: role });
+        } else {
+            const admins = await User.find({ roles: { $in: ['admin', 'super-admin']} });
+            targetUsers.push(...admins);
+        }
+        
+        const fcmTokens = [];
+        
+        // Loop through all target users to create in-website notifications and collect FCM tokens
+        for (const user of targetUsers) {
             const newNotification = new Notification({
                 message,
-                userId,
-                target,
+                userId: user._id,
+                role: role,
+                target: userId ? 'user' : 'admin',
                 ttl: ttlDate
             });
             await newNotification.save();
-        } 
-        // Handle sending to all users with a specific role
-        else if (role) {
-            const users = await User.find({ roles: role });
-            for (const user of users) {
-                const newNotification = new Notification({
-                    message,
-                    userId: user._id,
-                    role,
-                    target,
-                    ttl: ttlDate
-                });
-                await newNotification.save();
-            }
-        } 
-        // Handle sending to all admins (if no specific user/role)
-        else {
-            const admins = await User.find({ roles: { $in: ['admin', 'super-admin']} });
-             for (const admin of admins) {
-                const newNotification = new Notification({
-                    message,
-                    userId: admin._id,
-                    target: 'admin',
-                    ttl: ttlDate
-                });
-                await newNotification.save();
+            
+            // Collect tokens for OS-level push notifications
+            if (user.fcmTokens && user.fcmTokens.length > 0) {
+                fcmTokens.push(...user.fcmTokens);
             }
         }
-
-        // Trigger push notification logic
-        await sendPushNotification(message, target);
-
+        
+        // Send OS-level push notification via FCM
+        if (fcmTokens.length > 0) {
+            await sendFcmNotification(fcmTokens, title, body, {
+                notificationType: 'generalUpdate', // Custom data for client-side handling
+            });
+        }
+        
         res.status(201).json({ message: 'Notification sent successfully' });
 
     } catch (error) {

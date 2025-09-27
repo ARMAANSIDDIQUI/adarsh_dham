@@ -10,22 +10,28 @@ router.post(
   roleMiddleware(['satsang-operator']),
   satsangController.createLiveLink
 );
+
 router.get(
   '/live-links',
   authMiddleware,
   roleMiddleware(['satsang-operator']),
   satsangController.getLiveLinks
 );
+
+// The /live-links/event/:eventId route is now removed
+
 router.get(
-  '/live-links/event/:eventId',
-  satsangController.getLinksByEvent
+  '/live-links/active',
+  satsangController.getActiveLiveLinks
 );
+
 router.put(
   '/live-links/:id',
   authMiddleware,
   roleMiddleware(['satsang-operator']),
   satsangController.updateLiveLink
 );
+
 router.delete(
   '/live-links/:id',
   authMiddleware,

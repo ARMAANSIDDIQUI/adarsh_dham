@@ -23,6 +23,11 @@ const userSchema = new Schema({
   bookings: [{
     type: Schema.Types.ObjectId,
     ref: 'Booking'
+  }],
+  // Add this field to store FCM tokens
+  fcmTokens: [{
+    type: String,
+    unique: true
   }]
 }, { timestamps: true });
 

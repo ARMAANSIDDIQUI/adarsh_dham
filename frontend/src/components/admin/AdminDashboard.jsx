@@ -22,6 +22,7 @@ const AdminDashboard = () => {
 
   const dashboardLinks = [
     { to: "manage-admins", name: "Manage Admins", description: "Add, remove, or modify administrator roles and permissions.", icon: <FaUsers />, roles: ['super-admin'] },
+    { to: "user-management", name: "User Management", description: "View all users and manage their accounts and passwords.", icon: <FaUsers />, roles: ['admin', 'super-admin'] },
     { to: "manage-events", name: "Manage Events", description: "Create, edit, and manage event details.", icon: <FaCalendarAlt />, roles: ['admin'] },
     { to: "manage-buildings", name: "Manage Buildings", description: "Add or remove accommodation buildings.", icon: <FaBuilding />, roles: ['admin'] },
     { to: "manage-rooms", name: "Manage Rooms", description: "Configure rooms and their capacities within buildings.", icon: <FaBed />, roles: ['admin'] },
