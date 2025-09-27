@@ -7,11 +7,40 @@ const pdfGenerator = require('../utils/pdfGenerator');
 
 const generateBookingNumber = () => {
     const date = new Date();
-    const dateString = date.getFullYear().toString().slice(-2) 
-                     + ('0' + (date.getMonth() + 1)).slice(-2) 
+    const dateString = date.getFullYear().toString().slice(-2)
+                     + ('0' + (date.getMonth() + 1)).slice(-2)
                      + ('0' + date.getDate()).slice(-2);
     const randomChars = Math.random().toString(36).substring(2, 6).toUpperCase();
     return `BK${dateString}-${randomChars}`;
+};
+
+// Helper function to send a notification to a single user
+const sendUserNotification = async (userId, message) => {
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + 7); // TTL of 7 days
+    const newNotification = new Notification({
+        message,
+        userId,
+        target: 'user',
+        ttl: expiryDate
+    });
+    await newNotification.save();
+};
+
+// Helper function to send a notification to all admins
+const sendAdminNotification = async (message) => {
+    const admins = await User.find({ roles: { $in: ['admin', 'super-admin'] } });
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + 7); // TTL of 7 days
+    for (const admin of admins) {
+        const newNotification = new Notification({
+            message,
+            userId: admin._id,
+            target: 'admin',
+            ttl: expiryDate,
+        });
+        await newNotification.save();
+    }
 };
 
 exports.createBooking = async (req, res) => {
@@ -19,14 +48,17 @@ exports.createBooking = async (req, res) => {
     const userId = req.user.id;
     try {
         const bookingNumber = generateBookingNumber();
-        const newBooking = new Booking({ 
-            userId, 
-            eventId, 
-            formData, 
+        const newBooking = new Booking({
+            userId,
+            eventId,
+            formData,
             bookingNumber,
-            status: 'pending' 
+            status: 'pending'
         });
         await newBooking.save();
+
+        await sendAdminNotification(`A new booking request (#${bookingNumber}) has been submitted and is pending.`);
+
         res.status(201).json({ message: 'Booking request submitted successfully', booking: newBooking });
     } catch (error) {
         if (error.code === 11000) {
@@ -92,6 +124,7 @@ exports.approveOrDeclineBooking = async (req, res) => {
         if (!booking) return res.status(404).json({ message: 'Booking not found' });
 
         let message = '';
+        const previousStatus = booking.status;
 
         if (status === 'pending') {
             for (const alloc of booking.allocations) {
@@ -101,7 +134,7 @@ exports.approveOrDeclineBooking = async (req, res) => {
             }
             booking.status = 'pending';
             booking.allocations = [];
-            message = `Booking for ${booking.eventId?.name} is now pending again.`;
+            message = `Your booking for ${booking.eventId?.name} has been set back to pending.`;
         } else if (status === 'approved') {
             if (!allocations || allocations.length === 0) return res.status(400).json({ message: 'Missing allocation details' });
             const bookingAllocationsToSave = [];
@@ -124,14 +157,13 @@ exports.approveOrDeclineBooking = async (req, res) => {
         } else {
             return res.status(400).json({ message: 'Invalid status provided' });
         }
+
         await booking.save();
-        if (booking.userId) {
-            const expiryDate = new Date();
-            expiryDate.setDate(expiryDate.getDate() + 7);
-            await new Notification({
-                message, userId: booking.userId._id, target: 'user', ttl: expiryDate
-            }).save();
+
+        if (booking.userId && previousStatus !== status) {
+            await sendUserNotification(booking.userId._id, message);
         }
+
         res.status(200).json({ message: 'Booking status updated successfully', booking });
     } catch (error) {
         console.error("Error approving or declining booking:", error);
@@ -151,34 +183,35 @@ exports.updateBooking = async (req, res) => {
             return res.status(403).json({ message: 'Not authorized to edit this booking.' });
         }
 
+        const updateData = {
+            formData: formData,
+            status: 'pending'
+        };
+
         if (booking.status === 'approved') {
             for (const alloc of booking.allocations) {
                 if (alloc.bedId) {
                     await Bed.findByIdAndUpdate(alloc.bedId, { $inc: { occupancy: -1 } });
                 }
             }
-            booking.allocations = [];
-            
-            const admins = await User.find({ roles: { $in: ['admin', 'super-admin'] } });
-            const notificationMessage = `Booking #${booking.bookingNumber} was edited by the user and now requires re-approval.`;
-            const expiryDate = new Date();
-            expiryDate.setDate(expiryDate.getDate() + 7);
-
-            for (const admin of admins) {
-                await new Notification({
-                    message: notificationMessage,
-                    userId: admin._id,
-                    target: 'admin',
-                    ttl: expiryDate,
-                }).save();
-            }
+            updateData.allocations = [];
         }
-
-        booking.formData = formData;
-        booking.status = 'pending';
         
-        await booking.save();
-        res.status(200).json({ message: 'Booking updated successfully. It is now pending re-approval.', booking });
+        // Send a notification to admins about the edit and pending status
+        const notificationMessage = `Booking #${booking.bookingNumber} was edited by the user and is now pending.`;
+        await sendAdminNotification(notificationMessage);
+
+        const updatedBooking = await Booking.findByIdAndUpdate(
+            bookingId,
+            { $set: updateData },
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedBooking) {
+            return res.status(404).json({ message: 'Booking not found after update.' });
+        }
+        
+        res.status(200).json({ message: 'Booking updated successfully. It is now pending re-approval.', booking: updatedBooking });
     } catch (error) {
         console.error("Error updating booking:", error);
         res.status(500).json({ message: 'Server error', error: error.message });
@@ -200,6 +233,11 @@ exports.deleteMyBooking = async (req, res) => {
                 }
             }
         }
+        
+        // Send notification to admins with the previous status
+        const notificationMessage = `Booking #${booking.bookingNumber} was withdrawn by the user. Its previous status was '${booking.status}'.`;
+        await sendAdminNotification(notificationMessage);
+
         await Booking.findByIdAndDelete(bookingId);
         res.status(200).json({ message: 'Booking deleted successfully' });
     } catch (error) {
