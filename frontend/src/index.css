@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.react-calendar {
+  border-radius: 12px;
+}
+
+.react-calendar__tile.highlight {
+  background: #3b82f6 !important;
+  color: white;
+  border-radius: 50% !important;
+  font-weight: bold;
+}
+
+.react-calendar__tile:hover {
+  background-color: #e5e7eb !important;
+  border-radius: 50% !important;
+}

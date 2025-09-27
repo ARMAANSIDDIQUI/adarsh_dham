@@ -1,0 +1,8 @@
+module.exports = {
+  env: {
+    worker: true,
+  },
+  rules: {
+    "no-restricted-globals": "off"
+  }
+};
