@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../redux/slices/authSlice.js';
-import { FaUserShield, FaCalendarAlt, FaBuilding, FaBed, FaWifi, FaSignOutAlt, FaFileExport, FaUsers, FaBell, FaBars, FaTimes } from 'react-icons/fa';
+import { FaUserShield, FaCalendarAlt, FaBuilding, FaBed, FaWifi, FaSignOutAlt, FaFileExport, FaUsers, FaBell, FaBars, FaTimes, FaListAlt, FaSitemap } from 'react-icons/fa';
 
 const AdminLayout = ({ children }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { user } = useSelector((state) => state.auth);
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false); // State for mobile menu toggle
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     if (!user) {
         return null;
@@ -32,13 +32,15 @@ const AdminLayout = ({ children }) => {
     const navLinks = [
         { name: 'Admin Dashboard', to: '/admin', icon: <FaUserShield />, roles: ['admin', 'super-admin', 'super-operator', 'operator', 'satsang-operator'] },
         { name: 'Manage Admins', to: '/admin/manage-admins', icon: <FaUsers />, roles: ['super-admin'] },
-        // CORRECTED: 'to' prop is now consistent with other links
         { name: 'User Management', to: '/admin/user-management', icon: <FaUsers />, roles: ['admin', 'super-admin'] },
         { name: 'Manage Events', to: '/admin/manage-events', icon: <FaCalendarAlt />, roles: ['admin'] },
         { name: 'Manage Buildings', to: '/admin/manage-buildings', icon: <FaBuilding />, roles: ['admin'] },
         { name: 'Manage Rooms', to: '/admin/manage-rooms', icon: <FaBed />, roles: ['admin'] },
         { name: 'Manage Beds', to: '/admin/manage-beds', icon: <FaBed />, roles: ['admin'] },
         { name: 'Manage Allocations', to: '/admin/manage-allocations', icon: <FaUserShield />, roles: ['super-operator', 'operator'] },
+        { name: 'Occupancy Report', to: '/admin/occupancy-report', icon: <FaListAlt />, roles: ['admin', 'super-admin', 'operator', 'super-operator'] },
+        // NEW LINK ADDED
+        { name: 'Live Structure View', to: '/admin/structure-view', icon: <FaSitemap />, roles: ['admin', 'super-admin', 'operator', 'super-operator'] },
         { name: 'Manage Satsang', to: '/admin/manage-satsang', icon: <FaWifi />, roles: ['satsang-operator'] },
         { name: 'Export Data', to: '/admin/export-data', icon: <FaFileExport />, roles: ['admin'] },
         { name: 'Send Notification', to: '/admin/send-notification', icon: <FaBell />, roles: ['admin', 'super-admin'] },
@@ -46,8 +48,6 @@ const AdminLayout = ({ children }) => {
 
     return (
         <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">
-            
-            {/* 1. Mobile Overlay/Backdrop when menu is open */}
             {isSidebarOpen && (
                 <div 
                     className="fixed inset-0 z-[590] bg-black opacity-50 md:hidden"
@@ -55,13 +55,7 @@ const AdminLayout = ({ children }) => {
                 ></div>
             )}
             
-            {/* 2. Sidebar (Responsive, Sliding Menu) */}
-            <aside className={`
-                bg-gray-800 text-white w-64 p-4 md:p-6 shadow-2xl 
-                fixed md:static top-0 bottom-0 left-0 z-[650] transform transition-transform duration-300 ease-in-out
-                ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
-                md:translate-x-0 md:flex md:flex-col
-            `}>
+            <aside className={`bg-gray-800 text-white w-64 p-4 md:p-6 shadow-2xl fixed md:static top-0 bottom-0 left-0 z-[650] transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:flex md:flex-col`}>
                 <div className="flex justify-between items-center mb-6 pt-4">
                     <h2 className="text-xl font-bold">Admin Panel</h2>
                     <button onClick={handleMenuToggle} className="md:hidden text-white hover:text-red-400 p-1">
@@ -70,23 +64,16 @@ const AdminLayout = ({ children }) => {
                 </div>
                 <nav className="flex-1 overflow-y-auto">
                     <ul className="space-y-2">
-                        {navLinks.filter(link => link.roles.some(role => userRoles?.includes(role))).map((link) => (
+                        {navLinks.filter(link => link.roles.some(role => hasRole(role))).map((link) => (
                             <li key={link.name}>
-                                <Link
-                                    to={link.to}
-                                    onClick={handleMenuToggle}
-                                    className="flex items-center space-x-2 py-2 px-3 rounded-lg hover:bg-gray-700 hover:text-pink-300 transition-colors duration-200 text-sm font-medium"
-                                >
+                                <Link to={link.to} onClick={handleMenuToggle} className="flex items-center space-x-2 py-2 px-3 rounded-lg hover:bg-gray-700 hover:text-pink-300 transition-colors duration-200 text-sm font-medium">
                                     {link.icon}
                                     <span>{link.name}</span>
                                 </Link>
                             </li>
                         ))}
                         <li className="mt-4 pt-2 border-t border-gray-700">
-                            <button
-                                onClick={handleLogout}
-                                className="flex items-center justify-center space-x-2 w-full py-2 px-4 rounded-lg bg-red-600 hover:bg-red-700 text-white transition-colors duration-200 font-medium"
-                            >
+                            <button onClick={handleLogout} className="flex items-center justify-center space-x-2 w-full py-2 px-4 rounded-lg bg-red-600 hover:bg-red-700 text-white transition-colors duration-200 font-medium">
                                 <FaSignOutAlt />
                                 <span>Logout</span>
                             </button>

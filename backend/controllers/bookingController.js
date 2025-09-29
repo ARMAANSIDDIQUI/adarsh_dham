@@ -1,69 +1,131 @@
 const Booking = require('../models/bookingModel');
 const Bed = require('../models/bedModel');
+const Person = require('../models/peopleModel');
 const Notification = require('../models/notificationModel');
-const Room = require('../models/roomModel');
 const User = require('../models/userModel');
 const pdfGenerator = require('../utils/pdfGenerator');
 
+// --- Internal Helper Functions ---
 const generateBookingNumber = () => {
     const date = new Date();
     const dateString = date.getFullYear().toString().slice(-2)
-                     + ('0' + (date.getMonth() + 1)).slice(-2)
-                     + ('0' + date.getDate()).slice(-2);
+                         + ('0' + (date.getMonth() + 1)).slice(-2)
+                         + ('0' + date.getDate()).slice(-2);
     const randomChars = Math.random().toString(36).substring(2, 6).toUpperCase();
     return `BK${dateString}-${randomChars}`;
 };
 
-// Helper function to send a notification to a single user
 const sendUserNotification = async (userId, message) => {
     const expiryDate = new Date();
-    expiryDate.setDate(expiryDate.getDate() + 7); // TTL of 7 days
-    const newNotification = new Notification({
-        message,
-        userId,
-        target: 'user',
-        ttl: expiryDate
-    });
+    expiryDate.setDate(expiryDate.getDate() + 7);
+    const newNotification = new Notification({ message, userId, target: 'user', ttl: expiryDate });
     await newNotification.save();
 };
 
-// Helper function to send a notification to all admins
 const sendAdminNotification = async (message) => {
     const admins = await User.find({ roles: { $in: ['admin', 'super-admin'] } });
     const expiryDate = new Date();
-    expiryDate.setDate(expiryDate.getDate() + 7); // TTL of 7 days
+    expiryDate.setDate(expiryDate.getDate() + 7);
     for (const admin of admins) {
-        const newNotification = new Notification({
-            message,
-            userId: admin._id,
-            target: 'admin',
-            ttl: expiryDate,
-        });
+        const newNotification = new Notification({ message, userId: admin._id, target: 'admin', ttl: expiryDate });
         await newNotification.save();
     }
 };
+
+
+// --- CRUD Functions ---
 
 exports.createBooking = async (req, res) => {
     const { eventId, formData } = req.body;
     const userId = req.user.id;
     try {
         const bookingNumber = generateBookingNumber();
-        const newBooking = new Booking({
-            userId,
-            eventId,
-            formData,
-            bookingNumber,
-            status: 'pending'
-        });
+        const newBooking = new Booking({ userId, eventId, formData, bookingNumber, status: 'pending' });
         await newBooking.save();
-
-        await sendAdminNotification(`A new booking request (#${bookingNumber}) has been submitted and is pending.`);
-
+        await sendAdminNotification(`A new booking request (#${bookingNumber}) has been submitted.`);
         res.status(201).json({ message: 'Booking request submitted successfully', booking: newBooking });
     } catch (error) {
+        console.error("Error creating booking:", error);
         if (error.code === 11000) {
             return res.status(400).json({ message: 'Failed to generate a unique booking number. Please try again.' });
         }
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+exports.approveOrDeclineBooking = async (req, res) => {
+    const { bookingId } = req.params;
+    const { status, allocations } = req.body;
+
+    try {
+        const booking = await Booking.findById(bookingId).populate('userId').populate('eventId');
+        if (!booking) return res.status(404).json({ message: 'Booking not found' });
+
+        const previousStatus = booking.status;
+        let message = '';
+
+        await Person.deleteMany({ bookingId: booking._id });
+
+        if (status === 'approved') {
+            if (!allocations || allocations.length !== booking.formData.people.length) {
+                return res.status(400).json({ message: 'Allocation details must be provided for every person in the booking.' });
+            }
+
+            const peopleToCreate = [];
+            // CORRECTED: Create a new array to save with the correct personIndex
+            const allocationsToSave = []; 
+
+            for (const [index, personData] of booking.formData.people.entries()) {
+                const allocation = allocations[index];
+                if (!allocation || !allocation.bedId) {
+                    return res.status(400).json({ message: `A bed allocation is missing for ${personData.name}.` });
+                }
+                
+                // Add the personIndex to the allocation object before saving
+                allocationsToSave.push({ ...allocation, personIndex: index });
+
+                peopleToCreate.push({
+                    bookingId: booking._id,
+                    bookingNumber: booking.bookingNumber,
+                    userId: booking.userId._id,
+                    eventId: booking.eventId._id,
+                    bedId: allocation.bedId,
+                    name: personData.name,
+                    age: personData.age,
+                    gender: personData.gender,
+                    stayFrom: booking.formData.stayFrom,
+                    stayTo: booking.formData.stayTo,
+                    ashramName: booking.formData.ashramName,
+                    contactNumber: booking.formData.contactNumber,
+                    city: booking.formData.city,
+                    baijiMahatmaJi: booking.formData.baijiMahatmaJi,
+                });
+            }
+
+            await Person.insertMany(peopleToCreate);
+            
+            // Save the corrected allocations array with the personIndex
+            booking.allocations = allocationsToSave; 
+            booking.status = 'approved';
+            message = `Your booking for ${booking.eventId?.name} has been approved!`;
+
+        } else {
+            booking.status = status;
+            booking.allocations = [];
+            message = status === 'declined' 
+                ? `Your booking for ${booking.eventId?.name} has been declined.` 
+                : `Your booking for ${booking.eventId?.name} has been moved back to pending.`;
+        }
+
+        await booking.save();
+
+        if (booking.userId && previousStatus !== status) {
+            await sendUserNotification(booking.userId._id, message);
+        }
+
+        res.status(200).json({ message: `Booking status successfully updated to ${status}.`, booking });
+    } catch (error) {
+        console.error("Error updating booking status:", error);
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
@@ -116,61 +178,6 @@ exports.getBookingById = async (req, res) => {
     }
 };
 
-exports.approveOrDeclineBooking = async (req, res) => {
-    const { bookingId } = req.params;
-    const { status, allocations } = req.body;
-    try {
-        const booking = await Booking.findById(bookingId).populate('userId').populate('eventId');
-        if (!booking) return res.status(404).json({ message: 'Booking not found' });
-
-        let message = '';
-        const previousStatus = booking.status;
-
-        if (status === 'pending') {
-            for (const alloc of booking.allocations) {
-                if (alloc.bedId) {
-                    await Bed.findByIdAndUpdate(alloc.bedId, { $inc: { occupancy: -1 } });
-                }
-            }
-            booking.status = 'pending';
-            booking.allocations = [];
-            message = `Your booking for ${booking.eventId?.name} has been set back to pending.`;
-        } else if (status === 'approved') {
-            if (!allocations || allocations.length === 0) return res.status(400).json({ message: 'Missing allocation details' });
-            const bookingAllocationsToSave = [];
-            for (const [index, alloc] of allocations.entries()) {
-                const { bedId, roomId, buildingId } = alloc;
-                if (!bedId) return res.status(400).json({ message: 'Missing bed ID in one or more allocations.' });
-                const bed = await Bed.findById(bedId);
-                if (!bed) return res.status(404).json({ message: `Bed with ID ${bedId} not found` });
-                if (bed.occupancy >= bed.capacity) return res.status(400).json({ message: `Bed ${bed.name} is already full.` });
-                await Bed.findByIdAndUpdate(bedId, { $inc: { occupancy: 1 } });
-                bookingAllocationsToSave.push({ personIndex: index, buildingId, roomId, bedId });
-            }
-            booking.allocations = bookingAllocationsToSave;
-            booking.status = 'approved';
-            message = `Your booking for ${booking.eventId?.name} has been approved!`;
-        } else if (status === 'declined') {
-            booking.status = 'declined';
-            booking.allocations = [];
-            message = `Your booking for ${booking.eventId?.name} has been declined.`;
-        } else {
-            return res.status(400).json({ message: 'Invalid status provided' });
-        }
-
-        await booking.save();
-
-        if (booking.userId && previousStatus !== status) {
-            await sendUserNotification(booking.userId._id, message);
-        }
-
-        res.status(200).json({ message: 'Booking status updated successfully', booking });
-    } catch (error) {
-        console.error("Error approving or declining booking:", error);
-        res.status(500).json({ message: 'Server error', error: error.message });
-    }
-};
-
 exports.updateBooking = async (req, res) => {
     const { bookingId } = req.params;
     const { formData } = req.body;
@@ -183,22 +190,17 @@ exports.updateBooking = async (req, res) => {
             return res.status(403).json({ message: 'Not authorized to edit this booking.' });
         }
 
+        if (booking.status === 'approved') {
+            await Person.deleteMany({ bookingId: booking._id });
+        }
+
         const updateData = {
             formData: formData,
-            status: 'pending'
+            status: 'pending',
+            allocations: []
         };
-
-        if (booking.status === 'approved') {
-            for (const alloc of booking.allocations) {
-                if (alloc.bedId) {
-                    await Bed.findByIdAndUpdate(alloc.bedId, { $inc: { occupancy: -1 } });
-                }
-            }
-            updateData.allocations = [];
-        }
         
-        // Send a notification to admins about the edit and pending status
-        const notificationMessage = `Booking #${booking.bookingNumber} was edited by the user and is now pending.`;
+        const notificationMessage = `Booking #${booking.bookingNumber} was edited by the user and is now pending re-approval.`;
         await sendAdminNotification(notificationMessage);
 
         const updatedBooking = await Booking.findByIdAndUpdate(
@@ -226,15 +228,8 @@ exports.deleteMyBooking = async (req, res) => {
         if (!booking) return res.status(404).json({ message: 'Booking not found' });
         if (booking.userId.toString() !== userId) return res.status(403).json({ message: 'Forbidden' });
         
-        if (booking.status === 'approved' && booking.allocations.length > 0) {
-            for(const alloc of booking.allocations) {
-                if (alloc.bedId) {
-                    await Bed.findByIdAndUpdate(alloc.bedId, { $inc: { occupancy: -1 } });
-                }
-            }
-        }
+        await Person.deleteMany({ bookingId: booking._id });
         
-        // Send notification to admins with the previous status
         const notificationMessage = `Booking #${booking.bookingNumber} was withdrawn by the user. Its previous status was '${booking.status}'.`;
         await sendAdminNotification(notificationMessage);
 
@@ -244,6 +239,7 @@ exports.deleteMyBooking = async (req, res) => {
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
+
 
 exports.getBookingPdf = async (req, res) => {
     try {
@@ -266,7 +262,11 @@ exports.getBookingPdf = async (req, res) => {
             return res.status(400).json({ message: 'Booking must be approved to generate a pass.' });
         }
         
-        const pdfBuffer = await pdfGenerator.generateBookingPdf(booking);
+        // CORRECTED: Convert the Mongoose document to a plain JavaScript object
+        const bookingObject = booking.toObject();
+
+        // Pass the plain object to the generator
+        const pdfBuffer = await pdfGenerator.generateBookingPdf(bookingObject);
         
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `attachment; filename=Booking-Pass-${booking.bookingNumber}.pdf`);

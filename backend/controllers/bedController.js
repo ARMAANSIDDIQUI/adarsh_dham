@@ -1,6 +1,131 @@
+// backend/controllers/bedController.js
+
+const mongoose = require('mongoose');
 const Bed = require('../models/bedModel');
 const Room = require('../models/roomModel');
-const Booking = require('../models/bookingModel');
+const Person = require('../models/peopleModel');
+
+// GET all beds with dynamic status based on current date
+exports.getAllBeds = async (req, res) => {
+    try {
+        // UPDATED: More robust date logic for today's range
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+        const startOfTomorrow = new Date(startOfToday);
+        startOfTomorrow.setDate(startOfToday.getDate() + 1);
+
+        const beds = await Bed.aggregate([
+            {
+                $lookup: {
+                    from: 'people',
+                    let: { bed_id: '$_id' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ['$bedId', '$$bed_id'] },
+                                        // UPDATED: Robust date overlap check.
+                                        // A person is occupying today if their stay started BEFORE tomorrow
+                                        // AND their stay ends ON or AFTER today.
+                                        { $lt: ['$stayFrom', startOfTomorrow] },
+                                        { $gte: ['$stayTo', startOfToday] }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    as: 'currentOccupants'
+                }
+            },
+            {
+                $lookup: { from: 'rooms', localField: 'roomId', foreignField: '_id', as: 'roomInfo' }
+            },
+            { $unwind: { path: '$roomInfo', preserveNullAndEmptyArrays: true } },
+            {
+                $lookup: { from: 'buildings', localField: 'roomInfo.buildingId', foreignField: '_id', as: 'buildingInfo' }
+            },
+            { $unwind: { path: '$buildingInfo', preserveNullAndEmptyArrays: true } },
+            {
+                $project: {
+                    _id: 1, name: 1, type: 1, roomId: '$roomInfo._id',
+                    roomNumber: '$roomInfo.roomNumber', buildingName: '$buildingInfo.name',
+                    status: {
+                        $cond: { if: { $gt: [{ $size: '$currentOccupants' }, 0] }, then: 'occupied', else: 'available' }
+                    },
+                    occupant: { $arrayElemAt: ['$currentOccupants', 0] }
+                }
+            }
+        ]);
+
+        res.status(200).json(beds);
+    } catch (error) {
+        console.error("Error fetching beds with status:", error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+// GET a single bed by ID with dynamic status
+exports.getBedById = async (req, res) => {
+    try {
+        const bedId = new mongoose.Types.ObjectId(req.params.id);
+        
+        // UPDATED: More robust date logic for today's range
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+        const startOfTomorrow = new Date(startOfToday);
+        startOfTomorrow.setDate(startOfToday.getDate() + 1);
+
+        const bedDetails = await Bed.aggregate([
+            { $match: { _id: bedId } },
+            { $limit: 1 },
+            {
+                $lookup: {
+                    from: 'people',
+                    let: { bed_id: '$_id' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ['$bedId', '$$bed_id'] },
+                                        // UPDATED: Robust date overlap check
+                                        { $lt: ['$stayFrom', startOfTomorrow] },
+                                        { $gte: ['$stayTo', startOfToday] }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    as: 'currentOccupants'
+                }
+            },
+            { $lookup: { from: 'rooms', localField: 'roomId', foreignField: '_id', as: 'roomInfo' } },
+            { $unwind: { path: '$roomInfo', preserveNullAndEmptyArrays: true } },
+            { $lookup: { from: 'buildings', localField: 'roomInfo.buildingId', foreignField: '_id', as: 'buildingInfo' } },
+            { $unwind: { path: '$buildingInfo', preserveNullAndEmptyArrays: true } },
+            {
+                $project: {
+                    _id: 1, name: 1, type: 1, roomId: '$roomInfo._id',
+                    roomNumber: '$roomInfo.roomNumber', buildingName: '$buildingInfo.name',
+                    status: {
+                        $cond: { if: { $gt: [{ $size: '$currentOccupants' }, 0] }, then: 'occupied', else: 'available' }
+                    },
+                    occupant: { $arrayElemAt: ['$currentOccupants', 0] }
+                }
+            }
+        ]);
+
+        if (!bedDetails || bedDetails.length === 0) {
+            return res.status(404).json({ message: 'Bed not found' });
+        }
+
+        res.status(200).json(bedDetails[0]);
+    } catch (error) {
+        console.error("Error fetching single bed with status:", error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
 
 // CREATE a new bed and add it to a room
 exports.createBed = async (req, res) => {
@@ -10,41 +135,11 @@ exports.createBed = async (req, res) => {
         if (!room) {
             return res.status(404).json({ message: 'Room not found' });
         }
-
         const newBed = new Bed({ roomId, name, type });
         await newBed.save();
-
-        // Add the new bed's ID to the parent room's list of beds
         room.beds.push(newBed._id);
         await room.save();
-
         res.status(201).json({ message: 'Bed created and added to room successfully', bed: newBed });
-    } catch (error) {
-        res.status(500).json({ message: 'Server error', error: error.message });
-    }
-};
-
-// GET all beds
-exports.getAllBeds = async (req, res) => {
-    try {
-        const beds = await Bed.find().populate({
-            path: 'roomId',
-            select: 'roomNumber'
-        });
-        res.status(200).json(beds);
-    } catch (error) {
-        res.status(500).json({ message: 'Server error', error: error.message });
-    }
-};
-
-// GET a single bed by ID
-exports.getBedById = async (req, res) => {
-    try {
-        const bed = await Bed.findById(req.params.id).populate('roomId');
-        if (!bed) {
-            return res.status(404).json({ message: 'Bed not found' });
-        }
-        res.status(200).json(bed);
     } catch (error) {
         res.status(500).json({ message: 'Server error', error: error.message });
     }
@@ -71,21 +166,14 @@ exports.deleteBed = async (req, res) => {
         if (!bed) {
             return res.status(404).json({ message: 'Bed not found' });
         }
-
-        const activeBooking = await Booking.findOne({
-            "allocations.bedId": id,
-            status: { $in: ['pending', 'approved'] }
-        });
-
-        if (activeBooking) {
+        const assignedPerson = await Person.findOne({ bedId: id });
+        if (assignedPerson) {
             return res.status(409).json({
-                message: 'This bed cannot be deleted as it is part of an active booking.'
+                message: `This bed cannot be deleted as it is currently assigned to ${assignedPerson.name}. Please re-allocate them first.`
             });
         }
-
         await Room.findByIdAndUpdate(bed.roomId, { $pull: { beds: id } });
         await Bed.findByIdAndDelete(id);
-
         res.status(200).json({ message: 'Bed deleted successfully' });
     } catch (error) {
         console.error("Error deleting bed:", error);

@@ -35,22 +35,19 @@ const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel, confir
     );
 };
 
-
 const ManageRooms = () => {
     const [rooms, setRooms] = useState([]);
     const [buildings, setBuildings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [editingRoom, setEditingRoom] = useState(null);
-    
-    // State for the creation form
+
     const [newRoomData, setNewRoomData] = useState({
         roomNumber: '',
         buildingId: '',
         beds: [{ name: '', type: 'single' }]
     });
 
-    // State for Custom Modal
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalData, setModalData] = useState({ 
         title: '', 
@@ -60,6 +57,9 @@ const ManageRooms = () => {
         confirmText: '', 
         isAlert: false,
     });
+
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedBuilding, setSelectedBuilding] = useState('');
 
     const fetchAllData = async () => {
         try {
@@ -120,7 +120,6 @@ const ManageRooms = () => {
         }
     };
     
-    // New function to handle the actual deletion after confirmation
     const confirmDelete = async (id) => {
         setIsModalOpen(false);
         try {
@@ -165,6 +164,13 @@ const ManageRooms = () => {
 
     if (loading) return <div className="text-center mt-10 text-xl text-pink-500"><FaSpinner className="animate-spin inline mr-2" /> Loading Rooms...</div>;
 
+    // Filter rooms based on search and building selection
+    const filteredRooms = rooms.filter(room => {
+        const matchesSearch = room.roomNumber.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesBuilding = selectedBuilding ? room.buildingId?._id === selectedBuilding : true;
+        return matchesSearch && matchesBuilding;
+    });
+
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-8 bg-gray-100 min-h-screen">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6 border-b-2 border-pink-400 pb-2">
@@ -176,7 +182,6 @@ const ManageRooms = () => {
             <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
                 <h3 className="text-xl font-semibold text-pink-500 mb-4">Create New Room</h3>
                 <form onSubmit={handleCreateRoom} className="space-y-4">
-                    {/* Room Details: Building & Room Number */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700">Building</label>
@@ -207,7 +212,6 @@ const ManageRooms = () => {
                         <h4 className="text-lg font-semibold text-gray-800 mb-3">Beds in this Room</h4>
                         {newRoomData.beds.map((bed, index) => (
                             <div key={index} className="grid grid-cols-5 md:grid-cols-7 gap-3 items-center mt-2 pb-2 border-b last:border-b-0">
-                                {/* Bed Name Input */}
                                 <div className="col-span-2">
                                     <input 
                                         name="name" 
@@ -219,7 +223,6 @@ const ManageRooms = () => {
                                         required 
                                     />
                                 </div>
-                                {/* Bed Type Select */}
                                 <div className="col-span-2">
                                     <select 
                                         name="type" 
@@ -227,11 +230,10 @@ const ManageRooms = () => {
                                         onChange={e => handleBedInputChange(index, e)} 
                                         className="block w-full p-2 border border-gray-300 rounded-lg text-sm focus:ring-pink-300 focus:border-pink-500"
                                     >
-                                    <option value="single">Single (Capacity 1)</option>
-                                    <option value="double">Double (Capacity 2)</option>
-                                </select>
+                                        <option value="single">Single</option>
+                                        <option value="floor bed">Floor Bed</option>
+                                    </select>
                                 </div>
-                                {/* Remove Button */}
                                 <div className="col-span-1 md:col-span-3">
                                     <Button 
                                         type="button" 
@@ -253,13 +255,33 @@ const ManageRooms = () => {
                         </Button>
                     </div>
                     
-                    {/* Submit Button */}
                     <div className="pt-2 text-right">
                         <Button type="submit" className="bg-pink-500 hover:bg-pink-600 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition-colors">
                             Create Room
                         </Button>
                     </div>
                 </form>
+            </div>
+
+            {/* Search & Filter */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 space-y-2 md:space-y-0 md:space-x-4">
+                <input
+                    type="text"
+                    placeholder="Search by Room Number..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full md:w-1/3 p-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-500"
+                />
+                <select
+                    value={selectedBuilding}
+                    onChange={(e) => setSelectedBuilding(e.target.value)}
+                    className="w-full md:w-1/4 p-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-500"
+                >
+                    <option value="">All Buildings</option>
+                    {buildings.map(b => (
+                        <option key={b._id} value={b._id}>{b.name}</option>
+                    ))}
+                </select>
             </div>
 
             {/* Existing Rooms Table */}
@@ -270,18 +292,16 @@ const ManageRooms = () => {
                         <tr>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Room #</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Building</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Beds</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Capacity</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Occupancy</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Actions</th>
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                        {rooms.map(room => (
+                        {filteredRooms.map(room => (
                             <tr key={room._id} className="hover:bg-pink-50 transition-colors">
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{room.roomNumber}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{room.buildingId?.name || 'N/A'}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{room.beds?.length || 0}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{room.capacity}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{room.occupancy}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -296,16 +316,15 @@ const ManageRooms = () => {
                                 </td>
                             </tr>
                         ))}
-                        {rooms.length === 0 && (
+                        {filteredRooms.length === 0 && (
                             <tr className="border-b-0">
-                                <td colSpan="6" className="px-6 py-8 text-center text-gray-500">No rooms have been created yet.</td>
+                                <td colSpan="6" className="px-6 py-8 text-center text-gray-500">No rooms found.</td>
                             </tr>
                         )}
                     </tbody>
                 </table>
             </div>
             
-            {/* Edit Room Modal */}
             {editingRoom && (
                 <div className="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full flex items-center justify-center z-[1000]">
                     <motion.div initial={{scale: 0.9, opacity: 0}} animate={{scale: 1, opacity: 1}} className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md m-4">
@@ -331,7 +350,6 @@ const ManageRooms = () => {
                 </div>
             )}
             
-            {/* Custom Confirmation/Alert Modal */}
             <ConfirmationModal 
                 isOpen={isModalOpen}
                 title={modalData.title}

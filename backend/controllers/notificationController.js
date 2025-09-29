@@ -1,6 +1,7 @@
 const Notification = require('../models/notificationModel');
 const User = require('../models/userModel');
-const { sendFcmNotification } = require('../utils/fcmManager'); // ADDED: Import the FCM manager
+// NOTE: Make sure the path to your fcmManager.js file is correct.
+const { sendFcmNotification } = require('../utils/fcmManager'); 
 
 /**
  * Creates and saves a notification.
@@ -8,7 +9,8 @@ const { sendFcmNotification } = require('../utils/fcmManager'); // ADDED: Import
  * Also sends an OS-level push notification via FCM.
  */
 exports.sendNotification = async (req, res) => {
-    const { message, userId, role, ttlMinutes = 1440 } = req.body; // Default TTL is 24 hours
+    // ttlMinutes is the Time-To-Live in minutes for the in-website notification
+    const { message, userId, role, ttlMinutes = 1440 } = req.body; 
 
     try {
         if (!message) {
@@ -21,23 +23,26 @@ exports.sendNotification = async (req, res) => {
         let title = "Adarsh Dham: New Update";
         let body = message;
 
-        // Handle finding target users based on the request
+        // --- 1. Find Target Users ---
         if (userId) {
             const user = await User.findById(userId);
             if (user) {
                 targetUsers.push(user);
             }
         } else if (role) {
+            // Find users based on the provided role
             targetUsers = await User.find({ roles: role });
         } else {
+            // Default: Send to all admins if no specific user/role is provided
             const admins = await User.find({ roles: { $in: ['admin', 'super-admin']} });
             targetUsers.push(...admins);
         }
         
         const fcmTokens = [];
         
-        // Loop through all target users to create in-website notifications and collect FCM tokens
+        // --- 2. Create In-Website Notifications and Collect Tokens ---
         for (const user of targetUsers) {
+            // Create and save the notification record in MongoDB
             const newNotification = new Notification({
                 message,
                 userId: user._id,
@@ -47,20 +52,21 @@ exports.sendNotification = async (req, res) => {
             });
             await newNotification.save();
             
-            // Collect tokens for OS-level push notifications
+            // Collect tokens for the OS-level push notification
             if (user.fcmTokens && user.fcmTokens.length > 0) {
                 fcmTokens.push(...user.fcmTokens);
             }
         }
         
-        // Send OS-level push notification via FCM
+        // --- 3. Send OS-level Push Notification via FCM ---
         if (fcmTokens.length > 0) {
             await sendFcmNotification(fcmTokens, title, body, {
-                notificationType: 'generalUpdate', // Custom data for client-side handling
+                // Custom data payload (e.g., booking ID, type of update)
+                notificationType: 'generalUpdate', 
             });
         }
         
-        res.status(201).json({ message: 'Notification sent successfully' });
+        res.status(201).json({ message: 'Notification sent successfully (both in-app and push).' });
 
     } catch (error) {
         console.error("Error sending notification:", error);

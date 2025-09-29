@@ -5,14 +5,12 @@ import Button from '../common/Button.jsx';
 import { FaUsers, FaEdit, FaTrashAlt, FaKey, FaTimes, FaPlusCircle } from 'react-icons/fa';
 import api from '../../api/api.js';
 
-// Define the roles globally
 const roles = ['admin', 'super-operator', 'operator', 'satsang-operator'];
 
-// Helper component for the Modal (to keep the main component cleaner)
 const AdminModal = ({ user, modalOpen, setModalOpen, fetchUsers, setError }) => {
   const [updateForm, setUpdateForm] = useState({ name: user.name, phone: user.phone });
   const [passwordForm, setPasswordForm] = useState({ newPassword: '' });
-  const [deleteStep, setDeleteStep] = useState(false); // State for delete confirmation
+  const [deleteStep, setDeleteStep] = useState(false);
 
   const handleUpdateDetails = async (e) => {
     e.preventDefault();
@@ -31,8 +29,6 @@ const AdminModal = ({ user, modalOpen, setModalOpen, fetchUsers, setError }) => 
       await api.post(`/admin/change-password/${user._id}`, passwordForm);
       fetchUsers();
       setPasswordForm({ newPassword: '' });
-      // Keep modal open, but provide success feedback if needed, or close it after a brief pause
-      // For now, closing the modal
       setModalOpen(false);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to change password.');
@@ -68,7 +64,7 @@ const AdminModal = ({ user, modalOpen, setModalOpen, fetchUsers, setError }) => 
         {deleteStep ? (
           <div className="space-y-4">
             <p className="text-red-600 font-semibold">
-              Are you sure you want to permanently delete **{user.name}**? This action cannot be undone.
+              Are you sure you want to permanently delete <strong>{user.name}</strong>? This action cannot be undone.
             </p>
             <div className="flex space-x-3">
               <Button 
@@ -87,7 +83,6 @@ const AdminModal = ({ user, modalOpen, setModalOpen, fetchUsers, setError }) => 
           </div>
         ) : (
           <>
-            {/* Update Details Form */}
             <form onSubmit={handleUpdateDetails} className="space-y-4 border-b pb-6 mb-6">
               <h4 className="font-semibold text-gray-700 flex items-center">
                 <FaEdit className="mr-2 text-pink-400" /> Update Details
@@ -105,7 +100,6 @@ const AdminModal = ({ user, modalOpen, setModalOpen, fetchUsers, setError }) => 
               </Button>
             </form>
 
-            {/* Change Password Form */}
             <form onSubmit={handleChangePassword} className="space-y-4 mb-6 border-b pb-6">
               <h4 className="font-semibold text-gray-700 flex items-center">
                 <FaKey className="mr-2 text-pink-400" /> Change Password
@@ -119,7 +113,6 @@ const AdminModal = ({ user, modalOpen, setModalOpen, fetchUsers, setError }) => 
               </Button>
             </form>
 
-            {/* Delete Button */}
             <div className="pt-4">
               <Button 
                 onClick={() => setDeleteStep(true)} 
@@ -135,7 +128,6 @@ const AdminModal = ({ user, modalOpen, setModalOpen, fetchUsers, setError }) => 
   );
 };
 
-
 const ManageAdmins = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -143,6 +135,8 @@ const ManageAdmins = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [newAdminForm, setNewAdminForm] = useState({ name: '', phone: '', password: '', roles: [] });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [roleFilter, setRoleFilter] = useState('');
 
   const fetchUsers = async () => {
     try {
@@ -156,22 +150,16 @@ const ManageAdmins = () => {
     }
   };
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+  useEffect(() => { fetchUsers(); }, []);
 
   const handleRoleToggle = async (userId, role, hasRole) => {
     try {
-      // Optimistic update
       setUsers(prevUsers => prevUsers.map(u => 
         u._id === userId ? { ...u, roles: hasRole ? u.roles.filter(r => r !== role) : [...u.roles, role] } : u
       ));
-      
       await api.post(`/admin/toggle-role/${userId}`, { role, hasRole: !hasRole });
-      
     } catch (err) {
       setError('Failed to update user role. Reverting changes.');
-      // Revert if API fails
       fetchUsers(); 
     }
   };
@@ -206,6 +194,13 @@ const ManageAdmins = () => {
     setModalOpen(true);
   };
 
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          user.phone.includes(searchQuery);
+    const matchesRole = roleFilter ? user.roles.includes(roleFilter) : true;
+    return matchesSearch && matchesRole;
+  });
+
   if (loading) return <div className="text-center mt-20 text-xl text-gray-600">Loading administrator list...</div>;
   
   return (
@@ -239,9 +234,7 @@ const ManageAdmins = () => {
                     onChange={() => handleNewAdminRoleChange(role)}
                     className="form-checkbox h-4 w-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500"
                   />
-                  <span className="ml-2 text-sm font-medium text-gray-700 capitalize">
-                    {role.replace('-', ' ')}
-                  </span>
+                  <span className="ml-2 text-sm font-medium text-gray-700 capitalize">{role.replace('-', ' ')}</span>
                 </label>
               ))}
             </div>
@@ -250,6 +243,25 @@ const ManageAdmins = () => {
             <FaPlusCircle className="inline mr-2" /> Create Admin
           </Button>
         </form>
+      </div>
+
+      {/* --- Search & Filter --- */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4">
+        <input
+          type="text"
+          placeholder="Search by name or phone..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full md:w-1/2 px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-300 transition-colors"
+        />
+        <select
+          value={roleFilter}
+          onChange={(e) => setRoleFilter(e.target.value)}
+          className="w-full md:w-1/4 px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-300 transition-colors"
+        >
+          <option value="">All Roles</option>
+          {roles.map(role => <option key={role} value={role}>{role.replace('-', ' ')}</option>)}
+        </select>
       </div>
 
       {/* --- Admin List Table --- */}
@@ -269,7 +281,7 @@ const ManageAdmins = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-100">
-            {(users || []).map((user) => (
+            {filteredUsers.map((user) => (
               <tr key={user._id} className="hover:bg-pink-50 transition-colors">
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.name}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{user.phone}</td>
@@ -304,14 +316,13 @@ const ManageAdmins = () => {
         </table>
       </div>
 
-      {/* Admin Management Modal */}
       {modalOpen && selectedUser && (
         <AdminModal 
-            user={selectedUser} 
-            modalOpen={modalOpen} 
-            setModalOpen={setModalOpen} 
-            fetchUsers={fetchUsers} 
-            setError={setError} 
+          user={selectedUser} 
+          modalOpen={modalOpen} 
+          setModalOpen={setModalOpen} 
+          fetchUsers={fetchUsers} 
+          setError={setError} 
         />
       )}
     </motion.div>

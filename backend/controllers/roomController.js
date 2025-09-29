@@ -1,12 +1,52 @@
+// backend/controllers/roomController.js
+
 const Room = require('../models/roomModel');
 const Bed = require('../models/bedModel');
 const Building = require('../models/buildingModel');
-const Booking = require('../models/bookingModel');
+const Person = require('../models/peopleModel'); // Import the Person model
 
-// GET all rooms with populated details
+// GET all rooms with dynamically calculated occupancy and capacity
 exports.getRooms = async (req, res) => {
     try {
-        const rooms = await Room.find().populate('beds').populate('buildingId', 'name');
+        // We use an aggregation pipeline to calculate occupancy dynamically.
+        const rooms = await Room.aggregate([
+            {
+                $lookup: { // Join with the beds collection
+                    from: 'beds',
+                    localField: 'beds',
+                    foreignField: '_id',
+                    as: 'bedDetails'
+                }
+            },
+            {
+                $lookup: { // Join with the people collection
+                    from: 'people',
+                    localField: 'bedDetails._id',
+                    foreignField: 'bedId',
+                    as: 'occupants'
+                }
+            },
+            {
+                $lookup: { // Join with the buildings collection to get the building name
+                    from: 'buildings',
+                    localField: 'buildingId',
+                    foreignField: '_id',
+                    as: 'buildingInfo'
+                }
+            },
+            {
+                $project: { // Define the final shape of the returned documents
+                    roomNumber: 1,
+                    buildingId: { $arrayElemAt: ["$buildingInfo", 0] }, // Get the building object
+                    beds: "$bedDetails", // Keep the populated bed details
+                    capacity: { $size: "$bedDetails" }, // Capacity is the total number of beds
+                    occupancy: { $size: "$occupants" }, // Occupancy is the total number of people assigned
+                    createdAt: 1,
+                    updatedAt: 1
+                }
+            }
+        ]);
+
         res.status(200).json(rooms || []);
     } catch (error) {
         console.error("Error fetching rooms:", error);
@@ -14,9 +54,10 @@ exports.getRooms = async (req, res) => {
     }
 };
 
-// CREATE a new room and its beds in one transaction
+
+// CREATE a new room and its beds
 exports.createRoom = async (req, res) => {
-    const { roomNumber, buildingId, beds } = req.body;
+    const { roomNumber, buildingId, beds } = req.body; 
     try {
         const building = await Building.findById(buildingId);
         if (!building) {
@@ -26,7 +67,6 @@ exports.createRoom = async (req, res) => {
         const newRoom = new Room({
             roomNumber,
             buildingId,
-            eventId: building.eventId,
             beds: []
         });
         
@@ -54,7 +94,7 @@ exports.createRoom = async (req, res) => {
 // UPDATE a room's details
 exports.updateRoom = async (req, res) => {
     try {
-        const room = await Room.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const room = await Room.findByIdAndUpdate(req.params.id, req.body, { new: true }); 
         if (!room) {
             return res.status(404).json({ message: 'Room not found' });
         }
@@ -64,26 +104,29 @@ exports.updateRoom = async (req, res) => {
     }
 };
 
-// DELETE a room after checking for active bookings
+// DELETE a room after checking for assigned people
 exports.deleteRoom = async (req, res) => {
     const { id } = req.params;
     try {
-        const roomToDelete = await Room.findById(id);
+        const roomToDelete = await Room.findById(id).populate('beds');
         if (!roomToDelete) {
             return res.status(404).json({ message: 'Room not found' });
         }
 
-        const activeBooking = await Booking.findOne({ 
-            "allocations.roomId": id,
-            status: { $in: ['pending', 'approved'] } 
+        const bedIdsInRoom = roomToDelete.beds.map(b => b._id);
+
+        // NEW LOGIC: Check if any person is assigned to any bed in this room.
+        const assignedPerson = await Person.findOne({ 
+            bedId: { $in: bedIdsInRoom }
         });
 
-        if (activeBooking) {
+        if (assignedPerson) {
             return res.status(409).json({ 
-                message: 'This room cannot be deleted as it is part of an active booking.' 
+                message: `This room cannot be deleted as it has occupants. Please re-allocate people like ${assignedPerson.name} first.`
             });
         }
 
+        // Proceed with deletion if no occupants are found
         await Bed.deleteMany({ roomId: id });
         await Building.findByIdAndUpdate(roomToDelete.buildingId, { $pull: { rooms: id } });
         await Room.findByIdAndDelete(id);

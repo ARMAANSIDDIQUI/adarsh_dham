@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const morgan = require('morgan');
 const schedule = require('node-schedule');
+const structureRoutes = require('./routes/structureRoutes');
 require('dotenv').config();
 
 const authRoutes = require('./routes/authRoutes');
@@ -13,12 +14,12 @@ const notificationRoutes = require('./routes/notificationRoutes');
 const satsangRoutes = require('./routes/satsangRoutes');
 const buildingRoutes = require('./routes/buildingRoutes');
 const roomRoutes = require('./routes/roomRoutes');
-const bedRoutes = require('./routes/bedRoutes'); // <-- ADD THIS LINE
+const bedRoutes = require('./routes/bedRoutes');
+const peopleRoutes = require('./routes/peopleRoutes'); // <-- ADD THIS LINE
 
 const User = require('./models/userModel');
 const Event = require('./models/eventModel');
-const Bed = require('./models/bedModel');
-const Booking = require('./models/bookingModel');
+const Person = require('./models/peopleModel'); // UPDATED: Use Person model
 const bcrypt = require('bcrypt');
 
 const app = express();
@@ -64,34 +65,33 @@ const createFirstSuperAdmin = async () => {
   }
 };
 
+// UPDATED LOGIC FOR THE NIGHTLY JOB
 const setupAllocationResetJob = () => {
+  // Runs every day at midnight
   schedule.scheduleJob('0 0 * * *', async () => {
-    console.log('Running nightly allocation reset job...');
+    console.log('Running nightly job to clear old occupancy data...');
     const twoDaysAgo = new Date();
     twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
 
     try {
+      // Find all events that ended more than two days ago
       const completedEvents = await Event.find({ endDate: { $lte: twoDaysAgo } });
+      const completedEventIds = completedEvents.map(event => event._id);
 
-      for (const event of completedEvents) {
-        const bookingsToReset = await Booking.find({ eventId: event._id, status: 'approved' });
-        
-        for (const booking of bookingsToReset) {
-          if (booking.bedId) {
-            await Bed.findByIdAndUpdate(booking.bedId, { status: 'available', allocatedTo: null });
-            console.log(`Resetting bed ${booking.bedId} for event ${event.name}`);
-          }
-        }
+      if (completedEventIds.length > 0) {
+        // Delete all 'Person' records associated with these completed events
+        const result = await Person.deleteMany({ eventId: { $in: completedEventIds } });
+        console.log(`Nightly job completed. Cleared ${result.deletedCount} person records from completed events.`);
+      } else {
+        console.log('Nightly job completed. No old events found to clear.');
       }
-      console.log('Nightly allocation reset job completed.');
     } catch (error) {
-      console.error('Error during allocation reset job:', error);
+      console.error('Error during nightly occupancy reset job:', error);
     }
   });
 };
 
 app.use('/api/auth', authRoutes);
-app.use('/api/user', authRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/admin', adminRoutes);
@@ -99,8 +99,9 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/satsang', satsangRoutes);
 app.use('/api/buildings', buildingRoutes);
 app.use('/api/rooms', roomRoutes);
-app.use('/api/beds', bedRoutes); // <-- AND ADD THIS LINE
-
+app.use('/api/beds', bedRoutes);
+app.use('/api/people', peopleRoutes); // <-- AND ADD THIS LINE
+app.use('/api/structure', structureRoutes);
 app.get('/', (req, res) => {
   res.send('Adarsh Dham Backend is running...');
 });

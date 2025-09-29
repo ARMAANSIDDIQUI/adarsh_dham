@@ -1,3 +1,5 @@
+// backend/models/bedModel.js
+
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
@@ -13,26 +15,19 @@ const bedSchema = new Schema({
     },
     type: {
         type: String,
-        enum: ['single', 'double'],
+        enum: ['single', 'floor bed'], // Updated enum
         default: 'single'
-    },
-    occupancy: {
-        type: Number,
-        default: 0
-    },
-    status: {
-        type: String,
-        enum: ['available', 'booked', 'partially-booked'],
-        default: 'available'
     }
+    // REMOVED: occupancy and status fields
 }, { 
     timestamps: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true }
 });
 
+// The capacity of any bed is now always 1
 bedSchema.virtual('capacity').get(function() {
-    return this.type === 'double' ? 2 : 1;
+    return 1;
 });
 
 module.exports = mongoose.model('Bed', bedSchema);

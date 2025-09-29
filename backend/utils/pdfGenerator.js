@@ -4,107 +4,135 @@ function generateBookingPdf(booking) {
     return new Promise((resolve, reject) => {
         const doc = new PDFDocument({
             size: 'A4',
-            margin: 50,
+            margin: 40,
             info: {
                 Title: `Booking Pass - ${booking.bookingNumber}`,
                 Author: 'Adarsh Dham',
             }
         });
 
-        // Buffer to store the PDF data
         const buffers = [];
         doc.on('data', buffers.push.bind(buffers));
-        doc.on('end', () => {
-            const pdfData = Buffer.concat(buffers);
-            resolve(pdfData);
-        });
+        doc.on('end', () => resolve(Buffer.concat(buffers)));
         doc.on('error', reject);
 
-        // --- PDF Content Generation ---
+        // --- PDF Content ---
 
-        // Header Section
-        // You can add a logo here. Place your logo image in a folder (e.g., /assets)
-        // doc.image('path/to/your/logo.png', 50, 45, { width: 50 });
-        doc.font('Helvetica-Bold').fontSize(20).text('Booking Confirmation Pass', { align: 'center' });
-        doc.moveDown();
+        // Define colors and fonts
+        const primaryColor = '#C5306C'; // A pink shade
+        const secondaryColor = '#4A5568'; // A dark gray
+        const lightGray = '#E2E8F0';
 
-        // Booking Info
-        doc.fontSize(14).text(`Booking ID: ${booking.bookingNumber}`, { align: 'right' });
-        doc.fontSize(14).text(`Event: ${booking.eventId.name}`, { align: 'right' });
+        // Header
+        doc.fillColor(primaryColor).fontSize(24).font('Helvetica-Bold').text('Adarsh Dham', { align: 'center' });
+        doc.fontSize(16).font('Helvetica').text('Accommodation Pass', { align: 'center' });
         doc.moveDown(2);
 
-        // User Details
-        doc.font('Helvetica-Bold').fontSize(12).text('Guest Information');
-        doc.font('Helvetica').fontSize(11);
-        doc.text(`Name: ${booking.userId.name}`);
-        doc.text(`Contact: ${booking.formData.contactNumber}`);
-        doc.text(`From: ${booking.formData.city}, ${booking.formData.address}`);
+        // Booking Info Section
+        doc.rect(40, doc.y, 515, 2).fill(lightGray).stroke();
         doc.moveDown();
 
-        // Stay Details
-        const stayFrom = new Date(booking.formData.stayFrom).toLocaleDateString('en-GB');
-        const stayTo = new Date(booking.formData.stayTo).toLocaleDateString('en-GB');
-        doc.font('Helvetica-Bold').fontSize(12).text('Stay Details');
-        doc.font('Helvetica').fontSize(11);
-        doc.text(`Check-in Date: ${stayFrom}`);
-        doc.text(`Check-out Date: ${stayTo}`);
+        const infoTop = doc.y;
+        
+        // Left Column
+        doc.fillColor(secondaryColor).fontSize(11).font('Helvetica-Bold');
+        doc.text('Booked By:', 50, infoTop);
+        doc.text('Contact:', 50, infoTop + 20);
+        doc.text('Ashram:', 50, infoTop + 40);
+        doc.text('City:', 50, infoTop + 60);
+
+        doc.fillColor('black').font('Helvetica');
+        doc.text(booking.userId.name, 150, infoTop);
+        doc.text(booking.formData.contactNumber, 150, infoTop + 20);
+        doc.text(booking.formData.ashramName, 150, infoTop + 40);
+        doc.text(booking.formData.city, 150, infoTop + 60);
+
+        // Right Column
+        doc.fillColor(secondaryColor).font('Helvetica-Bold');
+        doc.text('Booking ID:', 320, infoTop);
+        doc.text('Event:', 320, infoTop + 20);
+        doc.text('Stay From:', 320, infoTop + 40);
+        doc.text('Stay To:', 320, infoTop + 60);
+
+        const stayFrom = formatDate(booking.formData.stayFrom);
+        const stayTo = formatDate(booking.formData.stayTo);
+
+        doc.fillColor('black').font('Helvetica');
+        doc.text(booking.bookingNumber, 420, infoTop);
+        doc.text(booking.eventId.name, 420, infoTop + 20);
+        doc.text(stayFrom, 420, infoTop + 40);
+        doc.text(stayTo, 420, infoTop + 60);
+        
+        doc.y = infoTop + 80;
+        doc.rect(40, doc.y, 515, 2).fill(lightGray).stroke();
         doc.moveDown(2);
 
         // Allocation Table
-        doc.font('Helvetica-Bold').fontSize(12).text('Accommodation Details');
+        doc.fillColor(secondaryColor).fontSize(14).font('Helvetica-Bold').text('Accommodation Details');
         doc.moveDown();
 
         const tableTop = doc.y;
-        const itemX = 50;
-        const nameX = 50;
-        const genderX = 150;
-        const buildingX = 220;
-        const roomX = 350;
-        const bedX = 450;
+        generateTableHeader(doc, tableTop);
         
-        // Table Header
-        doc.fontSize(10).font('Helvetica-Bold');
-        doc.text('Guest Name', nameX, tableTop);
-        doc.text('Gender', genderX, tableTop);
-        doc.text('Building', buildingX, tableTop);
-        doc.text('Room No.', roomX, tableTop);
-        doc.text('Bed No.', bedX, tableTop);
-        
-        const tableHeaderY = tableTop + 15;
-        doc.moveTo(itemX, tableHeaderY).lineTo(550, tableHeaderY).stroke();
-
-        // Table Rows
-        let currentY = tableHeaderY + 5;
-        doc.fontSize(10).font('Helvetica');
-
+        let currentY = tableTop + 25; // Start position for the first row
         booking.allocations.forEach(alloc => {
             const person = booking.formData.people[alloc.personIndex];
             if (person) {
-                doc.text(person.name, nameX, currentY);
-                doc.text(person.gender, genderX, currentY, { capitalize: true });
-                doc.text(alloc.buildingId.name, buildingX, currentY);
-                doc.text(alloc.roomId.roomNumber, roomX, currentY);
-                doc.text(alloc.bedId.name, bedX, currentY);
-                currentY += 20;
+                generateTableRow(doc, currentY, person, alloc);
+                currentY += 25; // Increment Y position for the next row
             }
         });
-        
-        doc.moveTo(itemX, currentY).lineTo(550, currentY).stroke();
-        doc.moveDown(4);
 
-        // Footer
-        const generatedDate = new Date().toLocaleDateString('en-GB', {
-            day: '2-digit', month: 'short', year: 'numeric'
-        });
-        doc.fontSize(8).text(
-            'This is a computer-generated pass. Please keep it with you for the duration of your stay.', 
-            50, 750, { align: 'center', lineBreak: false }
-        );
-        doc.fontSize(8).text(`Generated on: ${generatedDate}`, { align: 'center' });
+        // Finalize table
+        doc.rect(40, currentY - 5, 515, 0.5).stroke(secondaryColor);
         
-        // Finalize the PDF and end the stream
+        // Footer
+        const generatedDate = formatDate(new Date());
+        doc.fontSize(8).fillColor(secondaryColor).text(
+            'This is a computer-generated pass. Please keep it with you for the duration of your stay. Wishing you a peaceful visit.',
+            40, 780, { align: 'center' }
+        );
+        doc.text(`Generated on: ${generatedDate}`, { align: 'center' });
+
         doc.end();
     });
+}
+
+// Helper function to format dates
+function formatDate(dateString) {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+// Helper function to draw the table header
+function generateTableHeader(doc, y) {
+    const headerX = 40;
+    const headerY = y;
+    const headerHeight = 20;
+    const headerWidth = 515;
+
+    doc.rect(headerX, headerY, headerWidth, headerHeight).fill('#F7FAFC').stroke(
+        '#E2E8F0');
+        
+    doc.fontSize(10).fillColor('#2D3748').font('Helvetica-Bold');
+    doc.text('Guest Name', 50, y + 6);
+    doc.text('Gender', 160, y + 6);
+    doc.text('Building', 240, y + 6);
+    doc.text('Room No.', 370, y + 6);
+    doc.text('Bed No.', 470, y + 6);
+}
+
+// Helper function to draw a single table row
+function generateTableRow(doc, y, person, alloc) {
+    doc.fontSize(10).fillColor('black').font('Helvetica');
+    doc.text(person.name, 50, y);
+    doc.text(person.gender, 160, y, { width: 70, align: 'left', lineBreak: false });
+    doc.text(alloc.buildingId.name, 240, y, { width: 120, align: 'left', lineBreak: false });
+    doc.text(alloc.roomId.roomNumber, 370, y, { width: 90, align: 'left', lineBreak: false });
+    doc.text(alloc.bedId.name, 470, y, { width: 70, align: 'left', lineBreak: false });
+
+    // Draw the line below the row
+    doc.rect(40, y + 15, 515, 0.5).stroke('#E2E8F0');
 }
 
 module.exports = { generateBookingPdf };

@@ -3,25 +3,50 @@ import { motion } from 'framer-motion';
 import Button from '../common/Button.jsx';
 import { FaUserPlus, FaMapMarkerAlt, FaPhoneAlt, FaCalendarAlt, FaEnvelope, FaUniversity, FaUsers, FaPen } from 'react-icons/fa';
 
+// UPDATED: ThemedInput now accepts a 'max' prop for date validation
+const ThemedInput = ({ label, name, value, onChange, required, type = "text", icon, min, max, colSpan = "" }) => (
+    <div className={colSpan}>
+        <label className="text-sm font-medium text-gray-700 flex items-center mb-1">
+            {icon && <span className="mr-2 text-pink-500">{icon}</span>}
+            {label}
+            {required && <span className="ml-1 text-red-500">*</span>}
+        </label>
+        <input 
+            type={type} 
+            name={name} 
+            value={value} 
+            onChange={onChange} 
+            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500 shadow-sm" 
+            required={required} 
+            min={min} 
+            max={max}
+        />
+    </div>
+);
+
+const InputGroup = ({ label, name, value, onChange }) => (
+    <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+        <input 
+            type="number" 
+            name={name} 
+            value={value} 
+            onChange={onChange} 
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500 shadow-sm" 
+            min="0" 
+        />
+    </div>
+);
+
 const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing = false }) => {
     const [formData, setFormData] = useState({
-        numMales: 0,
-        numFemales: 0,
-        numBoys: 0,
-        numGirls: 0,
-        people: [],
-        stayFrom: '',
-        stayTo: '',
-        ashramName: '',
-        email: '',
-        address: '',
-        city: '',
-        contactNumber: '',
-        fillingForOthers: false,
-        baijiMahatmaJi: '',
-        baijiContact: '',
-        notes: ''
+        numMales: 0, numFemales: 0, numBoys: 0, numGirls: 0, people: [],
+        stayFrom: '', stayTo: '', ashramName: '', email: '', address: '', city: '',
+        contactNumber: '', fillingForOthers: false, baijiMahatmaJi: '', baijiContact: '', notes: ''
     });
+    
+    // NEW: State for client-side validation errors
+    const [validationError, setValidationError] = useState(null);
 
     useEffect(() => {
         if (initialData) {
@@ -40,20 +65,12 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
 
     useEffect(() => {
         if (isEditing) return; 
-
-        const genderCounts = {
-            'male': formData.numMales,
-            'female': formData.numFemales,
-            'boy': formData.numBoys,
-            'girl': formData.numGirls,
-        };
-
+        const genderCounts = { 'male': formData.numMales, 'female': formData.numFemales, 'boy': formData.numBoys, 'girl': formData.numGirls };
         let newPeopleArray = [];
         for (const gender of ['male', 'female', 'boy', 'girl']) {
             const currentCount = formData.people.filter(p => p.gender === gender).length;
             const targetCount = genderCounts[gender];
             let existingPeopleOfGender = formData.people.filter(p => p.gender === gender);
-
             if (targetCount > currentCount) {
                 for (let i = 0; i < targetCount - currentCount; i++) {
                     existingPeopleOfGender.push({ name: '', age: '', gender: gender });
@@ -64,16 +81,12 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
             newPeopleArray = [...newPeopleArray, ...existingPeopleOfGender];
         }
         setFormData(prev => ({ ...prev, people: newPeopleArray }));
-
     }, [formData.numMales, formData.numFemales, formData.numBoys, formData.numGirls, isEditing]);
 
     const handleGroupChange = (e) => {
         const { name, value } = e.target;
         const numValue = parseInt(value, 10);
-        setFormData(prev => ({
-            ...prev,
-            [name]: numValue >= 0 ? numValue : 0,
-        }));
+        setFormData(prev => ({ ...prev, [name]: numValue >= 0 ? numValue : 0 }));
     };
     
     const handlePersonChange = (e, index) => {
@@ -85,17 +98,19 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value
-        }));
+        const newFormData = { ...formData, [name]: type === 'checkbox' ? checked : value };
+
+        // NEW: Smart date logic
+        if (name === 'stayFrom') {
+            if (!newFormData.stayTo || new Date(value) > new Date(newFormData.stayTo)) {
+                newFormData.stayTo = value; // Set 'To' date to match 'From' date
+            }
+        }
+        setFormData(newFormData);
     };
 
     const handleRadioChange = (e) => {
-        setFormData(prev => ({
-            ...prev,
-            fillingForOthers: e.target.value === 'true'
-        }));
+        setFormData(prev => ({ ...prev, fillingForOthers: e.target.value === 'true' }));
     };
     
     const renderPersonInputs = (gender) => {
@@ -103,33 +118,15 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
             .map((person, index) => ({ person, originalIndex: index }))
             .filter(({ person }) => person.gender === gender)
             .map(({ person, originalIndex }, genderIndex) => (
-                <div 
-                    key={originalIndex} 
-                    className="grid grid-cols-2 gap-4 pt-4 border-b-2 border-pink-100 pb-4 last:border-b-0"
-                >
+                <div key={originalIndex} className="grid grid-cols-2 gap-4 pt-4 border-b-2 border-pink-100 pb-4 last:border-b-0">
                     <h4 className="col-span-2 font-bold capitalize text-gray-700">{gender} #{genderIndex + 1}</h4>
                     <div>
                         <label className="block text-xs font-medium text-gray-600">Name</label>
-                        <input 
-                            type="text" 
-                            name="name"
-                            value={person.name}
-                            onChange={(e) => handlePersonChange(e, originalIndex)} 
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500 shadow-sm" 
-                            required 
-                        />
+                        <input type="text" name="name" value={person.name} onChange={(e) => handlePersonChange(e, originalIndex)} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg" required />
                     </div>
                     <div>
                         <label className="block text-xs font-medium text-gray-600">Age</label>
-                        <input 
-                            type="number" 
-                            name="age" 
-                            value={person.age}
-                            onChange={(e) => handlePersonChange(e, originalIndex)} 
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500 shadow-sm" 
-                            required 
-                            min="1"
-                        />
+                        <input type="number" name="age" value={person.age} onChange={(e) => handlePersonChange(e, originalIndex)} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg" required min="1"/>
                     </div>
                 </div>
             ));
@@ -137,17 +134,22 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        setValidationError(null); // Clear previous errors
+
+        // NEW: Age validation logic
+        const ageValidationError = formData.people.find(p => (p.gender === 'boy' || p.gender === 'girl') && parseInt(p.age, 10) > 16);
+        if (ageValidationError) {
+            setValidationError(`Age for ${ageValidationError.name} (${ageValidationError.gender}) is over 16. Please classify as Male or Female.`);
+            return; // Stop the submission
+        }
+
         const { numMales, numFemales, numBoys, numGirls, ...submissionData } = formData;
         onSubmit(submissionData);
     };
 
     return (
         <div className="bg-gray-100 p-4 md:p-8 min-h-screen">
-            <motion.div 
-                initial={{ opacity: 0, y: -20 }} 
-                animate={{ opacity: 1, y: 0 }} 
-                className="p-6 md:p-8 bg-white rounded-xl shadow-lg max-w-2xl w-full mx-auto"
-            >
+            <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="p-6 md:p-8 bg-white rounded-xl shadow-lg max-w-2xl w-full mx-auto">
                 <h2 className="text-3xl font-bold mb-8 text-center text-gray-800 border-b-2 border-pink-400 pb-3">
                     {isEditing ? 'Edit Your Booking' : 'Request Accommodation'}
                 </h2>
@@ -156,11 +158,14 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
                     <div>
                         <h3 className="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Period of Stay</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <ThemedInput label="From" name="stayFrom" value={formData.stayFrom} onChange={handleChange} required type="date" icon={<FaCalendarAlt />} />
-                            <ThemedInput label="To" name="stayTo" value={formData.stayTo} onChange={handleChange} required type="date" icon={<FaCalendarAlt />} />
+                            {/* UPDATED: Added max property */}
+                            <ThemedInput label="From" name="stayFrom" value={formData.stayFrom} onChange={handleChange} required type="date" icon={<FaCalendarAlt />} max={formData.stayTo} />
+                            {/* UPDATED: Added min property */}
+                            <ThemedInput label="To" name="stayTo" value={formData.stayTo} onChange={handleChange} required type="date" icon={<FaCalendarAlt />} min={formData.stayFrom} />
                         </div>
                     </div>
 
+                    {/* ... other form sections (ashram, your details) are unchanged ... */}
                     <div>
                         <h3 className="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Ashram & Reference Details</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -219,7 +224,9 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
                             <textarea name="notes" value={formData.notes} onChange={handleChange} rows="3" className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500 shadow-sm" />
                         </div>
                     </div>
-
+                    
+                    {/* NEW: Display validation error */}
+                    {validationError && <p className="text-red-700 bg-red-100/50 border border-red-400 p-3 rounded-lg text-sm text-center font-medium">{validationError}</p>}
                     {error && <p className="text-red-700 bg-red-100/50 border border-red-400 p-3 rounded-lg text-sm text-center font-medium">{error}</p>}
                     
                     <div className="pt-4">
@@ -232,23 +239,5 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
         </div>
     );
 };
-
-const InputGroup = ({ label, name, value, onChange }) => (
-    <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-        <input type="number" name={name} value={value} onChange={onChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500 shadow-sm" min="0" />
-    </div>
-);
-
-const ThemedInput = ({ label, name, value, onChange, required, type = "text", icon, min, colSpan = "" }) => (
-    <div className={colSpan}>
-        <label className="text-sm font-medium text-gray-700 flex items-center mb-1">
-            {icon && <span className="mr-2 text-pink-500">{icon}</span>}
-            {label}
-            {required && <span className="ml-1 text-red-500">*</span>}
-        </label>
-        <input type={type} name={name} value={value} onChange={onChange} className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500 shadow-sm" required={required} min={min} />
-    </div>
-);
 
 export default BookingForm;

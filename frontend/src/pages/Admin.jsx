@@ -1,9 +1,5 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-// The bundler struggles with relative paths like '../components/admin/Component.jsx'
-// Often, removing the file extension can help resolve imports in environments that support it, 
-// or simplifying the path structure if the build tool is expecting a standard configuration.
-// Since we cannot change the component hierarchy, we will proceed assuming standard React environment rules apply.
 
 import AdminLayout from '../components/admin/AdminLayout';
 import AdminDashboard from '../components/admin/AdminDashboard';
@@ -16,7 +12,9 @@ import ManageAllocations from '../components/admin/ManageAllocations';
 import ManageSatsang from '../components/admin/ManageSatsang';
 import ExportData from '../components/admin/ExportData';
 import SendNotification from '../components/admin/SendNotification';
-import AdminUserManagement from '../components/admin/AdminUserManagement'; 
+import AdminUserManagement from '../components/admin/AdminUserManagement';
+import OccupancyReport from '../components/admin/OccupancyReport'; // NEW IMPORT
+import StructureView from '../components/admin/StructureView'; 
 
 const Admin = () => {
   return (
@@ -24,16 +22,17 @@ const Admin = () => {
       <Routes>
         <Route index element={<AdminDashboard />} />
         <Route path="manage-admins" element={<ManageAdmins />} />
+        <Route path="user-management" element={<AdminUserManagement />} />
         <Route path="manage-events" element={<ManageEvents />} />
         <Route path="manage-buildings" element={<ManageBuildings />} />
         <Route path="manage-rooms" element={<ManageRooms />} />
+        <Route path="structure-view" element={<StructureView />} />
         <Route path="manage-beds" element={<ManageBeds />} />
         <Route path="manage-allocations" element={<ManageAllocations />} />
+        <Route path="occupancy-report" element={<OccupancyReport />} /> {/* NEW ROUTE */}
         <Route path="manage-satsang" element={<ManageSatsang />} />
         <Route path="export-data" element={<ExportData />} />
         <Route path="send-notification" element={<SendNotification />} />
-        {/* ADDED NEW ROUTE FOR USER MANAGEMENT */}
-        <Route path="user-management" element={<AdminUserManagement />} /> 
       </Routes>
     </AdminLayout>
   );
