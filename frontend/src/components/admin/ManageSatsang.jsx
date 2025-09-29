@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../api/api.js'; 
 import Button from '../common/Button.jsx';
-import { FaEdit, FaTrashAlt, FaPlus, FaSpinner, FaLink, FaClock } from 'react-icons/fa';
+import { FaEdit, FaTrashAlt, FaPlus, FaSpinner, FaLink, FaClock, FaYoutube } from 'react-icons/fa';
 
 // Helper function to format ISO dates for datetime-local input
 const formatDateTimeLocal = (isoString) => {
@@ -15,6 +15,26 @@ const formatDateTimeLocal = (isoString) => {
     const minutes = String(date.getMinutes()).padStart(2, '0');
     return `${year}-${month}-${day}T${hours}:${minutes}`;
 };
+
+/**
+ * Extracts the URL from an iframe's src attribute.
+ * @param {string} inputString - The iframe HTML string or a regular URL.
+ * @returns {string} The extracted URL or the original string if no iframe is found.
+ */
+const extractSrcFromIframe = (inputString) => {
+    // If the input doesn't look like an iframe tag, return it as is.
+    if (!inputString || !inputString.trim().startsWith('<iframe')) {
+        return inputString;
+    }
+    
+    const srcRegex = /src="([^"]+)"/;
+    const match = inputString.match(srcRegex);
+    
+    // Return the captured group (the URL) if found, otherwise return an empty string
+    // indicating a failed extraction from an iframe tag.
+    return match && match[1] ? match[1] : '';
+};
+
 
 // Custom Modal Component for Delete Confirmation and Alerts
 const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel, confirmText, isAlert = false }) => {
@@ -54,9 +74,7 @@ const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel, confir
 
 const ManageSatsang = () => {
     const [liveLinks, setLiveLinks] = useState([]);
-    // Removed eventId from the state
-    const [newLink, setNewLink] = useState({ name: '', url: '', liveFrom: '', liveTo: '' });
-    // Removed events state and API call
+    const [newLink, setNewLink] = useState({ name: '', url: '', youtubeEmbedUrl: '', liveFrom: '', liveTo: '' });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [editingLink, setEditingLink] = useState(null);
@@ -88,9 +106,21 @@ const ManageSatsang = () => {
 
     const handleAddLink = async (e) => {
         e.preventDefault();
+        setError(null); // Clear previous errors
+
+        const processedUrl = extractSrcFromIframe(newLink.youtubeEmbedUrl);
+
+        // Check if the user entered an iframe but extraction failed
+        if (newLink.youtubeEmbedUrl && newLink.youtubeEmbedUrl.includes('<iframe') && !processedUrl) {
+            setError("Invalid iframe code. Could not find a valid 'src' URL inside the tag.");
+            return; // Stop the submission
+        }
+
+        const linkToSubmit = { ...newLink, youtubeEmbedUrl: processedUrl };
+
         try {
-            await api.post('/satsang/live-links', newLink);
-            setNewLink({ name: '', url: '', liveFrom: '', liveTo: '' }); 
+            await api.post('/satsang/live-links', linkToSubmit);
+            setNewLink({ name: '', url: '', youtubeEmbedUrl: '', liveFrom: '', liveTo: '' }); 
             fetchLiveLinks();
         } catch (err) {
             setError('Failed to add live link.');
@@ -99,8 +129,21 @@ const ManageSatsang = () => {
 
     const handleUpdateLink = async (e) => {
         e.preventDefault();
+        setError(null);
+
+        const processedUrl = extractSrcFromIframe(editingLink.youtubeEmbedUrl);
+        
+        if (editingLink.youtubeEmbedUrl && editingLink.youtubeEmbedUrl.includes('<iframe') && !processedUrl) {
+            setError("Invalid iframe code. Could not find a valid 'src' URL inside the tag.");
+            // Don't close the modal, let the user fix it. Or close it and show the error. Let's close it.
+            setEditingLink(null);
+            return;
+        }
+
+        const linkToSubmit = { ...editingLink, youtubeEmbedUrl: processedUrl };
+        
         try {
-            await api.put(`/satsang/live-links/${editingLink._id}`, editingLink);
+            await api.put(`/satsang/live-links/${editingLink._id}`, linkToSubmit);
             setEditingLink(null);
             fetchLiveLinks();
         } catch (err) {
@@ -111,6 +154,7 @@ const ManageSatsang = () => {
     const openEditModal = (link) => {
         setEditingLink({
             ...link,
+            youtubeEmbedUrl: link.youtubeEmbedUrl || '',
             liveFrom: formatDateTimeLocal(link.liveFrom),
             liveTo: formatDateTimeLocal(link.liveTo),
         });
@@ -159,35 +203,33 @@ const ManageSatsang = () => {
             {/* Add New Link Section */}
             <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
                 <h3 className="text-xl font-semibold text-pink-500 mb-4">Add New Live Link</h3>
-                {/* Updated form layout to match the new fields */}
-                <form onSubmit={handleAddLink} className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
-                    
-                    {/* Link Name */}
+                <form onSubmit={handleAddLink} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div className="md:col-span-1">
                         <label className="block text-sm font-medium text-gray-700">Link Name</label>
                         <input type="text" value={newLink.name} onChange={(e) => setNewLink({ ...newLink, name: e.target.value })} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-500" required />
                     </div>
                     
-                    {/* URL */}
                     <div className="md:col-span-1">
-                        <label className="block text-sm font-medium text-gray-700">URL</label>
+                        <label className="block text-sm font-medium text-gray-700">Marquee URL</label>
                         <input type="url" value={newLink.url} onChange={(e) => setNewLink({ ...newLink, url: e.target.value })} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-500" required />
                     </div>
                     
-                    {/* Live From */}
+                    <div className="md:col-span-1">
+                        <label className="text-sm font-medium text-gray-700 flex items-center"><FaYoutube className="mr-1 text-red-500"/> YouTube Embed (Optional)</label>
+                        <input type="text" placeholder="Paste full <iframe> code or just the URL" value={newLink.youtubeEmbedUrl} onChange={(e) => setNewLink({ ...newLink, youtubeEmbedUrl: e.target.value })} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-500" />
+                    </div>
+                    
                     <div className="md:col-span-1">
                         <label className="text-sm font-medium text-gray-700 flex items-center"><FaClock className="mr-1 text-gray-500"/> Live From</label>
                         <input type="datetime-local" value={newLink.liveFrom} onChange={(e) => setNewLink({ ...newLink, liveFrom: e.target.value })} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-500" required />
                     </div>
 
-                    {/* Live To */}
                     <div className="md:col-span-1">
                         <label className="text-sm font-medium text-gray-700 flex items-center"><FaClock className="mr-1 text-gray-500"/> Live To</label>
                         <input type="datetime-local" value={newLink.liveTo} onChange={(e) => setNewLink({ ...newLink, liveTo: e.target.value })} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-500" required />
                     </div>
                     
-                    {/* Add Button */}
-                    <div className="md:col-span-1">
+                    <div className="md:col-span-1 self-end">
                         <Button type="submit" className="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold shadow-md transition-colors">
                             <FaPlus className="inline mr-2" /> Add Link
                         </Button>
@@ -202,7 +244,7 @@ const ManageSatsang = () => {
                     <thead className="bg-gray-50">
                         <tr>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Name</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">URL</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Marquee URL</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Live From</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Live To</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Actions</th>
@@ -254,26 +296,27 @@ const ManageSatsang = () => {
                         <h3 className="text-2xl font-bold text-gray-800 mb-6">Edit Live Link: {editingLink.name}</h3>
                         <form onSubmit={handleUpdateLink} className="space-y-4">
                             
-                            {/* Link Name */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Link Name</label>
                                 <input type="text" name="name" value={editingLink.name} onChange={(e) => setEditingLink({ ...editingLink, name: e.target.value })} className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-500" required />
                             </div>
                             
-                            {/* URL */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">URL</label>
+                                <label className="block text-sm font-medium text-gray-700">Marquee URL</label>
                                 <input type="url" name="url" value={editingLink.url} onChange={(e) => setEditingLink({ ...editingLink, url: e.target.value })} className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-500" required />
                             </div>
 
+                            <div>
+                                <label className="text-sm font-medium text-gray-700 flex items-center"><FaYoutube className="mr-1 text-red-500"/> YouTube Embed (Optional)</label>
+                                <input type="text" name="youtubeEmbedUrl" placeholder="Paste full <iframe> code or just the URL" value={editingLink.youtubeEmbedUrl} onChange={(e) => setEditingLink({ ...editingLink, youtubeEmbedUrl: e.target.value })} className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-500" />
+                            </div>
+
                             <div className='grid grid-cols-2 gap-4'>
-                                {/* Live From */}
                                 <div>
                                     <label className="text-sm font-medium text-gray-700 flex items-center"><FaClock className="mr-1 text-gray-500"/> Live From</label>
                                     <input type="datetime-local" name="liveFrom" value={editingLink.liveFrom} onChange={(e) => setEditingLink({ ...editingLink, liveFrom: e.target.value })} className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-500" required />
                                 </div>
                                 
-                                {/* Live To */}
                                 <div>
                                     <label className="text-sm font-medium text-gray-700 flex items-center"><FaClock className="mr-1 text-gray-500"/> Live To</label>
                                     <input type="datetime-local" name="liveTo" value={editingLink.liveTo} onChange={(e) => setEditingLink({ ...editingLink, liveTo: e.target.value })} className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-500" required />
@@ -291,7 +334,6 @@ const ManageSatsang = () => {
             )}
             </AnimatePresence>
                 
-            {/* Custom Confirmation/Alert Modal */}
             <ConfirmationModal 
                 isOpen={isModalOpen}
                 title={modalData.title}

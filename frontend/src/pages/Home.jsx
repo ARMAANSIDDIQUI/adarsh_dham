@@ -5,7 +5,6 @@ import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
 
-// You can replace this with the actual path to your background image
 const heroImageUrl = 'https://images.unsplash.com/photo-1540322388339-291b1a784c47?q=80&w=2070&auto=format&fit=crop';
 
 const Home = () => {
@@ -21,7 +20,6 @@ const Home = () => {
     useEffect(() => {
         const fetchLiveLinks = async () => {
             try {
-                // Correctly using your provided environment variable names
                 const apiUrl = process.env.REACT_APP_BACKEND_URL || import.meta.env.VITE_BACKEND_URL;
                 const response = await axios.get(`${apiUrl}/api/satsang/live-links/active`);
                 setLiveLinks(response.data || []);
@@ -64,6 +62,41 @@ const Home = () => {
         );
     };
 
+    const LiveVideoSection = ({ links }) => {
+        // Find the first active link that has a YouTube embed URL
+        const videoLink = links.find(link => link.youtubeEmbedUrl);
+
+        if (!videoLink) {
+            return null;
+        }
+
+        return (
+            <motion.section 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.8 }}
+                className="bg-gray-100 py-12 md:py-16"
+            >
+                <div className="container mx-auto px-4">
+                    <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 text-gray-800">
+                        Watch Live: {videoLink.name}
+                    </h2>
+                    {/* Responsive iframe container */}
+                    <div className="relative overflow-hidden shadow-2xl rounded-lg" style={{ paddingBottom: '56.25%' /* 16:9 Aspect Ratio */ }}>
+                        <iframe
+                            className="absolute top-0 left-0 w-full h-full"
+                            src={videoLink.youtubeEmbedUrl}
+                            title="YouTube video player"
+                            frameBorder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                        ></iframe>
+                    </div>
+                </div>
+            </motion.section>
+        );
+    };
+
     if (loading) {
         return <div className="text-center mt-10 text-xl text-pink-500"><FaSpinner className="animate-spin inline mr-2" /> Loading...</div>;
     }
@@ -97,6 +130,8 @@ const Home = () => {
                     </Link>
                 </motion.div>
             </div>
+
+            <LiveVideoSection links={liveLinks} />
 
             <main className="container mx-auto px-4 py-12 md:py-16">
                 <section className="text-center">
