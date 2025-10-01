@@ -24,11 +24,9 @@ const userSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'Booking'
   }],
-  // Add this field to store FCM tokens
-  fcmTokens: [{
-    type: String,
-    unique: true
-  }]
+  pushSubscription: {
+    type: Object
+  }
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

@@ -50,9 +50,13 @@ const bookingSchema = new Schema({
     status: {
         type: String,
         enum: ['pending', 'approved', 'declined'],
-        default: 'pending'
+        default: 'pending',
+        index: true // Index added for faster status filtering
     },
     allocations: [allocationSchema]
 }, { timestamps: true });
+
+// Add a compound index for date range queries on the formData subdocument
+bookingSchema.index({ 'formData.stayFrom': 1, 'formData.stayTo': 1 });
 
 module.exports = mongoose.model('Booking', bookingSchema);

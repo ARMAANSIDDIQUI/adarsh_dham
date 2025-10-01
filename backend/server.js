@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const morgan = require('morgan');
 const schedule = require('node-schedule');
+const webpush = require('web-push'); // ✨ ADD THIS LINE
 const structureRoutes = require('./routes/structureRoutes');
 require('dotenv').config();
 
@@ -15,15 +16,22 @@ const satsangRoutes = require('./routes/satsangRoutes');
 const buildingRoutes = require('./routes/buildingRoutes');
 const roomRoutes = require('./routes/roomRoutes');
 const bedRoutes = require('./routes/bedRoutes');
-const peopleRoutes = require('./routes/peopleRoutes'); // <-- ADD THIS LINE
+const peopleRoutes = require('./routes/peopleRoutes');
 
 const User = require('./models/userModel');
 const Event = require('./models/eventModel');
-const Person = require('./models/peopleModel'); // UPDATED: Use Person model
+const Person = require('./models/peopleModel');
 const bcrypt = require('bcrypt');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// ✨ ADD THIS BLOCK to configure web-push with your VAPID keys
+webpush.setVapidDetails(
+  'mailto:your-email@example.com', // Replace with your contact email
+  process.env.VAPID_PUBLIC_KEY,
+  process.env.VAPID_PRIVATE_KEY
+);
 
 app.use(cors());
 app.use(express.json());
@@ -38,8 +46,8 @@ mongoose.connect(process.env.MONGO_URI)
   .catch(err => console.error('MongoDB connection error:', err));
 
 const createFirstSuperAdmin = async () => {
-  const superAdminPhone = '9999999999';
-  const superAdminPassword = 'superadminpassword';
+  const superAdminPhone = process.env.SUPER_ADMIN_PHONE || '9999999999';
+  const superAdminPassword = process.env.SUPER_ADMIN_PASSWORD || 'superadminpassword';
 
   try {
     const existingSuperAdmin = await User.findOne({ phone: superAdminPhone });
@@ -65,7 +73,6 @@ const createFirstSuperAdmin = async () => {
   }
 };
 
-// UPDATED LOGIC FOR THE NIGHTLY JOB
 const setupAllocationResetJob = () => {
   // Runs every day at midnight
   schedule.scheduleJob('0 0 * * *', async () => {
@@ -74,12 +81,10 @@ const setupAllocationResetJob = () => {
     twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
 
     try {
-      // Find all events that ended more than two days ago
       const completedEvents = await Event.find({ endDate: { $lte: twoDaysAgo } });
       const completedEventIds = completedEvents.map(event => event._id);
 
       if (completedEventIds.length > 0) {
-        // Delete all 'Person' records associated with these completed events
         const result = await Person.deleteMany({ eventId: { $in: completedEventIds } });
         console.log(`Nightly job completed. Cleared ${result.deletedCount} person records from completed events.`);
       } else {
@@ -100,8 +105,9 @@ app.use('/api/satsang', satsangRoutes);
 app.use('/api/buildings', buildingRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/beds', bedRoutes);
-app.use('/api/people', peopleRoutes); // <-- AND ADD THIS LINE
+app.use('/api/people', peopleRoutes);
 app.use('/api/structure', structureRoutes);
+
 app.get('/', (req, res) => {
   res.send('Adarsh Dham Backend is running...');
 });

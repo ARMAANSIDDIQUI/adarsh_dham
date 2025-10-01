@@ -1,11 +1,8 @@
-import React, { useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
-import { requestForToken, onMessageListener } from './firebase';
 
 import HomePage from './pages/Home.jsx';
 import AboutPage from './pages/About.jsx';
@@ -15,12 +12,14 @@ import LoginPage from './pages/Login.jsx';
 import RegisterPage from './pages/Register.jsx';
 import Admin from './pages/Admin.jsx';
 import BookingPage from './pages/Booking.jsx';
+import MyBookings from './components/user/MyBookings.jsx'; 
+import UserNotifications from './components/user/UserNotifications.jsx';
+
 import Header from './components/common/Header.jsx';
 import Footer from './components/common/Footer.jsx';
 import ProtectedRoute from './components/common/ProtectedRoute.jsx';
-import UserNotifications from './components/user/UserNotifications.jsx';
-import MyBookings from './components/user/MyBookings.jsx'; 
 
+// This component handles the animated transition between pages
 const PageTransition = ({ children }) => {
     const location = useLocation();
     return (
@@ -39,25 +38,8 @@ const PageTransition = ({ children }) => {
 };
 
 function App() {
-    const { isAuthenticated } = useSelector((state) => state.auth);
-
-    useEffect(() => {
-        if (isAuthenticated) {
-            requestForToken();
-        }
-    }, [isAuthenticated]);
-
-    useEffect(() => {
-        const unsubscribe = onMessageListener()
-            .then(payload => {
-                toast.info(<div><strong>{payload.notification.title}</strong><br/>{payload.notification.body}</div>);
-            })
-            .catch(err => console.log('failed to listen for foreground messages', err));
-        
-        return () => {
-            unsubscribe.catch(err => console.log('failed to unsubscribe', err));
-        };
-    }, []);
+    // The useEffect hooks for Firebase have been removed.
+    // The service worker handles push notifications automatically.
 
     return (
         <Router>
@@ -73,12 +55,16 @@ function App() {
                         <Route path="/login" element={<PageTransition><LoginPage /></PageTransition>} />
                         <Route path="/register" element={<PageTransition><RegisterPage /></PageTransition>} />
                         
+                        {/* Protected Routes */}
                         <Route path="/booking/:eventId" element={<ProtectedRoute component={BookingPage} />} />
                         <Route path="/my-bookings" element={<ProtectedRoute component={MyBookings} />} />
-                        
                         <Route path="/notifications" element={<ProtectedRoute component={UserNotifications} />} />
-                        <Route path="/admin/*" element={<ProtectedRoute roles={['admin', 'super-admin', 'super-operator', 'operator', 'satsang-operator']} component={Admin} />} />
+                        <Route 
+                            path="/admin/*" 
+                            element={<ProtectedRoute roles={['admin', 'super-admin', 'super-operator', 'operator', 'satsang-operator']} component={Admin} />} 
+                        />
                         
+                        {/* 404 Not Found Route */}
                         <Route path="*" element={<h1 className="text-center text-4xl mt-10">404 - Page Not Found</h1>} />
                     </Routes>
                 </main>

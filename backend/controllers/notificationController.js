@@ -1,86 +1,108 @@
 const Notification = require('../models/notificationModel');
 const User = require('../models/userModel');
-// NOTE: Make sure the path to your fcmManager.js file is correct.
-const { sendFcmNotification } = require('../utils/fcmManager'); 
+const webpush = require('web-push'); // Use the standard web-push library
 
 /**
- * Creates and saves a notification.
- * Can target a specific user, a role, or all users.
- * Also sends an OS-level push notification via FCM.
+ * Creates and saves an in-app notification.
+ * If the notification is immediate, it also sends an OS-level push notification via Web Push.
  */
 exports.sendNotification = async (req, res) => {
-    // ttlMinutes is the Time-To-Live in minutes for the in-website notification
-    const { message, userId, role, ttlMinutes = 1440 } = req.body; 
+    const { message, userId, role, targetGroup, ttlMinutes = 1440, sendAt } = req.body; 
 
     try {
         if (!message) {
             return res.status(400).json({ message: 'Message is required' });
         }
 
-        const ttlDate = new Date(Date.now() + ttlMinutes * 60 * 1000);
-        
-        let targetUsers = [];
-        let title = "Adarsh Dham: New Update";
-        let body = message;
-
-        // --- 1. Find Target Users ---
-        if (userId) {
-            const user = await User.findById(userId);
-            if (user) {
-                targetUsers.push(user);
-            }
-        } else if (role) {
-            // Find users based on the provided role
-            targetUsers = await User.find({ roles: role });
-        } else {
-            // Default: Send to all admins if no specific user/role is provided
-            const admins = await User.find({ roles: { $in: ['admin', 'super-admin']} });
-            targetUsers.push(...admins);
+        const sendDate = sendAt ? new Date(sendAt) : new Date();
+        if (isNaN(sendDate.getTime())) {
+            return res.status(400).json({ message: 'Invalid sendAt date format. Please use ISO 8601 format.' });
         }
         
-        const fcmTokens = [];
+        const ttlDate = new Date(sendDate.getTime() + ttlMinutes * 60 * 1000);
+        const isScheduled = sendAt && sendDate > new Date();
+
+        let targetUsers = [];
+        let notificationTargetType = 'admin'; // Default
+
+        // --- Targeting Logic (no changes needed here) ---
+        if (targetGroup === 'user' && userId) {
+            const user = await User.findById(userId);
+            if (user) targetUsers.push(user);
+            else return res.status(404).json({ message: 'Target user not found.' });
+            notificationTargetType = 'user';
+        } else if (targetGroup === 'role' && role) {
+            targetUsers = await User.find({ roles: role });
+            notificationTargetType = 'admin';
+        } else if (targetGroup === 'all') {
+            targetUsers = await User.find({});
+            notificationTargetType = 'all';
+        } else {
+            targetUsers = await User.find({ roles: { $in: ['admin', 'super-admin']} });
+            notificationTargetType = 'admin';
+        }
+
+        if (targetUsers.length === 0) {
+            return res.status(404).json({ message: 'No target users were found for the specified criteria.' });
+        }
         
-        // --- 2. Create In-Website Notifications and Collect Tokens ---
+        // --- Create In-App Notifications & Collect Push Subscriptions ---
+        const pushSubscriptions = [];
         for (const user of targetUsers) {
-            // Create and save the notification record in MongoDB
             const newNotification = new Notification({
                 message,
                 userId: user._id,
-                role: role,
-                target: userId ? 'user' : 'admin',
-                ttl: ttlDate
+                role: role, 
+                target: notificationTargetType,
+                ttl: ttlDate,
+                sendAt: isScheduled ? sendDate : null,
+                status: isScheduled ? 'scheduled' : 'sent',
             });
             await newNotification.save();
             
-            // Collect tokens for the OS-level push notification
-            if (user.fcmTokens && user.fcmTokens.length > 0) {
-                fcmTokens.push(...user.fcmTokens);
+            // Only collect push subscriptions if the notification should be sent immediately
+            if (!isScheduled && user.pushSubscription) {
+                pushSubscriptions.push(user.pushSubscription);
             }
         }
         
-        // --- 3. Send OS-level Push Notification via FCM ---
-        if (fcmTokens.length > 0) {
-            await sendFcmNotification(fcmTokens, title, body, {
-                // Custom data payload (e.g., booking ID, type of update)
-                notificationType: 'generalUpdate', 
+        // --- Send Web Push Notification (For Immediate Sends Only) ---
+        if (!isScheduled && pushSubscriptions.length > 0) {
+            const payload = JSON.stringify({
+                title: "Adarsh Dham: New Update",
+                body: message,
             });
+
+            // Send a notification to each collected subscription
+            const sendPromises = pushSubscriptions.map(sub => 
+                webpush.sendNotification(sub, payload).catch(err => {
+                    // This often happens if a subscription is expired or invalid.
+                    // It's safe to ignore the error for other users.
+                    console.error(`Error sending push notification, it might be expired: ${err.message}`);
+                })
+            );
+            await Promise.all(sendPromises);
         }
         
-        res.status(201).json({ message: 'Notification sent successfully (both in-app and push).' });
+        const successMessage = isScheduled 
+            ? `Notification successfully scheduled for ${targetUsers.length} user(s).`
+            : `Notification sent immediately to ${targetUsers.length} user(s).`;
+            
+        res.status(201).json({ message: successMessage });
 
     } catch (error) {
-        console.error("Error sending notification:", error);
+        console.error("Error in sendNotification:", error);
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 
 /**
- * Fetches notifications for the currently logged-in user.
+ * Fetches non-expired notifications for the currently logged-in user.
+ * (This function is for the in-app notification list and needs no changes).
  */
 exports.getUserNotifications = async (req, res) => {
     const userId = req.user.id;
     try {
-        // Find notifications where the TTL has not expired yet
         const notifications = await Notification.find({ 
             userId,
             ttl: { $gt: new Date() } 

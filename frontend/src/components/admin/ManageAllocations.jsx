@@ -97,6 +97,51 @@ const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, b
     const { formData = {}, userId = {}, status, _id: bookingId, bookingNumber, allocations: savedAllocations = [] } = booking;
     const pendingAllocations = allocations[bookingId] || [];
 
+    // --- UPDATED SECTION START ---
+    const [notificationOption, setNotificationOption] = useState('sendNow');
+    const [scheduleDelay, setScheduleDelay] = useState({ days: 0, hours: 0, minutes: 5, seconds: 0 });
+    const [notificationTtlMinutes, setNotificationTtlMinutes] = useState(10080); // 7 days
+
+    // Helper to calculate the future date for display and submission
+    const calculateFutureDate = useMemo(() => {
+        const now = new Date();
+        now.setDate(now.getDate() + (parseInt(scheduleDelay.days, 10) || 0));
+        now.setHours(now.getHours() + (parseInt(scheduleDelay.hours, 10) || 0));
+        now.setMinutes(now.getMinutes() + (parseInt(scheduleDelay.minutes, 10) || 0));
+        now.setSeconds(now.getSeconds() + (parseInt(scheduleDelay.seconds, 10) || 0));
+        return now;
+    }, [scheduleDelay]);
+    
+    const handleDelayChange = (unit, value) => {
+        setScheduleDelay(prev => ({ ...prev, [unit]: value }));
+    };
+
+    // Handler for submitting Approve/Decline actions
+    const handleDecision = (action) => {
+        setError(''); // Clear previous errors
+        let payload = { notificationOption };
+
+        if (action === 'approved') {
+            if (!allBedsAssigned) {
+                setError('All members must be assigned a bed before approving.');
+                return;
+            }
+            if (notificationOption === 'schedule' && calculateFutureDate <= new Date()) {
+                setError('Scheduled delay must result in a future time.');
+                return;
+            }
+            payload.allocations = pendingAllocations;
+        }
+
+        if (notificationOption === 'schedule') {
+            payload.scheduledSendTime = calculateFutureDate.toISOString();
+            payload.notificationTtlMinutes = notificationTtlMinutes;
+        }
+
+        onAction(bookingId, action, payload);
+    };
+    // --- UPDATED SECTION END ---
+
     const allBedsAssigned = (formData.people?.length || 0) > 0 &&
         formData.people.length === pendingAllocations.length &&
         pendingAllocations.every(a => a && a.bedId);
@@ -106,41 +151,23 @@ const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, b
     const getRoomOccupancyForBooking = (roomId, currentBooking) => {
         const room = (rooms || []).find(r => String(r._id) === String(roomId));
         if (!room) return { capacity: 0, occupied: 0, vacant: 0 };
-    
         const capacity = room.beds.length;
         const occupiedCount = (people || []).filter(person => {
             if (String(person.bookingId) === String(currentBooking._id)) return false;
             const bedInRoom = room.beds.some(bed => String(bed._id) === String(person.bedId?._id || person.bedId));
             return bedInRoom && datesOverlap(currentBooking.formData.stayFrom, currentBooking.formData.stayTo, person.stayFrom, person.stayTo);
         }).length;
-    
         return { capacity, occupied: occupiedCount, vacant: capacity - occupiedCount };
     };
 
     const getAvailableBedsForRoom = (roomId, currentBooking, currentPersonIndex) => {
         const room = (rooms || []).find(r => String(r._id) === String(roomId));
         if (!room || !Array.isArray(room.beds)) return [];
-    
         const bookingStart = new Date(currentBooking.formData.stayFrom);
         const bookingEnd = new Date(currentBooking.formData.stayTo);
-    
-        const globallyOccupiedBedIds = new Set(
-            (people || [])
-                .filter(p => String(p.bookingId) !== String(currentBooking._id) && datesOverlap(bookingStart, bookingEnd, p.stayFrom, p.stayTo))
-                .map(p => String(p.bedId?._id || p.bedId))
-        );
-    
-        const tentativelyOccupiedBedIds = new Set(
-            (pendingAllocations || [])
-                .filter((alloc, index) => index !== currentPersonIndex && alloc.bedId)
-                .map(alloc => String(alloc.bedId))
-        );
-    
-        return room.beds.filter(bed => 
-            bed?._id && 
-            !globallyOccupiedBedIds.has(String(bed._id)) &&
-            !tentativelyOccupiedBedIds.has(String(bed._id))
-        );
+        const globallyOccupiedBedIds = new Set((people || []).filter(p => String(p.bookingId) !== String(currentBooking._id) && datesOverlap(bookingStart, bookingEnd, p.stayFrom, p.stayTo)).map(p => String(p.bedId?._id || p.bedId)));
+        const tentativelyOccupiedBedIds = new Set((pendingAllocations || []).filter((alloc, index) => index !== currentPersonIndex && alloc.bedId).map(alloc => String(alloc.bedId)));
+        return room.beds.filter(bed => bed?._id && !globallyOccupiedBedIds.has(String(bed._id)) && !tentativelyOccupiedBedIds.has(String(bed._id)));
     };
 
     const getFilteredBuildings = (person) => {
@@ -154,11 +181,7 @@ const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, b
         const building = (buildings || []).find(b => String(b._id) === String(allocation.buildingId));
         const room = (rooms || []).find(r => String(r._id) === String(allocation.roomId));
         const bed = (room?.beds || []).find(b => String(b._id) === String(allocation.bedId));
-        return {
-            buildingName: building?.name || 'N/A',
-            roomNumber: room?.roomNumber || 'N/A',
-            bedName: bed?.name || 'N/A',
-        };
+        return { buildingName: building?.name || 'N/A', roomNumber: room?.roomNumber || 'N/A', bedName: bed?.name || 'N/A' };
     };
     
     const handleDownloadPdf = async () => {
@@ -194,25 +217,21 @@ const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, b
                     <p><strong>Stay:</strong> {formatDate(formData?.stayFrom)} to {formatDate(formData?.stayTo)}</p>
                     <p><strong>Group:</strong> {formData?.people?.length || 0} People</p>
                 </div>
-                
                 <AccordionItem title="Members">
                     <div className="space-y-1 max-h-24 overflow-y-auto pr-2">
                         {(formData.people || []).map((p, i) => <div key={i} className="text-xs flex justify-between"><span>{i+1}. {p.name}</span><span>Age: {p.age}</span></div>)}
                     </div>
                 </AccordionItem>
-
                 <AccordionItem title="Contact & Location">
                     <p><strong>Phone:</strong> {formData?.contactNumber || 'N/A'}</p>
                     <p><strong>Email:</strong> {formData?.email || 'N/A'}</p>
                     <p><strong>Address:</strong> {formData?.address || 'N/A'}, {formData?.city || 'N/A'}</p>
                 </AccordionItem>
-
                 <AccordionItem title="Reference Details">
                     <p><strong>Ashram:</strong> {formData?.ashramName || 'N/A'}</p>
                     <p><strong>Baiji/Mahatmaji:</strong> {formData?.baijiMahatmaJi || 'N/A'}</p>
                     <p><strong>Baiji/Mahatmaji Contact:</strong> {formData?.baijiContact || 'N/A'}</p>
                 </AccordionItem>
-                
                 {formData?.notes && (
                     <AccordionItem title="Notes">
                         <p className="text-gray-700 whitespace-pre-wrap text-xs bg-gray-50 p-2 rounded">{formData.notes}</p>
@@ -229,7 +248,6 @@ const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, b
                             const filteredBuildings = getFilteredBuildings(person);
                             const filteredRooms = personAllocated.buildingId ? (rooms || []).filter(r => String(r.buildingId?._id) === String(personAllocated.buildingId)) : [];
                             const filteredBeds = personAllocated.roomId ? getAvailableBedsForRoom(personAllocated.roomId, booking, index) : [];
-
                             return (
                                 <div key={index} className="p-3 bg-gray-50 rounded-lg border">
                                     <p className="font-semibold text-gray-700 mb-2">{person.name} <span className="text-xs text-pink-500 capitalize">({person.gender})</span></p>
@@ -246,11 +264,7 @@ const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, b
                                                     return <option key={r._id} value={r._id}>{r.roomNumber} ({vacant}/{capacity} vacant)</option>;
                                                 })}
                                             </select>
-                                            {personAllocated.roomId && (
-                                                <button onClick={() => onShowRoomDetails(personAllocated.roomId, booking)} className="text-blue-500 hover:text-blue-700 p-1" title="Show room occupants">
-                                                    <FaInfoCircle/>
-                                                </button>
-                                            )}
+                                            {personAllocated.roomId && (<button onClick={() => onShowRoomDetails(personAllocated.roomId, booking)} className="text-blue-500 hover:text-blue-700 p-1" title="Show room occupants"><FaInfoCircle/></button>)}
                                         </div>
                                         <select value={personAllocated.bedId || ''} onChange={(e) => handleAllocationChange(bookingId, index, 'bedId', e.target.value)} disabled={!personAllocated.roomId} className="block w-full text-sm p-2 border rounded-lg disabled:bg-gray-200">
                                             <option value="">Select Bed</option>
@@ -261,9 +275,39 @@ const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, b
                             );
                         })}
                     </div>
+
+                    {/* --- UPDATED NOTIFICATION UI --- */}
+                    <div className="space-y-3 mt-6 pt-4 border-t">
+                        <h5 className="font-bold text-gray-700">Notification Options</h5>
+                        <div className="flex flex-wrap gap-x-6 gap-y-2">
+                            <label className="flex items-center space-x-2 cursor-pointer"><input type="radio" value="sendNow" checked={notificationOption === 'sendNow'} onChange={(e) => setNotificationOption(e.target.value)} /><span>Send Now</span></label>
+                            <label className="flex items-center space-x-2 cursor-pointer"><input type="radio" value="schedule" checked={notificationOption === 'schedule'} onChange={(e) => setNotificationOption(e.target.value)} /><span>Schedule</span></label>
+                            <label className="flex items-center space-x-2 cursor-pointer"><input type="radio" value="dontSend" checked={notificationOption === 'dontSend'} onChange={(e) => setNotificationOption(e.target.value)} /><span>Don't Send</span></label>
+                        </div>
+                        <AnimatePresence>
+                        {notificationOption === 'schedule' && (
+                            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="pt-2">
+                                <div className='grid grid-cols-2 md:grid-cols-4 gap-3'>
+                                    <div><label className="block text-xs font-medium text-gray-600">Days</label><input type="number" min="0" value={scheduleDelay.days} onChange={(e) => handleDelayChange('days', e.target.value)} className="mt-1 w-full p-2 border rounded-md text-sm" /></div>
+                                    <div><label className="block text-xs font-medium text-gray-600">Hours</label><input type="number" min="0" max="23" value={scheduleDelay.hours} onChange={(e) => handleDelayChange('hours', e.target.value)} className="mt-1 w-full p-2 border rounded-md text-sm" /></div>
+                                    <div><label className="block text-xs font-medium text-gray-600">Minutes</label><input type="number" min="0" max="59" value={scheduleDelay.minutes} onChange={(e) => handleDelayChange('minutes', e.target.value)} className="mt-1 w-full p-2 border rounded-md text-sm" /></div>
+                                    <div><label className="block text-xs font-medium text-gray-600">Seconds</label><input type="number" min="0" max="59" value={scheduleDelay.seconds} onChange={(e) => handleDelayChange('seconds', e.target.value)} className="mt-1 w-full p-2 border rounded-md text-sm" /></div>
+                                </div>
+                                <div className="mt-2 text-xs text-blue-600 bg-blue-50 p-2 rounded-md">
+                                    <strong>Will be sent on:</strong> {calculateFutureDate.toLocaleString('en-GB')}
+                                </div>
+                                <div className="mt-3">
+                                    <label className="block text-xs font-medium text-gray-600">Notification Visibility (minutes from send time)</label>
+                                    <input type="number" value={notificationTtlMinutes} onChange={(e) => setNotificationTtlMinutes(e.target.value)} className="mt-1 w-full p-2 border rounded-md text-sm" placeholder="e.g., 1440 for 1 day"/>
+                                </div>
+                            </motion.div>
+                        )}
+                        </AnimatePresence>
+                    </div>
+
                     <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 mt-6 pt-4 border-t">
-                        <Button onClick={() => onAction(bookingId, 'approved', pendingAllocations)} disabled={!allBedsAssigned} className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-lg disabled:bg-gray-400"><FaCheck className="inline mr-2" /> Approve</Button>
-                        <Button onClick={() => onAction(bookingId, 'declined')} className="w-full sm:w-auto bg-rose-500 hover:bg-rose-600 text-white font-medium rounded-lg"><FaTimes className="inline mr-2" /> Decline</Button>
+                        <Button onClick={() => handleDecision('approved')} disabled={!allBedsAssigned} className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-lg disabled:bg-gray-400"><FaCheck className="inline mr-2" /> Approve</Button>
+                        <Button onClick={() => handleDecision('declined')} className="w-full sm:w-auto bg-rose-500 hover:bg-rose-600 text-white font-medium rounded-lg"><FaTimes className="inline mr-2" /> Decline</Button>
                     </div>
                 </div>
             )}
@@ -355,11 +399,11 @@ const ManageAllocations = () => {
 
     useEffect(() => { fetchAllData(); }, []);
 
-    const handleAction = async (bookingId, action, allocationData = null) => {
+    const handleAction = async (bookingId, action, payloadData = {}) => {
         try {
-            let payload = { status: action };
-            if (action === 'approved') payload.allocations = allocationData;
-            await api.post(`/bookings/approve-decline/${bookingId}`, payload);
+            setError(null);
+            const payload = { status: action, ...payloadData };
+            await api.put(`/bookings/${bookingId}/status`, payload);
             setAllocations(prev => {
                 const newAlloc = { ...prev };
                 delete newAlloc[bookingId];
@@ -391,13 +435,11 @@ const ManageAllocations = () => {
     const handleShowRoomDetails = (roomId, currentBooking) => {
         const room = rooms.find(r => String(r._id) === String(roomId));
         if (!room) return;
-    
         const occupants = (people || []).filter(person => {
             if (!person.bedId) return false;
             const bedInRoom = room.beds.some(bed => String(bed._id) === String(person.bedId?._id || person.bedId));
             return bedInRoom && datesOverlap(currentBooking.formData.stayFrom, currentBooking.formData.stayTo, person.stayFrom, person.stayTo);
         });
-    
         setRoomDetailsModal({ isOpen: true, room, occupants });
     };
 

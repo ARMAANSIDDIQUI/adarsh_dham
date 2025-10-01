@@ -1,82 +1,116 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FaHeart, FaLaptopCode, FaPeace } from 'react-icons/fa';
+import { FaBookOpen, FaHandsHelping, FaLaptopCode } from 'react-icons/fa';
+import { GiLotus } from 'react-icons/gi';
 
-// A different background image suitable for an "About" page
-const aboutHeroUrl = 'https://images.unsplash.com/photo-1583595630311-822b64a7536f?q=80&w=1974&auto=format&fit=crop';
+const pageBackgroundUrl = 'https://images.unsplash.com/photo-1544465544-d499e3907c08?q=80&w=2574&auto=format&fit=crop';
+
+const containerAnimation = {
+    initial: { opacity: 0, y: 50 },
+    whileInView: { opacity: 1, y: 0 },
+    viewport: { once: true },
+    transition: { duration: 0.8, ease: "easeOut" }
+};
 
 const About = () => {
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-gray-50 min-h-screen">
-      {/* Hero Section */}
-      <div 
-        className="relative flex items-center justify-center h-[50vh] bg-cover bg-center text-white" 
-        style={{ backgroundImage: `url(${aboutHeroUrl})` }}
-      >
-        <div className="absolute inset-0 bg-black bg-opacity-50"></div>
-        <motion.h1 
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.8 }}
-          className="relative z-10 text-4xl md:text-5xl font-bold text-center drop-shadow-lg p-4"
+    <div className="min-h-screen bg-slate-50">
+      <main className="container mx-auto px-4 py-16 md:py-24 space-y-12">
+        
+        {/* --- Container 1: Title & Introduction --- */}
+        <motion.div
+          {...containerAnimation}
+          // ✨ ADDED: Motion and transform on hover
+          whileHover={{ y: -8, scale: 1.03, transition: { type: 'spring', stiffness: 300 } }}
+          className="bg-white rounded-2xl shadow-xl p-8 md:p-12 cursor-pointer"
         >
-          About Adarsh Dham
-        </motion.h1>
-      </div>
+          <div className="text-center">
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-800">
+              About Shri Adarsh Dham
+            </h1>
+            <p className="mt-2 text-lg text-pink-600 font-semibold">A Sanctuary for Spiritual Growth</p>
+            <div className="w-24 h-1 bg-pink-500 mx-auto my-6 rounded-full"></div>
+            <p className="max-w-3xl mx-auto text-lg text-gray-600 leading-relaxed">
+              Located on Ramnagar Road in Kashipur, Uttarakhand, Shri Adarsh Dham Ashram is a serene sanctuary enveloped by nature. Affiliated with Shri Anandpur Trust and founded by visionary spiritual leaders, our ashram is dedicated to the profound journey of spiritual growth and self-realization.
+            </p>
+          </div>
+        </motion.div>
 
-      {/* Content Section */}
-      <main className="container mx-auto px-4 py-12 md:py-16">
-        <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
-          
-          {/* Our Mission Card */}
-          <motion.div 
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7, delay: 0.2 }}
-            className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 border-t-4 border-pink-500 flex flex-col items-center text-center"
+        {/* --- Two-Column Containers: Philosophy & Objectives --- */}
+        <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
+          <motion.div
+            {...containerAnimation}
+            // ✨ ADDED: Motion and transform on hover
+            whileHover={{ y: -8, scale: 1.03, transition: { type: 'spring', stiffness: 300 } }}
+            className="bg-white rounded-2xl shadow-xl p-8 flex flex-col items-center text-center cursor-pointer"
           >
-            <div className="bg-pink-100 p-4 rounded-full mb-4">
-                <FaHeart className="text-4xl text-pink-500" />
+            <div className="text-5xl text-pink-500 mb-4">
+              <FaBookOpen />
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Our Mission</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-3">Spiritual Philosophy</h2>
             <p className="text-gray-600">
-              To promote peace, harmony, and well-being by providing a serene environment for spiritual seekers and hosting events that foster personal growth and communal harmony.
+              Our philosophy is rooted in **Bhakti-Paramarth**, highlighting the eternal essence of pure devotion and spiritual knowledge.
             </p>
           </motion.div>
 
-          {/* Technology Vision Card */}
-          <motion.div 
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7, delay: 0.4 }}
-            className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 border-t-4 border-pink-500 flex flex-col items-center text-center"
+          <motion.div
+            {...containerAnimation}
+            // ✨ ADDED: Motion and transform on hover
+            whileHover={{ y: -8, scale: 1.03, transition: { type: 'spring', stiffness: 300 } }}
+            className="bg-white rounded-2xl shadow-xl p-8 flex flex-col items-center text-center cursor-pointer"
           >
-            <div className="bg-pink-100 p-4 rounded-full mb-4">
-                <FaLaptopCode className="text-4xl text-pink-500" />
+            <div className="text-5xl text-pink-500 mb-4">
+              <GiLotus />
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">A Digital Sanctuary</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-3">Our Objectives</h2>
             <p className="text-gray-600">
-              This web application streamlines event and accommodation management, allowing devotees to seamlessly request lodging and stay updated on their booking status.
+              To foster a deeper understanding of spirituality, promote selfless services (sewa), and cultivate the knowledge of self-realization.
             </p>
           </motion.div>
         </div>
 
-        {/* Closing Statement */}
-        <motion.div 
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.6 }}
-          className="mt-12 max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-xl text-center"
+        {/* --- Container 3: Activities & Seva --- */}
+        <motion.div
+          {...containerAnimation}
+          // ✨ ADDED: Motion and transform on hover
+          whileHover={{ y: -8, scale: 1.03, transition: { type: 'spring', stiffness: 300 } }}
+          className="bg-white rounded-2xl shadow-xl p-8 md:p-12 grid md:grid-cols-2 gap-8 items-center cursor-pointer"
         >
-            <div className="flex justify-center mb-4">
-                <FaPeace className="text-4xl text-pink-500"/>
+          <div className="text-center md:text-left">
+              <h2 className="text-3xl font-bold text-gray-800 mb-4">Activities for the Soul</h2>
+              <p className="text-gray-600 leading-relaxed mb-6">
+                  We offer a variety of practices designed to quiet the mind and open the heart.
+              </p>
+              <ul className="space-y-3 text-gray-700 text-left">
+                  <li className="flex items-center"><FaHandsHelping className="text-pink-500 mr-3 text-xl" /> Meditation & Self-Reflection</li>
+                  <li className="flex items-center"><FaHandsHelping className="text-pink-500 mr-3 text-xl" /> Discourses on Spiritual Texts</li>
+                  <li className="flex items-center"><FaHandsHelping className="text-pink-500 mr-3 text-xl" /> Kirtans and Bhajans</li>
+                  <li className="flex items-center"><FaHandsHelping className="text-pink-500 mr-3 text-xl" /> Community Service (Sewa)</li>
+              </ul>
+          </div>
+          <div className="hidden md:flex justify-center items-center">
+              <FaHandsHelping className="text-9xl text-pink-100" />
+          </div>
+        </motion.div>
+
+        {/* --- Container 4: Digital Sanctuary --- */}
+        <motion.div
+          {...containerAnimation}
+          // ✨ ADDED: Motion and transform on hover
+          whileHover={{ y: -8, scale: 1.03, transition: { type: 'spring', stiffness: 300 } }}
+          className="bg-white rounded-2xl shadow-xl p-8 flex flex-col items-center text-center cursor-pointer"
+        >
+            <div className="text-5xl text-pink-500 mb-4">
+                <FaLaptopCode />
             </div>
-            <p className="text-lg text-gray-700 italic">
-                We believe in using technology to serve our community more effectively, ensuring every visitor has a comfortable and welcoming experience.
+            <h2 className="text-2xl font-bold text-gray-800 mb-3">Our Digital Sanctuary</h2>
+            <p className="text-gray-600 max-w-2xl">
+              This web application is an extension of our principle of sewa. It is designed to streamline event and accommodation management, allowing our community to seamlessly request lodging and stay updated.
             </p>
         </motion.div>
+
       </main>
-    </motion.div>
+    </div>
   );
 };
 

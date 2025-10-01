@@ -28,12 +28,14 @@ router.get(
     bookingController.getUserBookings
 );
 
-// Admins and operators can approve, decline, or modify allocations
-router.post(
-    '/approve-decline/:bookingId',
+// --- THIS IS THE CORRECTED ROUTE ---
+// Changed from POST /approve-decline/:bookingId to PUT /:bookingId/status
+// This now matches the frontend API call.
+router.put(
+    '/:bookingId/status', // Corrected path and method
     authMiddleware,
     roleMiddleware(['admin', 'super-admin', 'operator', 'super-operator']),
-    bookingController.approveOrDeclineBooking
+    bookingController.approveOrDeclineBooking // The same controller function works perfectly
 );
 
 // A user can delete their own booking request
@@ -62,6 +64,13 @@ router.get(
     '/pdf/:id',
     authMiddleware, // Controller logic verifies ownership or admin status
     bookingController.getBookingPdf
+);
+
+router.get(
+    '/paginated',
+    authMiddleware,
+    roleMiddleware(['admin', 'super-admin', 'operator', 'super-operator']),
+    bookingController.getBookingsPaginated
 );
 
 module.exports = router;
