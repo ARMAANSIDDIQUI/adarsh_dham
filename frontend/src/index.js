@@ -6,7 +6,6 @@ import { PersistGate } from 'redux-persist/integration/react';
 import './styles/index.css';
 import App from './App';
 
-// ✨ ADD THIS BLOCK to register your service worker
 // This tells the browser to install and run your /public/service-worker.js file.
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {

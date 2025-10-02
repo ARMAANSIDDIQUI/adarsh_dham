@@ -18,7 +18,7 @@ import UserNotifications from './components/user/UserNotifications.jsx';
 import Header from './components/common/Header.jsx';
 import Footer from './components/common/Footer.jsx';
 import ProtectedRoute from './components/common/ProtectedRoute.jsx';
-
+import EventsPage from './pages/EventsPage';
 // This component handles the animated transition between pages
 const PageTransition = ({ children }) => {
     const location = useLocation();
@@ -54,7 +54,7 @@ function App() {
                         <Route path="/calendar" element={<PageTransition><CalendarPage /></PageTransition>} />
                         <Route path="/login" element={<PageTransition><LoginPage /></PageTransition>} />
                         <Route path="/register" element={<PageTransition><RegisterPage /></PageTransition>} />
-                        
+                        <Route path="/events/:date?" element={<EventsPage />} />
                         {/* Protected Routes */}
                         <Route path="/booking/:eventId" element={<ProtectedRoute component={BookingPage} />} />
                         <Route path="/my-bookings" element={<ProtectedRoute component={MyBookings} />} />

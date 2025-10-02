@@ -58,7 +58,7 @@ const RoomOccupantsModal = ({ isOpen, room, occupants, onClose }) => {
                                         </div>
                                     </div>
                                 ))
-                            ) : ( <p className="text-gray-500">This room is vacant for the selected dates.</p> )}
+                            ) : (<p className="text-gray-500">This room is vacant for the selected dates.</p>)}
                         </div>
                         <div className="text-right mt-4">
                             <Button onClick={onClose} className="bg-gray-500 text-white">Close</Button>
@@ -94,15 +94,15 @@ const AccordionItem = ({ title, children }) => {
 
 // --- BookingCard Sub-component ---
 const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, buildings, rooms, people, onShowRoomDetails, setError }) => {
-    const { formData = {}, userId = {}, status, _id: bookingId, bookingNumber, allocations: savedAllocations = [] } = booking;
+    const { formData = {}, userId = {}, status, _id: bookingId, bookingNumber, allocations: savedAllocations, eventId = {} } = booking;
     const pendingAllocations = allocations[bookingId] || [];
 
-    // --- UPDATED SECTION START ---
+    const safeSavedAllocations = Array.isArray(savedAllocations) ? savedAllocations : [];
+    
     const [notificationOption, setNotificationOption] = useState('sendNow');
     const [scheduleDelay, setScheduleDelay] = useState({ days: 0, hours: 0, minutes: 5, seconds: 0 });
     const [notificationTtlMinutes, setNotificationTtlMinutes] = useState(10080); // 7 days
 
-    // Helper to calculate the future date for display and submission
     const calculateFutureDate = useMemo(() => {
         const now = new Date();
         now.setDate(now.getDate() + (parseInt(scheduleDelay.days, 10) || 0));
@@ -116,36 +116,25 @@ const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, b
         setScheduleDelay(prev => ({ ...prev, [unit]: value }));
     };
 
-    // Handler for submitting Approve/Decline actions
-    const handleDecision = (action) => {
-        setError(''); // Clear previous errors
-        let payload = { notificationOption };
-
-        if (action === 'approved') {
-            if (!allBedsAssigned) {
-                setError('All members must be assigned a bed before approving.');
-                return;
-            }
-            if (notificationOption === 'schedule' && calculateFutureDate <= new Date()) {
-                setError('Scheduled delay must result in a future time.');
-                return;
-            }
-            payload.allocations = pendingAllocations;
-        }
-
-        if (notificationOption === 'schedule') {
-            payload.scheduledSendTime = calculateFutureDate.toISOString();
-            payload.notificationTtlMinutes = notificationTtlMinutes;
-        }
-
-        onAction(bookingId, action, payload);
-    };
-    // --- UPDATED SECTION END ---
-
     const allBedsAssigned = (formData.people?.length || 0) > 0 &&
         formData.people.length === pendingAllocations.length &&
         pendingAllocations.every(a => a && a.bedId);
 
+    const handleDecision = (action) => {
+        setError('');
+        let payload = { status: action, allocations: pendingAllocations };
+
+        if (notificationOption === 'schedule') {
+            payload.notificationOption = 'schedule';
+            payload.scheduledSendTime = calculateFutureDate.toISOString();
+            payload.notificationTtlMinutes = notificationTtlMinutes;
+        } else if (notificationOption === 'dontSend') {
+            payload.notificationOption = 'dontSend';
+        }
+
+        onAction(bookingId, action, payload);
+    };
+    
     const getStatusBorderColor = s => s === 'pending' ? 'border-pink-500' : s === 'approved' ? 'border-emerald-500' : 'border-rose-500';
     
     const getRoomOccupancyForBooking = (roomId, currentBooking) => {
@@ -155,7 +144,8 @@ const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, b
         const occupiedCount = (people || []).filter(person => {
             if (String(person.bookingId) === String(currentBooking._id)) return false;
             const bedInRoom = room.beds.some(bed => String(bed._id) === String(person.bedId?._id || person.bedId));
-            return bedInRoom && datesOverlap(currentBooking.formData.stayFrom, currentBooking.formData.stayTo, person.stayFrom, person.stayTo);
+            // FIXED: Added safety checks for person.stayFrom and person.stayTo
+            return bedInRoom && person.stayFrom && person.stayTo && datesOverlap(currentBooking.formData.stayFrom, currentBooking.formData.stayTo, person.stayFrom, person.stayTo);
         }).length;
         return { capacity, occupied: occupiedCount, vacant: capacity - occupiedCount };
     };
@@ -176,14 +166,6 @@ const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, b
         return (buildings || []).filter(b => personAllowed.includes((b.gender || '').toLowerCase()));
     };
 
-    const findAllocationNames = (allocation) => {
-        if (!allocation) return { buildingName: 'N/A', roomNumber: 'N/A', bedName: 'N/A' };
-        const building = (buildings || []).find(b => String(b._id) === String(allocation.buildingId));
-        const room = (rooms || []).find(r => String(r._id) === String(allocation.roomId));
-        const bed = (room?.beds || []).find(b => String(b._id) === String(allocation.bedId));
-        return { buildingName: building?.name || 'N/A', roomNumber: room?.roomNumber || 'N/A', bedName: bed?.name || 'N/A' };
-    };
-    
     const handleDownloadPdf = async () => {
         try {
             const response = await api.get(`/bookings/pdf/${bookingId}`, { responseType: 'blob' });
@@ -201,7 +183,7 @@ const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, b
             setError('Failed to download PDF.');
         }
     };
-
+    
     return (
         <div className={`bg-white p-5 rounded-xl shadow-lg border-l-4 ${getStatusBorderColor(status)}`}>
             <div className="flex justify-between items-start border-b pb-3 mb-4">
@@ -216,22 +198,27 @@ const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, b
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 mb-2">
                     <p><strong>Stay:</strong> {formatDate(formData?.stayFrom)} to {formatDate(formData?.stayTo)}</p>
                     <p><strong>Group:</strong> {formData?.people?.length || 0} People</p>
+                    <p className="col-span-full"><strong>Event:</strong> {booking.eventId?.name || 'N/A'}</p>
                 </div>
+                
                 <AccordionItem title="Members">
                     <div className="space-y-1 max-h-24 overflow-y-auto pr-2">
                         {(formData.people || []).map((p, i) => <div key={i} className="text-xs flex justify-between"><span>{i+1}. {p.name}</span><span>Age: {p.age}</span></div>)}
                     </div>
                 </AccordionItem>
+
                 <AccordionItem title="Contact & Location">
                     <p><strong>Phone:</strong> {formData?.contactNumber || 'N/A'}</p>
                     <p><strong>Email:</strong> {formData?.email || 'N/A'}</p>
                     <p><strong>Address:</strong> {formData?.address || 'N/A'}, {formData?.city || 'N/A'}</p>
                 </AccordionItem>
+
                 <AccordionItem title="Reference Details">
                     <p><strong>Ashram:</strong> {formData?.ashramName || 'N/A'}</p>
                     <p><strong>Baiji/Mahatmaji:</strong> {formData?.baijiMahatmaJi || 'N/A'}</p>
                     <p><strong>Baiji/Mahatmaji Contact:</strong> {formData?.baijiContact || 'N/A'}</p>
                 </AccordionItem>
+                
                 {formData?.notes && (
                     <AccordionItem title="Notes">
                         <p className="text-gray-700 whitespace-pre-wrap text-xs bg-gray-50 p-2 rounded">{formData.notes}</p>
@@ -248,6 +235,7 @@ const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, b
                             const filteredBuildings = getFilteredBuildings(person);
                             const filteredRooms = personAllocated.buildingId ? (rooms || []).filter(r => String(r.buildingId?._id) === String(personAllocated.buildingId)) : [];
                             const filteredBeds = personAllocated.roomId ? getAvailableBedsForRoom(personAllocated.roomId, booking, index) : [];
+
                             return (
                                 <div key={index} className="p-3 bg-gray-50 rounded-lg border">
                                     <p className="font-semibold text-gray-700 mb-2">{person.name} <span className="text-xs text-pink-500 capitalize">({person.gender})</span></p>
@@ -264,7 +252,11 @@ const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, b
                                                     return <option key={r._id} value={r._id}>{r.roomNumber} ({vacant}/{capacity} vacant)</option>;
                                                 })}
                                             </select>
-                                            {personAllocated.roomId && (<button onClick={() => onShowRoomDetails(personAllocated.roomId, booking)} className="text-blue-500 hover:text-blue-700 p-1" title="Show room occupants"><FaInfoCircle/></button>)}
+                                            {personAllocated.roomId && (
+                                                <button onClick={() => onShowRoomDetails(personAllocated.roomId, booking)} className="text-blue-500 hover:text-blue-700 p-1" title="Show room occupants">
+                                                    <FaInfoCircle/>
+                                                </button>
+                                            )}
                                         </div>
                                         <select value={personAllocated.bedId || ''} onChange={(e) => handleAllocationChange(bookingId, index, 'bedId', e.target.value)} disabled={!personAllocated.roomId} className="block w-full text-sm p-2 border rounded-lg disabled:bg-gray-200">
                                             <option value="">Select Bed</option>
@@ -275,8 +267,6 @@ const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, b
                             );
                         })}
                     </div>
-
-                    {/* --- UPDATED NOTIFICATION UI --- */}
                     <div className="space-y-3 mt-6 pt-4 border-t">
                         <h5 className="font-bold text-gray-700">Notification Options</h5>
                         <div className="flex flex-wrap gap-x-6 gap-y-2">
@@ -316,15 +306,14 @@ const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, b
                 <div className="mt-4 pt-4 border-t border-gray-100">
                     <h5 className="font-bold mb-3 text-emerald-600 flex items-center"><FaUserShield className="mr-2"/> Allocated Details</h5>
                     <div className="space-y-3">
-                        {(savedAllocations || []).map((alloc, index) => {
-                            const { buildingName, roomNumber, bedName } = findAllocationNames(alloc);
-                            return (
-                                <div key={index} className="text-sm bg-emerald-50 p-3 rounded-lg border border-emerald-200">
-                                    <span className="font-semibold text-gray-800 mr-2">{formData.people[index]?.name}:</span>
-                                    <span className="text-gray-600 block sm:inline">{buildingName}, Room {roomNumber}, Bed {bedName}</span>
-                                </div>
-                            );
-                        })}
+                        {safeSavedAllocations.map((alloc, index) => (
+                            <div key={index} className="text-sm bg-emerald-50 p-3 rounded-lg border border-emerald-200">
+                                <span className="font-semibold text-gray-800 mr-2">{formData.people[index]?.name}:</span>
+                                <span className="text-gray-600 block sm:inline">
+                                    Building {alloc.buildingId?.name || 'N/A'}, Room {alloc.roomId?.roomNumber || 'N/A'}, Bed {alloc.bedId?.name || 'N/A'}
+                                </span>
+                            </div>
+                        ))}
                     </div>
                     <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mt-4">
                         <Button onClick={() => onAction(bookingId, 'pending')} className="bg-pink-500 hover:bg-pink-600"><FaEdit className="inline mr-2" /> Edit Allocation</Button>
@@ -382,7 +371,10 @@ const ManageAllocations = () => {
         try {
             setLoading(true);
             const [bookingsRes, roomsRes, buildingsRes, peopleRes] = await Promise.all([
-                api.get('/bookings'), api.get('/rooms'), api.get('/buildings'), api.get('/people'),
+                api.get('/bookings'), 
+                api.get('/rooms'),
+                api.get('/buildings'), 
+                api.get('/people'),
             ]);
             setBookings(bookingsRes.data || []);
             setRooms(roomsRes.data || []);
@@ -399,19 +391,44 @@ const ManageAllocations = () => {
 
     useEffect(() => { fetchAllData(); }, []);
 
-    const handleAction = async (bookingId, action, payloadData = {}) => {
+    const handleAction = async (bookingId, action, allocationData = null) => {
         try {
             setError(null);
-            const payload = { status: action, ...payloadData };
-            await api.put(`/bookings/${bookingId}/status`, payload);
+            
+            // Optimistic UI update: Find the booking and change its status locally
+            const updatedBookings = bookings.map(b => {
+                if (b._id === bookingId) {
+                    const newBooking = { ...b, status: action };
+                    // Safely set allocations if they exist
+                    if (allocationData && allocationData.allocations) {
+                        newBooking.allocations = allocationData.allocations;
+                    } else if (action === 'pending' || action === 'declined') {
+                        // Clear allocations for pending or declined status
+                        newBooking.allocations = [];
+                    }
+                    return newBooking;
+                }
+                return b;
+            });
+            setBookings(updatedBookings);
+
+            // Call the API
+            await api.put(`/bookings/${bookingId}/status`, { status: action, allocations: allocationData });
+
+            // Clear pending allocations for this booking
             setAllocations(prev => {
                 const newAlloc = { ...prev };
                 delete newAlloc[bookingId];
                 return newAlloc;
             });
+            
+            // Re-fetch all data to ensure consistency
             await fetchAllData();
+
         } catch (err) {
-            setError(err.response?.data?.message || `Failed to perform action: ${action}.`);
+            setError(err.response?.data?.message || `Failed to perform action: ${action}. Please reload.`);
+            // Revert state if the API call fails
+            fetchAllData(); 
         }
     };
 
@@ -438,7 +455,7 @@ const ManageAllocations = () => {
         const occupants = (people || []).filter(person => {
             if (!person.bedId) return false;
             const bedInRoom = room.beds.some(bed => String(bed._id) === String(person.bedId?._id || person.bedId));
-            return bedInRoom && datesOverlap(currentBooking.formData.stayFrom, currentBooking.formData.stayTo, person.stayFrom, person.stayTo);
+            return bedInRoom && datesOverlap(currentBooking.formData.stayFrom, currentBooking.formData.stayTo, person.stayFrom, person.formData.stayTo);
         });
         setRoomDetailsModal({ isOpen: true, room, occupants });
     };

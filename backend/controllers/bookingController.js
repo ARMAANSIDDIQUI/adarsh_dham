@@ -37,7 +37,6 @@ const createAndSaveNotification = async ({ message, userIds = [], notifyAdmins =
 
         if (targetUsers.length === 0) return;
 
-        // Use a Set to avoid duplicate users if someone is both an admin and in the userIds list.
         const uniqueTargetUsers = [...new Map(targetUsers.map(user => [user._id.toString(), user])).values()];
 
         const sendDate = sendAt ? new Date(sendAt) : new Date();
@@ -113,7 +112,12 @@ exports.createBooking = async (req, res) => {
 
 exports.approveOrDeclineBooking = async (req, res) => {
     const { bookingId } = req.params;
-    const { status, allocations, notificationOption, scheduledSendTime, notificationTtlMinutes } = req.body;
+    
+    const { status, allocations: allocationData } = req.body;
+    
+    // This is the one-line fix.
+    // It safely handles cases where allocationData is null, preventing the server crash.
+    const { notificationOption, scheduledSendTime, notificationTtlMinutes, allocations } = allocationData || {};
 
     try {
         const booking = await Booking.findById(bookingId).populate('userId').populate('eventId');
@@ -121,12 +125,12 @@ exports.approveOrDeclineBooking = async (req, res) => {
 
         const previousStatus = booking.status;
         let message = '';
-
+        
         await Person.deleteMany({ bookingId: booking._id });
 
         if (status === 'approved') {
-            if (!allocations || allocations.length !== booking.formData.people.length) {
-                return res.status(400).json({ message: 'Allocation details must be provided for every person.' });
+            if (!allocations || !Array.isArray(allocations) || allocations.length !== booking.formData.people.length) {
+                return res.status(400).json({ message: 'Allocation details must be provided as an array for every person.' });
             }
 
             const peopleToCreate = booking.formData.people.map((personData, index) => {
@@ -169,7 +173,7 @@ exports.approveOrDeclineBooking = async (req, res) => {
                 message,
                 userIds: [booking.userId._id.toString()],
             };
-
+            
             if (notificationOption === 'schedule' && scheduledSendTime) {
                 notificationPayload.sendAt = scheduledSendTime;
                 if (notificationTtlMinutes) {
@@ -180,7 +184,14 @@ exports.approveOrDeclineBooking = async (req, res) => {
             await createAndSaveNotification(notificationPayload);
         }
 
-        res.status(200).json({ message: `Booking status successfully updated to ${status}.`, booking });
+        const updatedBooking = await Booking.findById(bookingId)
+            .populate('userId', 'name')
+            .populate('eventId', 'name')
+            .populate('allocations.buildingId', 'name')
+            .populate('allocations.roomId', 'roomNumber')
+            .populate('allocations.bedId', 'name');
+
+        res.status(200).json({ message: `Booking status successfully updated to ${status}.`, booking: updatedBooking });
     } catch (error) {
         console.error("Error updating booking status:", error);
         res.status(500).json({ message: 'Server error', error: error.message });
@@ -279,14 +290,9 @@ exports.getBookingPdf = async (req, res) => {
         const booking = await Booking.findById(req.params.id)
             .populate('userId', 'name')
             .populate('eventId', 'name')
-            .populate({
-                path: 'allocations',
-                populate: [
-                    { path: 'buildingId', model: 'Building', select: 'name' },
-                    { path: 'roomId', model: 'Room', select: 'roomNumber' },
-                    { path: 'bedId', model: 'Bed', select: 'name' }
-                ]
-            });
+            .populate('allocations.buildingId', 'name')
+            .populate('allocations.roomId', 'roomNumber')
+            .populate('allocations.bedId', 'name type');
 
         if (!booking) return res.status(404).json({ message: 'Booking not found' });
         if (booking.status !== 'approved') return res.status(400).json({ message: 'A pass can only be generated for approved bookings.' });

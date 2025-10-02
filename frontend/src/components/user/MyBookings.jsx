@@ -4,49 +4,7 @@ import api from '../../api/api.js';
 import { FaSpinner, FaTrash, FaFilePdf, FaBed, FaBuilding, FaDoorOpen, FaTimesCircle, FaCheckCircle, FaEdit } from 'react-icons/fa';
 import Button from '../../components/common/Button.jsx';
 import { Link, useNavigate } from 'react-router-dom';
-import BookingForm from '../../components/user/BookingForm.jsx';
-
-const EditBookingModal = ({ booking, onClose, onUpdate }) => {
-    const [submitLoading, setSubmitLoading] = useState(false);
-    const [error, setError] = useState('');
-
-    const handleUpdateSubmit = async (formData) => {
-        setSubmitLoading(true);
-        setError('');
-        try {
-            await api.put(`/bookings/update/${booking._id}`, { formData });
-            onUpdate();
-        } catch (err) {
-            setError(err.response?.data?.message || 'Failed to update booking.');
-        } finally {
-            setSubmitLoading(false);
-        }
-    };
-
-    return (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-[1000] p-4">
-            <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.9, opacity: 0 }}
-                className="relative bg-gray-100 rounded-lg w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
-            >
-                <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 z-10">
-                    <FaTimesCircle size={24} />
-                </button>
-                <div className="overflow-y-auto p-6">
-                    <BookingForm 
-                        onSubmit={handleUpdateSubmit}
-                        initialData={booking.formData}
-                        loading={submitLoading}
-                        error={error}
-                        isEditing={true}
-                    />
-                </div>
-            </motion.div>
-        </div>
-    );
-};
+import EditBookingModal from './EditBookingModal.jsx'; // Correctly import the self-contained modal
 
 const BookingCard = ({ booking, onEdit, onDelete, onDownloadPdf, navigateToEvent }) => {
     const getStatusStyles = (status) => {
@@ -66,13 +24,13 @@ const BookingCard = ({ booking, onEdit, onDelete, onDownloadPdf, navigateToEvent
         >
             <div className="flex justify-between items-start mb-4">
                 <div>
-                    <h3 
+                    <h3
                         onClick={() => navigateToEvent(booking.eventId)}
                         className="text-xl font-bold text-pink-600 cursor-pointer hover:underline transition-colors"
                     >
                         {booking.eventId?.name || 'Event Details'}
                     </h3>
-                    <p className="text-xs font-mono text-gray-400 mt-1">{booking.bookingNumber}</p> 
+                    <p className="text-xs font-mono text-gray-400 mt-1">{booking.bookingNumber}</p>
                     <div className={`flex items-center space-x-2 font-semibold capitalize mt-1 text-base ${booking.status === 'approved' ? 'text-green-600' : booking.status === 'declined' ? 'text-red-600' : 'text-yellow-600'}`}>
                         {booking.status === 'approved' && <FaCheckCircle />}
                         {booking.status === 'declined' && <FaTimesCircle />}
@@ -137,7 +95,7 @@ const MyBookings = () => {
 
     const fetchMyBookings = async () => {
         try {
-            const res = await api.get('/bookings/my-bookings'); 
+            const res = await api.get('/bookings/my-bookings');
             setBookings(res.data || []);
         } catch (err) {
             setError('Failed to fetch bookings.');
@@ -169,6 +127,7 @@ const MyBookings = () => {
         setIsEditModalOpen(false);
         setSelectedBooking(null);
         setMessage({ type: 'success', text: 'Booking updated and is now pending re-approval.' });
+        fetchMyBookings();
     };
 
     const navigateToEvent = (event) => {
@@ -194,7 +153,6 @@ const MyBookings = () => {
     if (loading) return <div className="flex justify-center items-center h-screen"><FaSpinner className="animate-spin text-4xl text-pink-500" /></div>;
     if (error) return <div className="text-center mt-10 text-red-600">{error}</div>;
 
-    // --- Exception: No bookings at all ---
     if (bookings.length === 0) {
         return (
             <div className="flex flex-col justify-center items-center h-screen text-center px-4">
@@ -208,22 +166,21 @@ const MyBookings = () => {
         );
     }
 
-    // --- Render UI ---
     return (
         <>
             <div className="p-4 md:p-8 max-w-5xl mx-auto min-h-screen">
                 <h2 className="text-3xl font-bold mb-6 text-gray-800 border-b-2 border-pink-400 pb-2 text-center">My Bookings</h2>
 
-                <input 
-                    type="text" 
-                    placeholder="Search by booking number or event..." 
-                    value={searchQuery} 
+                <input
+                    type="text"
+                    placeholder="Search by booking number or event..."
+                    value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
                     className="w-full p-3 mb-6 border rounded-lg focus:ring-pink-300 focus:border-pink-500 transition-colors"
                 />
 
                 {message && (
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         className={`my-4 p-3 rounded-lg text-center font-medium shadow-md cursor-pointer ${message.type === 'success' ? 'bg-green-100 text-green-700 border border-green-400' : 'bg-red-100 text-red-700 border border-red-400'}`}
@@ -233,9 +190,8 @@ const MyBookings = () => {
                     </motion.div>
                 )}
 
-                {/* --- Render categorized bookings with search filter --- */}
                 {['upcoming', 'ongoing', 'finished'].map(category => {
-                    const filtered = categorizedBookings[category].filter(b => 
+                    const filtered = categorizedBookings[category].filter(b =>
                         b.bookingNumber.includes(searchQuery) || b.eventId?.name?.toLowerCase().includes(searchQuery.toLowerCase())
                     );
                     if (filtered.length === 0) return null;
@@ -248,11 +204,11 @@ const MyBookings = () => {
                             <h3 className={`text-2xl font-semibold mb-4 ${titleColor}`}>{titleText}</h3>
                             <div className="space-y-4">
                                 {filtered.map(b => (
-                                    <BookingCard 
-                                        key={b._id} 
-                                        booking={b} 
-                                        onEdit={handleEdit} 
-                                        onDelete={handleDeleteBooking} 
+                                    <BookingCard
+                                        key={b._id}
+                                        booking={b}
+                                        onEdit={handleEdit}
+                                        onDelete={handleDeleteBooking}
                                         onDownloadPdf={async booking => {
                                             const res = await api.get(`/bookings/pdf/${booking._id}`, { responseType: 'blob' });
                                             const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
@@ -263,7 +219,7 @@ const MyBookings = () => {
                                             link.click();
                                             link.remove();
                                             window.URL.revokeObjectURL(url);
-                                        }} 
+                                        }}
                                         navigateToEvent={navigateToEvent}
                                     />
                                 ))}
@@ -272,9 +228,8 @@ const MyBookings = () => {
                     );
                 })}
 
-                {/* --- Exception: No bookings match search --- */}
-                {['upcoming', 'ongoing', 'finished'].every(category => 
-                    categorizedBookings[category].filter(b => 
+                {['upcoming', 'ongoing', 'finished'].every(category =>
+                    categorizedBookings[category].filter(b =>
                         b.bookingNumber.includes(searchQuery) || b.eventId?.name?.toLowerCase().includes(searchQuery.toLowerCase())
                     ).length === 0
                 ) && searchQuery && (
@@ -282,13 +237,12 @@ const MyBookings = () => {
                         No bookings match your search.
                     </div>
                 )}
-
             </div>
 
             <AnimatePresence>
-                {isEditModalOpen && (
-                    <EditBookingModal 
-                        booking={selectedBooking} 
+                {isEditModalOpen && selectedBooking && (
+                    <EditBookingModal
+                        booking={selectedBooking}
                         onClose={() => setIsEditModalOpen(false)}
                         onUpdate={handleUpdateSuccess}
                     />

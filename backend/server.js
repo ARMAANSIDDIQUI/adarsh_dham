@@ -1,12 +1,20 @@
+// server.js
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const morgan = require('morgan');
 const schedule = require('node-schedule');
-const webpush = require('web-push'); // ✨ ADD THIS LINE
-const structureRoutes = require('./routes/structureRoutes');
+const webpush = require('web-push');
 require('dotenv').config();
 
+// Mongoose Models
+const Notification = require('./models/notificationModel'); // Import Notification model
+const User = require('./models/userModel');
+const Event = require('./models/eventModel');
+const Person = require('./models/peopleModel');
+const bcrypt = require('bcrypt');
+
+// Routes
 const authRoutes = require('./routes/authRoutes');
 const eventRoutes = require('./routes/eventRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
@@ -17,18 +25,15 @@ const buildingRoutes = require('./routes/buildingRoutes');
 const roomRoutes = require('./routes/roomRoutes');
 const bedRoutes = require('./routes/bedRoutes');
 const peopleRoutes = require('./routes/peopleRoutes');
+const structureRoutes = require('./routes/structureRoutes');
 
-const User = require('./models/userModel');
-const Event = require('./models/eventModel');
-const Person = require('./models/peopleModel');
-const bcrypt = require('bcrypt');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ✨ ADD THIS BLOCK to configure web-push with your VAPID keys
+// Set VAPID details for web-push
 webpush.setVapidDetails(
-  'mailto:your-email@example.com', // Replace with your contact email
+  'mailto:your-email@example.com',
   process.env.VAPID_PUBLIC_KEY,
   process.env.VAPID_PRIVATE_KEY
 );
@@ -42,6 +47,7 @@ mongoose.connect(process.env.MONGO_URI)
     console.log('MongoDB connected successfully');
     createFirstSuperAdmin();
     setupAllocationResetJob();
+    setupScheduledNotificationJob(); // ✨ ADDED: Call the new job setup function
   })
   .catch(err => console.error('MongoDB connection error:', err));
 
@@ -94,6 +100,56 @@ const setupAllocationResetJob = () => {
       console.error('Error during nightly occupancy reset job:', error);
     }
   });
+};
+
+// ✨ ADD THIS NEW FUNCTION
+const setupScheduledNotificationJob = () => {
+    // This job runs every minute to check for scheduled notifications
+    schedule.scheduleJob('* * * * *', async () => {
+        console.log('Checking for scheduled notifications...');
+        try {
+            const now = new Date();
+            const notificationsToSend = await Notification.find({
+                status: 'scheduled',
+                sendAt: { $lte: now }
+            }).populate('userId', 'pushSubscription');
+
+            if (notificationsToSend.length > 0) {
+                console.log(`Found ${notificationsToSend.length} notifications to send.`);
+                const pushPromises = notificationsToSend.map(async (notification) => {
+                    const user = notification.userId;
+                    if (user && user.pushSubscription) {
+                        const payload = JSON.stringify({
+                            title: "Adarsh Dham: New Update",
+                            body: notification.message,
+                        });
+                        try {
+                            await webpush.sendNotification(user.pushSubscription, payload);
+                            notification.status = 'sent';
+                            await notification.save();
+                            console.log(`Notification sent to user: ${user._id}`);
+                        } catch (err) {
+                            console.error(`Error sending push notification to user ${user._id}: ${err.message}`);
+                            // If the subscription is no longer valid, remove it
+                            if (err.statusCode === 410) {
+                                user.pushSubscription = null;
+                                await user.save();
+                                console.log(`Invalid subscription removed for user: ${user._id}`);
+                            }
+                        }
+                    } else {
+                        // Mark as sent even if no subscription exists to avoid re-sending
+                        notification.status = 'sent';
+                        await notification.save();
+                        console.log(`No valid subscription found for notification ${notification._id}, marked as sent.`);
+                    }
+                });
+                await Promise.all(pushPromises);
+            }
+        } catch (error) {
+            console.error('Error in scheduled notification job:', error);
+        }
+    });
 };
 
 app.use('/api/auth', authRoutes);

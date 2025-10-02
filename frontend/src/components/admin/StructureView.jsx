@@ -31,7 +31,7 @@ const OccupantDetailsModal = ({ isOpen, person, onClose }) => {
                             <p className="flex items-center"><FaCity className="mr-3 text-gray-400"/>City: <span className="font-semibold ml-2">{person.city}</span></p>
                             <p className="flex items-center"><FaPhone className="mr-3 text-gray-400"/>Contact: <span className="font-semibold ml-2">{person.contactNumber}</span></p>
                             <p className="flex items-center"><FaUserTag className="mr-3 text-gray-400"/>Reference: <span className="font-semibold ml-2">{person.baijiMahatmaJi || 'N/A'}</span></p>
-                            <p className="flex items-center"><FaUserCheck className="mr-3 text-gray-400"/>Booked By: <span className="font-semibold ml-2">{person.userId?.name}</span></p>
+                            {/* <p className="flex items-center"><FaUserCheck className="mr-3 text-gray-400"/>Booked By: <span className="font-semibold ml-2">{person.userId?.name}</span></p> */}
                             <p className="mt-4 pt-4 border-t text-sm text-center">Stay: {formatDate(person.stayFrom)} to {formatDate(person.stayTo)}</p>
                         </div>
                     </motion.div>

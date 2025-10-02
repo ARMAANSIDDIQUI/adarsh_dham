@@ -74,12 +74,14 @@ function generateBookingPdf(booking) {
         const tableTop = doc.y;
         generateTableHeader(doc, tableTop);
         
-        let currentY = tableTop + 25; // Start position for the first row
-        booking.allocations.forEach(alloc => {
-            const person = booking.formData.people[alloc.personIndex];
-            if (person) {
+        let currentY = tableTop + 25;
+        
+        // CORRECTED LOOP LOGIC
+        booking.formData.people.forEach((person, index) => {
+            const alloc = booking.allocations[index];
+            if (alloc) {
                 generateTableRow(doc, currentY, person, alloc);
-                currentY += 25; // Increment Y position for the next row
+                currentY += 25;
             }
         });
 
@@ -111,9 +113,7 @@ function generateTableHeader(doc, y) {
     const headerHeight = 20;
     const headerWidth = 515;
 
-    doc.rect(headerX, headerY, headerWidth, headerHeight).fill('#F7FAFC').stroke(
-        '#E2E8F0');
-        
+    doc.rect(headerX, headerY, headerWidth, headerHeight).fill('#F7FAFC').stroke('#E2E8F0');
     doc.fontSize(10).fillColor('#2D3748').font('Helvetica-Bold');
     doc.text('Guest Name', 50, y + 6);
     doc.text('Gender', 160, y + 6);
