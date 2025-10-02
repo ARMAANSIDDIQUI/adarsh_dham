@@ -87,7 +87,7 @@ const EnableNotificationsButton = () => {
     <button 
       onClick={handleSubscribe} 
       disabled={loading} 
-      className={`flex items-center justify-center w-full sm:w-auto px-4 py-2 text-base font-medium rounded-md transition-colors disabled:opacity-50 ` +
+      className={`flex items-center justify-center w-full sm:w-auto px-6 py-2 text-base font-medium rounded-full transition-colors disabled:opacity-50 ` +
         (isSubscribed 
             ? 'bg-red-50 text-red-700 hover:bg-red-100' 
             : 'bg-green-100 text-green-700 hover:bg-green-200')
