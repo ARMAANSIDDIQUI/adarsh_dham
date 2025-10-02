@@ -1,13 +1,9 @@
 const Notification = require('../models/notificationModel');
 const User = require('../models/userModel');
-const webpush = require('web-push'); // Use the standard web-push library
+const webpush = require('web-push');
 
-/**
- * Creates and saves an in-app notification.
- * If the notification is immediate, it also sends an OS-level push notification via Web Push.
- */
 exports.sendNotification = async (req, res) => {
-    const { message, userId, role, targetGroup, ttlMinutes = 1440, sendAt } = req.body; 
+    const { message, userId, role, targetGroup, ttlMinutes = 1440, sendAt } = req.body;
 
     try {
         if (!message) {
@@ -23,9 +19,8 @@ exports.sendNotification = async (req, res) => {
         const isScheduled = sendAt && sendDate > new Date();
 
         let targetUsers = [];
-        let notificationTargetType = 'admin'; // Default
+        let notificationTargetType = 'admin';
 
-        // --- Targeting Logic (no changes needed here) ---
         if (targetGroup === 'user' && userId) {
             const user = await User.findById(userId);
             if (user) targetUsers.push(user);
@@ -38,7 +33,7 @@ exports.sendNotification = async (req, res) => {
             targetUsers = await User.find({});
             notificationTargetType = 'all';
         } else {
-            targetUsers = await User.find({ roles: { $in: ['admin', 'super-admin']} });
+            targetUsers = await User.find({ roles: { $in: ['admin', 'super-admin'] } });
             notificationTargetType = 'admin';
         }
 
@@ -46,13 +41,12 @@ exports.sendNotification = async (req, res) => {
             return res.status(404).json({ message: 'No target users were found for the specified criteria.' });
         }
         
-        // --- Create In-App Notifications & Collect Push Subscriptions ---
         const pushSubscriptions = [];
         for (const user of targetUsers) {
             const newNotification = new Notification({
                 message,
                 userId: user._id,
-                role: role, 
+                role, 
                 target: notificationTargetType,
                 ttl: ttlDate,
                 sendAt: isScheduled ? sendDate : null,
@@ -60,24 +54,19 @@ exports.sendNotification = async (req, res) => {
             });
             await newNotification.save();
             
-            // Only collect push subscriptions if the notification should be sent immediately
-            if (!isScheduled && user.pushSubscription) {
+            if (user.pushSubscription) {
                 pushSubscriptions.push(user.pushSubscription);
             }
         }
         
-        // --- Send Web Push Notification (For Immediate Sends Only) ---
-        if (!isScheduled && pushSubscriptions.length > 0) {
+        if (pushSubscriptions.length > 0) {
             const payload = JSON.stringify({
                 title: "Adarsh Dham: New Update",
                 body: message,
             });
 
-            // Send a notification to each collected subscription
             const sendPromises = pushSubscriptions.map(sub => 
                 webpush.sendNotification(sub, payload).catch(err => {
-                    // This often happens if a subscription is expired or invalid.
-                    // It's safe to ignore the error for other users.
                     console.error(`Error sending push notification, it might be expired: ${err.message}`);
                 })
             );
@@ -96,10 +85,6 @@ exports.sendNotification = async (req, res) => {
     }
 };
 
-/**
- * Fetches non-expired notifications for the currently logged-in user.
- * (This function is for the in-app notification list and needs no changes).
- */
 exports.getUserNotifications = async (req, res) => {
     const userId = req.user.id;
     try {
