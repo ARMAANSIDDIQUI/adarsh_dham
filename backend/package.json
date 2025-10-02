@@ -7,7 +7,8 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "render-start": "node server.js",
-    "build": "npm install" 
+    "build": "npm install" ,
+    "serve": "serve -s build"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
