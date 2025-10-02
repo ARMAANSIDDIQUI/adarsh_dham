@@ -25,13 +25,13 @@ const EnableNotificationsButton = () => {
     const checkSubscription = async () => {
       if ('serviceWorker' in navigator && 'PushManager' in window) {
         try {
-            const registration = await navigator.serviceWorker.ready;
-            const subscription = await registration.pushManager.getSubscription();
-            setIsSubscribed(!!subscription);
+          const registration = await navigator.serviceWorker.ready;
+          const subscription = await registration.pushManager.getSubscription();
+          setIsSubscribed(!!subscription);
         } catch (error) {
-            console.error("Error checking subscription:", error);
+          console.error("Error checking subscription:", error);
         } finally {
-            setLoading(false);
+          setLoading(false);
         }
       } else {
         setLoading(false);
@@ -42,37 +42,40 @@ const EnableNotificationsButton = () => {
 
   const handleSubscribe = async () => {
     if (!('serviceWorker' in navigator && 'PushManager' in window)) {
-        alert('Push notifications are not supported by your browser.');
-        return;
+      alert('Push notifications are not supported by your browser.');
+      return;
     }
       
     setLoading(true);
     try {
-        const registration = await navigator.serviceWorker.ready;
-        const existingSubscription = await registration.pushManager.getSubscription();
+      const registration = await navigator.serviceWorker.ready;
+      const existingSubscription = await registration.pushManager.getSubscription();
 
-        if (existingSubscription) {
-          await existingSubscription.unsubscribe();
-          setIsSubscribed(false);
-        } else {
-          const applicationServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
-          const subscription = await registration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: applicationServerKey,
-          });
-          
-          await api.post('/notifications/subscribe', subscription);
-          setIsSubscribed(true);
-        }
+      if (existingSubscription) {
+        await existingSubscription.unsubscribe();
+        // Remove subscription from your server as well
+        await api.delete('/notifications/unsubscribe', { data: { endpoint: existingSubscription.endpoint } });
+        setIsSubscribed(false);
+      } else {
+        // Here's the key part: The browser prompt is triggered by this `subscribe` call.
+        const applicationServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+        const subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: applicationServerKey,
+        });
+        
+        await api.post('/notifications/subscribe', subscription);
+        setIsSubscribed(true);
+      }
     } catch (error) {
-        if (Notification.permission === 'denied') {
-          alert('You have blocked notifications. Please enable them in your browser settings.');
-        } else {
-          console.error('Failed to subscribe:', error);
-          alert('An error occurred while trying to subscribe to notifications.');
-        }
+      if (Notification.permission === 'denied') {
+        alert('You have blocked notifications. Please enable them in your browser settings.');
+      } else {
+        console.error('Failed to subscribe:', error);
+        alert('An error occurred while trying to subscribe to notifications.');
+      }
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   };
   
@@ -84,7 +87,6 @@ const EnableNotificationsButton = () => {
     <button 
       onClick={handleSubscribe} 
       disabled={loading} 
-      // ✨ UPDATED STYLING to match your theme
       className={`flex items-center justify-center w-full sm:w-auto px-4 py-2 text-base font-medium rounded-md transition-colors disabled:opacity-50 ` +
         (isSubscribed 
             ? 'bg-red-50 text-red-700 hover:bg-red-100' 
