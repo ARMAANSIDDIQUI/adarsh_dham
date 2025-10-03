@@ -1,4 +1,3 @@
-// server.js
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -8,7 +7,7 @@ const webpush = require('web-push');
 require('dotenv').config();
 
 // Mongoose Models
-const Notification = require('./models/notificationModel'); // Import Notification model
+const Notification = require('./models/notificationModel');
 const User = require('./models/userModel');
 const Event = require('./models/eventModel');
 const Person = require('./models/peopleModel');
@@ -26,7 +25,9 @@ const roomRoutes = require('./routes/roomRoutes');
 const bedRoutes = require('./routes/bedRoutes');
 const peopleRoutes = require('./routes/peopleRoutes');
 const structureRoutes = require('./routes/structureRoutes');
-
+const passwordRequestRoutes = require('./routes/passwordRequestRoutes');
+const commentRoutes = require('./routes/commentRoutes');
+const userRoutes = require('./routes/userRoutes'); // ✨ NEW
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -47,7 +48,7 @@ mongoose.connect(process.env.MONGO_URI)
     console.log('MongoDB connected successfully');
     createFirstSuperAdmin();
     setupAllocationResetJob();
-    setupScheduledNotificationJob(); // ✨ ADDED: Call the new job setup function
+    setupScheduledNotificationJob();
   })
   .catch(err => console.error('MongoDB connection error:', err));
 
@@ -80,7 +81,6 @@ const createFirstSuperAdmin = async () => {
 };
 
 const setupAllocationResetJob = () => {
-  // Runs every day at midnight
   schedule.scheduleJob('0 0 * * *', async () => {
     console.log('Running nightly job to clear old occupancy data...');
     const twoDaysAgo = new Date();
@@ -102,9 +102,7 @@ const setupAllocationResetJob = () => {
   });
 };
 
-// ✨ ADD THIS NEW FUNCTION
 const setupScheduledNotificationJob = () => {
-    // This job runs every minute to check for scheduled notifications
     schedule.scheduleJob('* * * * *', async () => {
         console.log('Checking for scheduled notifications...');
         try {
@@ -130,7 +128,6 @@ const setupScheduledNotificationJob = () => {
                             console.log(`Notification sent to user: ${user._id}`);
                         } catch (err) {
                             console.error(`Error sending push notification to user ${user._id}: ${err.message}`);
-                            // If the subscription is no longer valid, remove it
                             if (err.statusCode === 410) {
                                 user.pushSubscription = null;
                                 await user.save();
@@ -138,7 +135,6 @@ const setupScheduledNotificationJob = () => {
                             }
                         }
                     } else {
-                        // Mark as sent even if no subscription exists to avoid re-sending
                         notification.status = 'sent';
                         await notification.save();
                         console.log(`No valid subscription found for notification ${notification._id}, marked as sent.`);
@@ -152,7 +148,9 @@ const setupScheduledNotificationJob = () => {
     });
 };
 
+// Route Middleware
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes); // ✨ NEW
 app.use('/api/events', eventRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/admin', adminRoutes);
@@ -163,6 +161,8 @@ app.use('/api/rooms', roomRoutes);
 app.use('/api/beds', bedRoutes);
 app.use('/api/people', peopleRoutes);
 app.use('/api/structure', structureRoutes);
+app.use('/api/password-requests', passwordRequestRoutes);
+app.use('/api/comments', commentRoutes);
 
 app.get('/', (req, res) => {
   res.send('Adarsh Dham Backend is running...');

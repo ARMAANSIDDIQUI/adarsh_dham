@@ -13,8 +13,10 @@ import ManageSatsang from '../components/admin/ManageSatsang';
 import ExportData from '../components/admin/ExportData';
 import SendNotification from '../components/admin/SendNotification';
 import AdminUserManagement from '../components/admin/AdminUserManagement';
-import OccupancyReport from '../components/admin/OccupancyReport'; // NEW IMPORT
+import OccupancyReport from '../components/admin/OccupancyReport';
 import StructureView from '../components/admin/StructureView'; 
+import ManageComments from '../components/admin/ManageComments';
+import PasswordResetRequests from '../components/admin/PasswordResetRequests'; // ✨ NEW
 
 const Admin = () => {
   return (
@@ -23,13 +25,15 @@ const Admin = () => {
         <Route index element={<AdminDashboard />} />
         <Route path="manage-admins" element={<ManageAdmins />} />
         <Route path="user-management" element={<AdminUserManagement />} />
+        <Route path="password-requests" element={<PasswordResetRequests />} /> {/* ✨ NEW */}
+        <Route path="manage-comments" element={<ManageComments />} />
         <Route path="manage-events" element={<ManageEvents />} />
         <Route path="manage-buildings" element={<ManageBuildings />} />
         <Route path="manage-rooms" element={<ManageRooms />} />
         <Route path="structure-view" element={<StructureView />} />
         <Route path="manage-beds" element={<ManageBeds />} />
         <Route path="manage-allocations" element={<ManageAllocations />} />
-        <Route path="occupancy-report" element={<OccupancyReport />} /> {/* NEW ROUTE */}
+        <Route path="occupancy-report" element={<OccupancyReport />} />
         <Route path="manage-satsang" element={<ManageSatsang />} />
         <Route path="export-data" element={<ExportData />} />
         <Route path="send-notification" element={<SendNotification />} />

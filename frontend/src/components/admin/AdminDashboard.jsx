@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { FaUserShield, FaCalendarAlt, FaBuilding, FaBed, FaWifi, FaFileExport, FaUsers, FaBell, FaListAlt, FaSitemap } from 'react-icons/fa';
+import { FaUserShield, FaCalendarAlt, FaBuilding, FaBed, FaWifi, FaFileExport, FaUsers, FaBell, FaListAlt, FaSitemap, FaComments, FaKey } from 'react-icons/fa';
 
 const linkVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -22,16 +22,17 @@ const AdminDashboard = () => {
     const dashboardLinks = [
         { to: "manage-admins", name: "Manage Admins", description: "Modify administrator roles and permissions.", icon: <FaUsers />, roles: ['super-admin'] },
         { to: "user-management", name: "User Management", description: "View all users and manage their accounts.", icon: <FaUsers />, roles: ['admin', 'super-admin'] },
+        { to: "password-requests", name: "Password Requests", description: "View user requests for password resets.", icon: <FaKey />, roles: ['admin', 'super-admin'] },
+        { to: "manage-comments", name: "Manage Comments", description: "Approve or reject user-submitted comments.", icon: <FaComments />, roles: ['admin', 'super-admin'] },
         { to: "manage-events", name: "Manage Events", description: "Create, edit, and manage event details.", icon: <FaCalendarAlt />, roles: ['admin'] },
         { to: "manage-buildings", name: "Manage Buildings", description: "Add or remove accommodation buildings.", icon: <FaBuilding />, roles: ['admin'] },
         { to: "manage-rooms", name: "Manage Rooms", description: "Configure rooms and beds within buildings.", icon: <FaBed />, roles: ['admin'] },
         { to: "manage-beds", name: "Manage Beds", description: "Add individual beds to specific rooms.", icon: <FaBed />, roles: ['admin'] },
         { to: "manage-allocations", name: "Manage Allocations", description: "Allocate bookings to rooms and beds.", icon: <FaUserShield />, roles: ['super-operator', 'operator'] },
-        { to: "occupancy-report", name: "Occupancy Report", description: "View and filter all guest stays and allocations.", icon: <FaListAlt />, roles: ['admin', 'super-admin', 'operator', 'super-operator'] },
-        // NEW LINK ADDED
-        { to: "structure-view", name: "Live Structure View", description: "Visualize building, room, and bed occupancy for any date.", icon: <FaSitemap />, roles: ['admin', 'super-admin', 'operator', 'super-operator'] },
+        { to: "occupancy-report", name: "Occupancy Report", description: "View and filter all guest stays.", icon: <FaListAlt />, roles: ['admin', 'super-admin', 'operator', 'super-operator'] },
+        { to: "structure-view", name: "Live Structure View", description: "Visualize building and room occupancy.", icon: <FaSitemap />, roles: ['admin', 'super-admin', 'operator', 'super-operator'] },
         { to: "manage-satsang", name: "Manage Satsang Links", description: "Update and manage live stream links.", icon: <FaWifi />, roles: ['satsang-operator'] },
-        { to: "export-data", name: "Export Data", description: "Export booking data to an XLSX file.", icon: <FaFileExport />, roles: ['admin'] },
+        // { to: "export-data", name: "Export Data", description: "Export booking data to an XLSX file.", icon: <FaFileExport />, roles: ['admin'] },
         { to: "send-notification", name: "Send Notification", description: "Send notifications to users or groups.", icon: <FaBell />, roles: ['admin', 'super-admin'] },
     ];
 
@@ -41,8 +42,8 @@ const AdminDashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {dashboardLinks.filter(link => link.roles.some(role => hasRole(role))).map((link, index) => (
                     <motion.div key={link.to} variants={linkVariants} initial="hidden" animate="visible" transition={{ delay: index * 0.1 }}>
-                        <Link to={link.to} className="block p-6 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                            <div className="flex items-start space-x-4 mb-2">
+                        <Link to={link.to} className="block p-6 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 h-full">
+                            <div className="flex items-start space-x-4">
                                 <div className="text-3xl text-pink-500 bg-pink-100 p-3 rounded-full">
                                     {link.icon}
                                 </div>

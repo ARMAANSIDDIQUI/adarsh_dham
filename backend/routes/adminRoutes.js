@@ -6,7 +6,6 @@ const adminController = require('../controllers/adminController');
 
 // --- NEW USER MANAGEMENT ROUTES (FOR ADMINS) ---
 
-// GET all users (for Admin User Management Page)
 router.get(
     '/all-users',
     authMiddleware,
@@ -14,7 +13,6 @@ router.get(
     adminController.getAllUsers
 );
 
-// PUT to change a user's password (Admin-only action)
 router.put(
     '/admin-change-password/:userId',
     authMiddleware,
@@ -22,7 +20,7 @@ router.put(
     adminController.adminChangePassword
 );
 
-// --- NEW USER ACTION ROUTE ---
+// --- NEW USER ACTION ROUTES ---
 
 // POST to request a password change (for all authenticated users)
 router.post(
@@ -31,8 +29,15 @@ router.post(
     adminController.requestPasswordChange
 );
 
-// --- EXISTING ADMIN ROUTES ---
+// NEW: POST to change a user's own password
+router.post(
+    '/change-password',
+    authMiddleware,
+    adminController.changeUserPassword
+);
 
+// --- EXISTING ADMIN ROUTES ---
+// ... (The rest of your existing routes remain unchanged)
 router.get(
     '/',
     authMiddleware,

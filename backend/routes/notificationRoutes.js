@@ -3,11 +3,10 @@ const router = express.Router();
 const authMiddleware = require('../middlewares/authMiddleware');
 const roleMiddleware = require('../middlewares/roleMiddleware');
 const notificationController = require('../controllers/notificationController');
-const User = require('../models/userModel'); // Required for the subscribe route
 
 // --- Routes for In-Website Notifications ---
 
-// POST /api/notifications/ (For admins to send an in-site notification)
+// POST /api/notifications/ (For admins to send notifications)
 router.post(
   '/',
   authMiddleware,
@@ -15,7 +14,7 @@ router.post(
   notificationController.sendNotification
 );
 
-// GET /api/notifications/ (For a user to get their list of in-site notifications)
+// GET /api/notifications/ (For a user to get their notifications)
 router.get(
   '/',
   authMiddleware,
@@ -23,24 +22,20 @@ router.get(
 );
 
 
-// --- Route for OS-Level (Web Push) Notifications ---
+// --- Routes for OS-Level (Web Push) Subscription Management ---
 
-// POST /api/notifications/subscribe
-// This receives the subscription object from the browser for OS-level push notifications.
-router.post('/subscribe', authMiddleware, async (req, res) => {
-    const subscription = req.body;
-    const userId = req.user.id;
+// POST /api/notifications/subscribe (Saves a user's subscription object)
+router.post(
+    '/subscribe', 
+    authMiddleware, 
+    notificationController.subscribe
+);
 
-    try {
-        // Find the logged-in user and save their Web Push subscription object
-        await User.findByIdAndUpdate(userId, { $set: { pushSubscription: subscription } });
-        
-        res.status(200).json({ message: 'Web Push subscription saved successfully.' });
-    } catch (error) {
-        console.error("Error saving Web Push subscription:", error);
-        res.status(500).json({ message: 'Could not save Web Push subscription.' });
-    }
-});
-
+// DELETE /api/notifications/unsubscribe (Removes a user's subscription object)
+router.delete(
+    '/unsubscribe', 
+    authMiddleware, 
+    notificationController.unsubscribe
+);
 
 module.exports = router;

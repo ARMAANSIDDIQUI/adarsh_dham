@@ -12,6 +12,7 @@ const initialState = {
   token: null,
 };
 
+// Async thunk for logging in a user
 export const login = createAsyncThunk(
   'auth/login',
   async ({ phone, password }, { rejectWithValue }) => {
@@ -24,25 +25,22 @@ export const login = createAsyncThunk(
   }
 );
 
+// Async thunk for checking authentication status on app load
 export const checkAuth = createAsyncThunk(
   'auth/checkAuth',
   async (_, { getState, rejectWithValue }) => {
     const state = getState().auth; 
     
-    // **CRITICAL FIX:** Do not proceed with checkAuth logic until persistence has loaded.
-    // This handles the race condition where getState().auth is still null/default.
     if (!state.isPersistLoaded) {
-        // We will return a placeholder value and let the REHYDRATE handler below manage the token setting
-        return { user: null, isAuthenticated: false }; 
+      return { user: null, isAuthenticated: false }; 
     }
 
-    // **CRITICAL:** Ensure API header is set before this request runs
     if (state.token) {
-        api.defaults.headers.common['Authorization'] = `Bearer ${state.token}`;
+      api.defaults.headers.common['Authorization'] = `Bearer ${state.token}`;
     }
 
     if (!state.user || !state.token) {
-        return rejectWithValue({ message: 'No session data found' });
+      return rejectWithValue({ message: 'No session data found' });
     }
 
     try {
@@ -54,8 +52,7 @@ export const checkAuth = createAsyncThunk(
       return { user: state.user, isAuthenticated: true };
 
     } catch (error) {
-      // If JWT decode fails or validation fails, this runs:
-      api.defaults.headers.common['Authorization'] = null; // Clear header on failure
+      api.defaults.headers.common['Authorization'] = null;
       return rejectWithValue({ message: 'Invalid token' });
     }
   }
@@ -65,28 +62,35 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
+    // Action to log the user out
     logout: (state) => {
       state.user = null;
       state.isAuthenticated = false;
       state.token = null; 
-      // CRITICAL: Clear API header immediately on client-side logout
       api.defaults.headers.common['Authorization'] = null;
+    },
+    // Action for PROFILE UPDATES (only changes user details)
+    updateUser: (state, action) => {
+        if (state.user && action.payload) {
+            state.user = { ...state.user, ...action.payload };
+        }
+    },
+    // Action for full login/session replacement (requires user AND token)
+    setCredentials: (state, action) => {
+        state.user = action.payload.user;
+        state.token = action.payload.token;
+        state.isAuthenticated = !!action.payload.token;
     },
   },
   extraReducers: (builder) => {
     builder
-      // Handles data loaded by redux-persist
       .addCase(REHYDRATE, (state, action) => {
           state.isPersistLoaded = true;
           if (action.payload && action.payload.auth) {
             const token = action.payload.auth.token;
-            // CRITICAL: Set API token immediately on rehydrate before any components fetch data
             if (token) {
-                api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-                // After rehydrate, dispatch checkAuth from a top-level component
-                // to validate the token against the backend if needed.
+              api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
             }
-            // Inherit persisted state values if needed, although Redux Persist usually handles this automatically
             state.user = action.payload.auth.user || null;
             state.isAuthenticated = !!action.payload.auth.token;
             state.token = action.payload.auth.token || null;
@@ -101,7 +105,6 @@ const authSlice = createSlice({
         state.isAuthenticated = true;
         state.user = action.payload.user;
         state.token = action.payload.token;
-        // Set API header immediately on successful login
         api.defaults.headers.common['Authorization'] = `Bearer ${action.payload.token}`;
       })
       .addCase(login.rejected, (state, action) => {
@@ -112,7 +115,6 @@ const authSlice = createSlice({
         api.defaults.headers.common['Authorization'] = null;
         state.error = action.payload || { message: 'Login failed' };
       })
-      // --- checkAuth cases ---
       .addCase(checkAuth.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -133,6 +135,6 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout } = authSlice.actions;
+export const { logout, updateUser, setCredentials } = authSlice.actions;
 
 export default authSlice.reducer;
