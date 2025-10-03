@@ -19,7 +19,7 @@ const Register = () => {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center p-4 min-h-screen ">
       <div className="w-full max-w-md">
         <RegisterForm />
-        <div className="mt-6 text-center text-gray-600">
+        {/* <div className="mt-6 text-center text-gray-600">
           <p>
             Already have an account?{' '}
             <Link 
@@ -29,7 +29,7 @@ const Register = () => {
               Login here
             </Link>
           </p>
-        </div>
+        </div> */}
       </div>
     </motion.div>
   );
