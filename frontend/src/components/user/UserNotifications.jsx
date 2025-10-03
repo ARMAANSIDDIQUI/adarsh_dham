@@ -1,56 +1,55 @@
-import React, { useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { toast } from 'react-toastify';
-import api from '../../api/api';
-import { setCredentials } from '../../redux/slices/authSlice'; // You'll need to add this to your authSlice
-import Button from '../common/Button';
-import { FaUser, FaSpinner } from 'react-icons/fa';
+import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import api from '../../api/api.js';
+import NotificationsList from '../shared/NotificationsList.jsx';
+import { FaSpinner } from 'react-icons/fa';
 
-const UpdateProfileForm = () => {
-    const { user } = useSelector((state) => state.auth);
-    const dispatch = useDispatch();
-    const [name, setName] = useState(user.name);
-    const [loading, setLoading] = useState(false);
+const UserNotifications = () => {
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        try {
-            const { data } = await api.put('/users/profile', { name });
-            dispatch(setCredentials({ user: data, token: localStorage.getItem('token') }));
-            toast.success('Profile updated successfully!');
-        } catch (error) {
-            toast.error(error.response?.data?.message || 'Failed to update profile.');
-        } finally {
-            setLoading(false);
-        }
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const res = await api.get('/notifications');
+        // Set state to the fetched data, or an empty array if data is null
+        setNotifications(res.data || []);
+      } catch (err) {
+        setError('Failed to fetch notifications.');
+      } finally {
+        setLoading(false);
+      }
     };
+    
+    fetchNotifications();
+  }, []);
 
+  if (loading) {
     return (
-        <div className="bg-white p-6 rounded-lg shadow-sm">
-            <h3 className="text-xl font-semibold mb-4 text-gray-700">Edit Profile</h3>
-            <form onSubmit={handleSubmit}>
-                <label htmlFor="name" className="text-sm font-medium text-gray-700">Full Name</label>
-                <div className="mt-1 relative">
-                    <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                    <input
-                        id="name"
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                        className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500"
-                    />
-                </div>
-                <div className="text-right mt-4">
-                    <Button type="submit" disabled={loading}>
-                        {loading && <FaSpinner className="animate-spin mr-2" />}
-                        {loading ? 'Saving...' : 'Save Changes'}
-                    </Button>
-                </div>
-            </form>
-        </div>
+      <div className="text-center mt-10 p-8">
+        <FaSpinner className="animate-spin inline-block mr-2 text-pink-500 text-3xl" />
+        <p className="text-gray-600 mt-2">Loading notifications...</p>
+      </div>
     );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center mt-10 p-4 bg-red-100/50 border border-red-400 rounded-lg max-w-lg mx-auto">
+        <p className="text-red-700 font-medium">{error}</p>
+      </div>
+    );
+  }
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-6 md:p-10 max-w-4xl mx-auto">
+      <h2 className="text-3xl font-bold mb-6 text-gray-800 text-center border-b-2 border-pink-400 pb-2">
+        My Notifications
+      </h2>
+      <NotificationsList notifications={notifications} />
+    </motion.div>
+  );
 };
 
-export default UpdateProfileForm;
+export default UserNotifications;

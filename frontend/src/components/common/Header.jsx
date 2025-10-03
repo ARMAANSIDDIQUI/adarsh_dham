@@ -71,9 +71,8 @@ const Header = () => {
         <>
             <header className="bg-white shadow-sm sticky top-0 z-[999]">
                 <nav className="container mx-auto flex items-center justify-between px-4 py-3 max-w-7xl">
-                    <Link to="/" className="text-2xl font-bold mr-5 text-gray-800 hover:text-pink-600 transition-colors duration-200 flex items-center gap-x-1"> {/* Adjusted gap-x */}
-                        {/* ✨ UPDATED ICON SIZE */}
-                        <FaOm className="text-pink-500 text-3xl pr-2" /> {/* Tailwind text-3xl for larger size */}
+                    <Link to="/" className="text-2xl font-bold mr-5 text-gray-800 hover:text-pink-600 transition-colors duration-200 flex items-center gap-x-1">
+                        <FaOm className="text-pink-500 text-3xl pr-2" />
                         <span>Adarsh Dham</span>
                     </Link>
 
@@ -86,7 +85,11 @@ const Header = () => {
                             <NavLink to="/comments" icon={<FaComments />} text="Comments" />
                             <NavLink to="/contact" icon={<FaPhone />} text="Contact" />
                             {isAuthenticated && (
-                                <NavLink to="/my-bookings" icon={<FaClipboardList />} text="My Bookings" />
+                                <>
+                                    <NavLink to="/my-bookings" icon={<FaClipboardList />} text="My Bookings" />
+                                    {/* ✨ NEW NOTIFICATION BUTTON ADDED HERE */}
+                                    <NavLink to="/notifications" icon={<FaBell />} text="Notifications" />
+                                </>
                             )}
                         </div>
                     )}
