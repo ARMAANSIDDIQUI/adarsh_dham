@@ -6,12 +6,13 @@ import Button from '../../components/common/Button.jsx';
 import { Link, useNavigate } from 'react-router-dom';
 import EditBookingModal from './EditBookingModal.jsx';
 
+
 const BookingCard = ({ booking, onEdit, onDelete, onDownloadPdf, navigateToEvent }) => {
     const getStatusStyles = (status) => {
         switch (status) {
-            case 'approved': return 'bg-accent/10 border-accent text-accent';
-            case 'pending': return 'bg-primary/10 border-primary text-primaryDark';
-            case 'declined': return 'bg-highlight/10 border-highlight text-highlight';
+            case 'approved': return 'bg-green-100 border-green-500 text-green-700'; 
+            case 'pending': return 'bg-yellow-100 border-yellow-500 text-yellow-700';
+            case 'declined': return 'bg-red-100 border-red-500 text-red-700';
             default: return 'bg-gray-100 border-gray-400 text-gray-700';
         }
     };
@@ -32,8 +33,8 @@ const BookingCard = ({ booking, onEdit, onDelete, onDownloadPdf, navigateToEvent
                     </h3>
                     <p className="text-xs font-mono text-gray-500 mt-1">{booking.bookingNumber}</p>
                     <div className={`flex items-center space-x-2 font-semibold capitalize mt-1 text-base`}>
-                        {booking.status === 'approved' && <FaCheckCircle />}
-                        {booking.status === 'declined' && <FaTimesCircle />}
+                        {booking.status === 'approved' && <FaCheckCircle className="text-green-500" />} {/* Icon color adjustment */}
+                        {booking.status === 'declined' && <FaTimesCircle className="text-red-500" />}   {/* Icon color adjustment */}
                         <span>{booking.status}</span>
                     </div>
                 </div>
@@ -61,21 +62,22 @@ const BookingCard = ({ booking, onEdit, onDelete, onDownloadPdf, navigateToEvent
                 </div>
             )}
 
-            {booking.status === 'declined' && <p className="mt-4 text-sm font-medium text-highlight">Booking declined.</p>}
-            {booking.status === 'pending' && <p className="mt-4 text-sm font-medium text-accent">Booking pending approval.</p>}
+            {booking.status === 'declined' && <p className="mt-4 text-sm font-medium text-red-700">Booking declined.</p>}
+            {booking.status === 'pending' && <p className="mt-4 text-sm font-medium text-yellow-700">Booking pending approval.</p>}
+
 
             <div className="mt-6 flex flex-col sm:flex-row justify-end items-center space-y-2 sm:space-y-0 sm:space-x-2">
                 {booking.status === 'approved' && (
-                    <Button onClick={() => onDownloadPdf(booking)} className="w-full sm:w-auto bg-accent hover:bg-primaryDark text-white text-sm py-2">
+                    <Button onClick={() => onDownloadPdf(booking)} className="w-full sm:w-auto bg-green-500 hover:bg-green-600 text-white text-sm py-2">
                         <FaFilePdf className="inline mr-1" /> Download Pass
                     </Button>
                 )}
                 {(booking.status === 'pending' || booking.status === 'approved') && (
-                    <Button onClick={() => onEdit(booking)} className="w-full sm:w-auto bg-primary hover:bg-primaryDark text-white text-sm py-2">
+                    <Button onClick={() => onEdit(booking)} className="w-full sm:w-auto bg-blue-500 hover:bg-blue-600 text-white text-sm py-2"> {/* Changed to blue for edit */}
                         <FaEdit className="inline mr-1" /> Edit
                     </Button>
                 )}
-                <Button onClick={() => onDelete(booking._id)} className="w-full sm:w-auto bg-highlight hover:bg-primaryDark text-white text-sm py-2">
+                <Button onClick={() => onDelete(booking._id)} className="w-full sm:w-auto bg-red-500 hover:bg-red-600 text-white text-sm py-2"> {/* Changed to red for withdraw */}
                     <FaTrash className="inline mr-1" /> Withdraw
                 </Button>
             </div>
