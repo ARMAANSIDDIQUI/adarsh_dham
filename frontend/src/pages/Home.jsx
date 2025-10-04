@@ -311,36 +311,32 @@ const Home = () => {
 
         {/* Quick Links */}
         <section className="mt-20 text-center">
-          <h2 className="text-3xl font-bold font-heading mb-10 text-primaryDark border-b-2 border-primary inline-block pb-1">
-            Quick Links
-          </h2>
-          <div className="flex flex-wrap justify-center gap-6 text-primary font-semibold">
-            <Link to="/my-bookings" className="hover:underline">
-              My Bookings
+          <h2 className="text-3xl font-bold font-heading mb-10 text-primaryDark border-b-2 border-primary inline-block pb-1">Quick Links</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Link to="/my-bookings" className="w-full block">
+              <motion.div whileHover={{ scale: 1.03 }} className="bg-card p-8 rounded-2xl shadow-soft hover:shadow-accent transition-all duration-300 transform border-t-4 border-primary flex flex-col items-center">
+                <div className="bg-background p-4 rounded-full mb-4"><FaBell className="text-4xl text-primary" /></div>
+                <h3 className="text-xl font-semibold font-heading text-primaryDark">My Bookings</h3>
+              </motion.div>
             </Link>
-            <Link to="/events" className="hover:underline">
-              Events
+
+            <Link to="/events" className="w-full block">
+              <motion.div whileHover={{ scale: 1.03 }} className="bg-card p-8 rounded-2xl shadow-soft hover:shadow-accent transition-all duration-300 transform border-t-4 border-primary flex flex-col items-center">
+                <div className="bg-background p-4 rounded-full mb-4"><FaCalendarAlt className="text-4xl text-primary" /></div>
+                <h3 className="text-xl font-semibold font-heading text-primaryDark">Events</h3>
+              </motion.div>
             </Link>
-            <Link to="/calendar" className="hover:underline">
-              Calendar
+
+            <Link to="/calendar" className="w-full block">
+              <motion.div whileHover={{ scale: 1.03 }} className="bg-card p-8 rounded-2xl shadow-soft hover:shadow-accent transition-all duration-300 transform border-t-4 border-primary flex flex-col items-center">
+                <div className="bg-background p-4 rounded-full mb-4"><FaCalendarAlt className="text-4xl text-primary" /></div>
+                <h3 className="text-xl font-semibold font-heading text-primaryDark">Calendar</h3>
+              </motion.div>
             </Link>
           </div>
         </section>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-primaryDark text-white py-10 px-4 md:px-20 text-center">
-        <h3 className="text-xl font-semibold mb-3">Contact Us</h3>
-        <p className="flex items-center justify-center gap-2 mb-2">
-          <FaBell /> +91 98765 43210
-        </p>
-        <p className="flex items-center justify-center gap-2 mb-2">
-          <FaCalendarAlt /> contact@adarshdham.org
-        </p>
-        <p className="text-sm mt-4 text-gray-300">
-          © {new Date().getFullYear()} Adarsh Dham. All rights reserved.
-        </p>
-      </footer>
     </motion.div>
   );
 };
