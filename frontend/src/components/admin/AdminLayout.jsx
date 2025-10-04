@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../redux/slices/authSlice.js';
-import { FaUserShield, FaCalendarAlt, FaBuilding, FaBed, FaWifi, FaSignOutAlt, FaFileExport, FaUsers, FaBell, FaBars, FaTimes, FaListAlt, FaSitemap, FaComments, FaKey } from 'react-icons/fa';
+import { FaUserShield, FaCalendarAlt, FaBuilding, FaBed, FaWifi,FaUserCog, FaSignOutAlt,FaDoorOpen, FaFileExport, FaUsers, FaBell, FaBars, FaTimes, FaListAlt, FaSitemap, FaComments, FaKey } from 'react-icons/fa';
 
 const AdminLayout = ({ children }) => {
     const dispatch = useDispatch();
@@ -37,14 +37,14 @@ const AdminLayout = ({ children }) => {
     };
 
     const navLinks = [
-        { name: 'Dashboard', to: '/admin', icon: <FaUserShield />, roles: ['admin', 'super-admin', 'super-operator', 'operator', 'satsang-operator'] },
-        { name: 'Manage Admins', to: '/admin/manage-admins', icon: <FaUsers />, roles: ['super-admin'] },
+        { name: 'Dashboard', to: '/admin', icon: <FaUserCog />, roles: ['admin', 'super-admin', 'super-operator', 'operator', 'satsang-operator'] },
+        { name: 'Manage Admins', to: '/admin/manage-admins', icon: <FaUserShield />, roles: ['super-admin'] },
         { name: 'User Management', to: '/admin/user-management', icon: <FaUsers />, roles: ['admin', 'super-admin'] },
         { name: 'Password Requests', to: '/admin/password-requests', icon: <FaKey />, roles: ['admin', 'super-admin'] },
         { name: 'Manage Comments', to: '/admin/manage-comments', icon: <FaComments />, roles: ['admin', 'super-admin'] },
         { name: 'Manage Events', to: '/admin/manage-events', icon: <FaCalendarAlt />, roles: ['admin'] },
         { name: 'Manage Buildings', to: '/admin/manage-buildings', icon: <FaBuilding />, roles: ['admin'] },
-        { name: 'Manage Rooms', to: '/admin/manage-rooms', icon: <FaBed />, roles: ['admin'] },
+        { name: 'Manage Rooms', to: '/admin/manage-rooms', icon: <FaDoorOpen/>, roles: ['admin'] },
         { name: 'Manage Beds', to: '/admin/manage-beds', icon: <FaBed />, roles: ['admin'] },
         { name: 'Manage Allocations', to: '/admin/manage-allocations', icon: <FaUserShield />, roles: ['super-operator', 'operator'] },
         { name: 'Occupancy Report', to: '/admin/occupancy-report', icon: <FaListAlt />, roles: ['admin', 'super-admin', 'operator', 'super-operator'] },

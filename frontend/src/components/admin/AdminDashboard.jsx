@@ -20,7 +20,7 @@ const AdminDashboard = () => {
     const hasRole = (role) => userRoles?.includes(role);
 
     const dashboardLinks = [
-        { to: "manage-admins", name: "Manage Admins", description: "Modify administrator roles and permissions.", icon: <FaUserCog />, roles: ['super-admin'] },
+        { to: "manage-admins", name: "Manage Admins", description: "Modify administrator roles and permissions.", icon: <FaUserShield  />, roles: ['super-admin'] },
         { to: "user-management", name: "User Management", description: "View all users and manage their accounts.", icon: <FaUsers />, roles: ['admin', 'super-admin'] },
         { to: "password-requests", name: "Password Requests", description: "View user requests for password resets.", icon: <FaKey />, roles: ['admin', 'super-admin'] },
         { to: "manage-comments", name: "Manage Comments", description: "Approve or reject user-submitted comments.", icon: <FaComments />, roles: ['admin', 'super-admin'] },
