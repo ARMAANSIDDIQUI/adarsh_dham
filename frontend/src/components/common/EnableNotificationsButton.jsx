@@ -81,17 +81,26 @@ const EnableNotificationsButton = () => {
     return null;
   }
 
+  // Simplified color logic
+  const buttonClasses = `flex items-center justify-center w-full sm:w-auto px-6 py-2 text-base font-semibold rounded-full transition-colors disabled:opacity-50 shadow-soft font-body`;
+
+  const colorClasses = isSubscribed
+    ? 'bg-red-500 text-white hover:bg-red-600' // Red for disabling
+    : 'bg-green-500 text-white hover:bg-green-600'; // Green for enabling
+
   return (
     <button 
       onClick={handleSubscribe} 
       disabled={loading} 
-      className={`flex items-center justify-center w-full sm:w-auto px-6 py-2 text-base font-semibold rounded-full transition-colors disabled:opacity-50 shadow-soft font-body ` +
-        (isSubscribed 
-            ? 'bg-highlight/10 text-highlight hover:bg-highlight/20' 
-            : 'bg-accent/10 text-accent hover:bg-accent/20')
-      }
+      className={`${buttonClasses} ${colorClasses}`}
     >
-      {loading ? <FaSpinner className="animate-spin" /> : (isSubscribed ? <FaBellSlash className="mr-2" /> : <FaBell className="mr-2" />)}
+      {loading ? (
+        <FaSpinner className="animate-spin text-gray-400" />
+      ) : isSubscribed ? (
+        <FaBellSlash className="mr-2" />
+      ) : (
+        <FaBell className="mr-2" />
+      )}
       <span>
         {loading ? 'Loading...' : (isSubscribed ? 'Disable Notifications' : 'Enable Notifications')}
       </span>

@@ -82,9 +82,13 @@ const FloatingNotificationButton = ({ variants }) => {
     const isInitialLoading = subscriptionState === 'loading';
     const isSubscribed = subscriptionState === 'subscribed';
     
+    // Determine title, color, and hover state based on simplified logic
     const title = isInitialLoading ? 'Checking...' : (isSubscribed ? "Disable Notifications" : "Enable Notifications");
-    const iconColor = isInitialLoading ? "text-gray-400" : (isSubscribed ? "text-highlight" : "text-accent");
-    const hoverColor = isInitialLoading ? "hover:bg-background/50" : (isSubscribed ? "hover:bg-highlight/10" : "hover:bg-accent/10");
+    
+    // Simplified color logic: green for subscribed, red for unsubscribed/loading
+    const iconColor = isSubscribed ? "text-green-500" : "text-red-500";
+    const hoverColor = isSubscribed ? "hover:bg-green-100" : "hover:bg-red-100";
+    const spinnerColor = "text-gray-400"; // Keep the spinner gray to indicate a neutral loading state
 
     return (
         <motion.div variants={variants} className="group relative flex items-center font-body">
@@ -99,7 +103,7 @@ const FloatingNotificationButton = ({ variants }) => {
                 className={`w-14 h-14 rounded-full flex items-center justify-center shadow-soft cursor-pointer transition-colors bg-card disabled:opacity-70 ${hoverColor}`}
             >
                 {isInitialLoading || isActionLoading
-                    ? <FaSpinner size={22} className={`animate-spin ${iconColor}`} />
+                    ? <FaSpinner size={22} className={`animate-spin ${spinnerColor}`} />
                     : isSubscribed 
                         ? <FaBellSlash size={22} className={iconColor} /> 
                         : (
