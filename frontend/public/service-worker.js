@@ -4,7 +4,7 @@ self.addEventListener('push', event => {
     event.waitUntil(
         self.registration.showNotification(data.title, {
             body: data.body,
-            icon: '/VM401196.svg' // Change this to your icon's filename
+            icon: '/VM401196.png' // Change this to your icon's filename
         })
     );
 });
