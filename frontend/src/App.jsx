@@ -26,6 +26,8 @@ import UserProfile from './components/user/UserProfile.jsx';
 import Header from './components/common/Header.jsx';
 import Footer from './components/common/Footer.jsx';
 import ProtectedRoute from './components/common/ProtectedRoute.jsx';
+import ScrollToTopButton from './components/common/ScrollToTopButton.jsx'; 
+import ScrollToTopOnMount from './components/common/ScrollToTopOnMount.jsx'; // NEW IMPORT for redirect helper
 
 const PageTransition = ({ children }) => {
     const location = useLocation();
@@ -47,6 +49,12 @@ const PageTransition = ({ children }) => {
 function App() {
     return (
         <Router>
+            {/* SCROLL RESTORATION HELPER:
+                This component watches for URL changes and forces the window to scroll 
+                to the top (0,0), ensuring new pages start correctly.
+            */}
+            <ScrollToTopOnMount /> 
+            
             <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} />
             <div className="flex flex-col min-h-screen bg-neutral font-body">
                 <Header />
@@ -85,6 +93,9 @@ function App() {
                     </Routes>
                 </main>
                 <Footer />
+                
+                {/* MANUAL SCROLL BUTTON: Appears when the user scrolls down */}
+                <ScrollToTopButton />
             </div>
         </Router>
     );

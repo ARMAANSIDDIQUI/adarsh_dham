@@ -44,17 +44,17 @@ const BookingCard = ({ booking, onEdit, onDelete, onDownloadPdf, navigateToEvent
             </div>
 
             {booking.status === 'approved' && (
-                <div className="mt-4 space-y-3 p-4 bg-card rounded-lg shadow-inner">
+                <div className="mt-4 space-y-3 p-4 bg-green-50 rounded-lg shadow-inner"> {/* CHANGED: bg-card to bg-green-50 */}
                     <h4 className="font-bold font-heading text-primary text-md border-b border-background pb-2">Allocation Details:</h4>
                     {(booking.allocations || []).map((alloc, i) => {
                         const person = booking.formData.people[i];
                         return (
-                            <div key={i} className="p-3 bg-background/50 rounded-md text-sm border border-background">
+                            <div key={i} className="p-3 bg-green-100 rounded-md text-sm border border-green-200"> {/* CHANGED: bg-background/50 to bg-green-100 and border-background to border-green-200 */}
                                 <p className="font-bold text-gray-800 mb-2">{person?.name} ({person?.gender})</p>
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-y-1 text-gray-700">
-                                    <span className="flex items-center text-sm"><FaBuilding className="mr-2 text-primary" />{alloc.buildingId?.name || 'N/A'}</span>
-                                    <span className="flex items-center text-sm"><FaDoorOpen className="mr-2 text-primary" />Room {alloc.roomId?.roomNumber || 'N/A'}</span>
-                                    <span className="flex items-center text-sm"><FaBed className="mr-2 text-primary" />Bed {alloc.bedId?.name || 'N/A'}</span>
+                                    <span className="flex items-center text-sm"><FaBuilding className="mr-2 text-green-500" />{alloc.buildingId?.name || 'N/A'}</span> {/* CHANGED: text-primary to text-green-500 */}
+                                    <span className="flex items-center text-sm"><FaDoorOpen className="mr-2 text-green-500" />Room {alloc.roomId?.roomNumber || 'N/A'}</span> {/* CHANGED: text-primary to text-green-500 */}
+                                    <span className="flex items-center text-sm"><FaBed className="mr-2 text-green-500" />Bed {alloc.bedId?.name || 'N/A'}</span> {/* CHANGED: text-primary to text-green-500 */}
                                 </div>
                             </div>
                         );
@@ -78,7 +78,7 @@ const BookingCard = ({ booking, onEdit, onDelete, onDownloadPdf, navigateToEvent
                     </Button>
                 )}
                 <Button onClick={() => onDelete(booking._id)} className="w-full sm:w-auto bg-red-500 hover:bg-red-600 text-white text-sm py-2"> {/* Changed to red for withdraw */}
-                    <FaTrash className="inline mr-1" /> Withdraw
+                        <FaTrash className="inline mr-1" /> Withdraw
                 </Button>
             </div>
         </motion.div>
