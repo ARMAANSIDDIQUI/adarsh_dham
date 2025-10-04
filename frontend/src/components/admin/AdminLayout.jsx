@@ -17,6 +17,13 @@ const AdminLayout = ({ children }) => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+    useEffect(() => {
+        document.body.style.overflow = isSidebarOpen ? 'hidden' : 'unset';
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isSidebarOpen]);
+
     if (!user) {
         return null;
     }
@@ -62,7 +69,7 @@ const AdminLayout = ({ children }) => {
                 ></div>
             )}
             
-            <aside className={`bg-[#C9788A] text-white w-64 p-4 md:p-6 shadow-soft fixed md:static top-0 bottom-0 left-0 z-[650] transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:flex md:flex-col`}>
+            <aside className={`bg-[#C9788A] text-white w-64 p-4 md:p-6 shadow-soft fixed md:static top-0 bottom-0 left-0 z-[650] flex flex-col transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:flex md:flex-col`}>
                 <div className="flex justify-between items-center mb-6 pt-4">
                     <h2 className="text-xl font-bold font-heading">Admin Panel</h2>
                     <button onClick={handleMenuToggle} className="md:hidden hover:text-accent p-1">
@@ -81,14 +88,14 @@ const AdminLayout = ({ children }) => {
                                 </Link>
                             </li>
                         ))}
-                        <li className="mt-4 pt-4 border-t border-primary/30">
-                            <button onClick={handleLogout} className="flex items-center justify-center space-x-2 w-full py-2 px-4 rounded-lg bg-highlight hover:bg-opacity-80 text-white transition-colors duration-200 font-medium">
-                                <FaSignOutAlt />
-                                <span>Logout</span>
-                            </button>
-                        </li>
                     </ul>
                 </nav>
+                <div className="mt-4 pt-4 border-t border-primary/30">
+                     <button onClick={handleLogout} className="flex items-center justify-center space-x-2 w-full py-2 px-4 rounded-lg bg-highlight hover:bg-opacity-80 text-white transition-colors duration-200 font-medium">
+                        <FaSignOutAlt />
+                        <span>Logout</span>
+                    </button>
+                </div>
             </aside>
 
             <div className="flex-1 flex flex-col">
@@ -97,12 +104,9 @@ const AdminLayout = ({ children }) => {
                         <FaBars />
                     </button>
                     <h1 className="text-lg font-bold font-heading text-gray-800">Admin</h1>
-                    <button onClick={handleLogout} className="text-highlight hover:text-primaryDark text-lg">
-                        <FaSignOutAlt />
-                    </button>
                 </header>
                 
-                <main className="flex-1 overflow-y-auto">
+                <main className="flex-1 p-4 md:p-6">
                     {children}
                 </main>
             </div>
