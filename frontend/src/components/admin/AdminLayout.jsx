@@ -62,7 +62,7 @@ const AdminLayout = ({ children }) => {
                 ></div>
             )}
             
-            <aside className={`bg-primaryDark text-white w-64 p-4 md:p-6 shadow-soft fixed md:static top-0 bottom-0 left-0 z-[650] transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:flex md:flex-col`}>
+            <aside className={`bg-[#C9788A] text-white w-64 p-4 md:p-6 shadow-soft fixed md:static top-0 bottom-0 left-0 z-[650] transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:flex md:flex-col`}>
                 <div className="flex justify-between items-center mb-6 pt-4">
                     <h2 className="text-xl font-bold font-heading">Admin Panel</h2>
                     <button onClick={handleMenuToggle} className="md:hidden hover:text-accent p-1">
