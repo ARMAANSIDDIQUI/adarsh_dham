@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { DateTime } from 'luxon';
 import api from '../../api/api.js'; 
 import Button from '../common/Button.jsx';
 import { FaPaperPlane, FaClock, FaExclamationCircle, FaCalendarAlt } from 'react-icons/fa';
 
 const SendNotification = () => {
     const [message, setMessage] = useState('');
-    const [target, setTarget] = useState({ userId: '', role: '', targetGroup: 'allAdmins' });
+    const [target, setTarget] = useState({ userId: '', role: '' });
     const [status, setStatus] = useState(null);
     const [loading, setLoading] = useState(false);
     const [sendOption, setSendOption] = useState('now');
@@ -15,19 +16,25 @@ const SendNotification = () => {
     const [totalTtlMinutes, setTotalTtlMinutes] = useState(1440);
     const roles = ['user', 'admin', 'super-admin', 'super-operator', 'operator', 'satsang-operator'];
 
+    // Calculate the scheduled time in IST using luxon
     const calculatedSendTime = useMemo(() => {
-        if (sendOption === 'now') return new Date();
-        const now = new Date();
-        now.setDate(now.getDate() + (parseInt(scheduleDelay.days, 10) || 0));
-        now.setHours(now.getHours() + (parseInt(scheduleDelay.hours, 10) || 0));
-        now.setMinutes(now.getMinutes() + (parseInt(scheduleDelay.minutes, 10) || 0));
-        return now;
+        if (sendOption === 'now') {
+            return DateTime.now().setZone('Asia/Kolkata');
+        }
+        const nowInIST = DateTime.now().setZone('Asia/Kolkata');
+        return nowInIST
+            .plus({
+                days: parseInt(scheduleDelay.days, 10) || 0,
+                hours: parseInt(scheduleDelay.hours, 10) || 0,
+                minutes: parseInt(scheduleDelay.minutes, 10) || 0,
+            });
     }, [sendOption, scheduleDelay]);
 
+    // Calculate the total Time-to-Live (TTL) in minutes
     useEffect(() => {
-        const d = ttl.days || 0;
-        const h = ttl.hours || 0;
-        const m = ttl.minutes || 0;
+        const d = parseInt(ttl.days, 10) || 0;
+        const h = parseInt(ttl.hours, 10) || 0;
+        const m = parseInt(ttl.minutes, 10) || 0;
         const total = (d * 1440) + (h * 60) + m;
         setTotalTtlMinutes(Math.max(1, Math.round(total)));
     }, [ttl]);
@@ -46,34 +53,34 @@ const SendNotification = () => {
         e.preventDefault();
         setLoading(true);
         setStatus(null);
-        let targetGroup;
-        if (target.userId) {
-            targetGroup = 'user';
-        } else if (target.role) {
-            targetGroup = 'role';
-        } else {
-            targetGroup = 'all';
-        }
+        
+        // Determine the target group based on provided input
         const payload = {
             message,
-            targetGroup,
+            targetGroup: target.userId ? 'user' : (target.role ? 'role' : 'allAdmins'),
             userId: target.userId || undefined,
             role: target.role || undefined,
             ttlMinutes: totalTtlMinutes
         };
+
         if (sendOption === 'schedule') {
-             if (calculatedSendTime <= new Date()) {
+            const nowInIST = DateTime.now().setZone('Asia/Kolkata');
+            if (calculatedSendTime <= nowInIST) {
                 setStatus({ type: 'error', message: 'Scheduled time must be in the future.' });
                 setLoading(false);
                 return;
             }
-            payload.sendAt = calculatedSendTime.toISOString();
+            // Convert IST scheduled time to UTC for the database
+            payload.sendAt = calculatedSendTime.toUTC().toISO();
         }
+        
         try {
             await api.post('/notifications', payload);
             setStatus({ type: 'success', message: sendOption === 'now' ? 'Notification sent successfully!' : 'Notification scheduled successfully!' });
             setMessage('');
             setTarget({ userId: '', role: '' });
+            setScheduleDelay({ days: 0, hours: 0, minutes: 5 });
+            setTtl({ days: 1, hours: 0, minutes: 0 });
         } catch (err) {
             setStatus({ type: 'error', message: err.response?.data?.message || 'Failed to send notification.' });
         } finally {
@@ -97,11 +104,11 @@ const SendNotification = () => {
 
                         {/* Scheduling UI */}
                         <div className="p-4 border border-blue-100 bg-blue-50 rounded-lg">
-                             <label className="text-base font-semibold text-gray-800 mb-3 flex items-center"><FaCalendarAlt className="mr-2 text-blue-500" /> Sending Options</label>
-                             <div className="flex flex-wrap gap-x-6 gap-y-2 mb-4">
-                                 <label className="flex items-center space-x-2 cursor-pointer"><input type="radio" value="now" checked={sendOption === 'now'} onChange={(e) => setSendOption(e.target.value)} /><span>Send Now</span></label>
-                                 <label className="flex items-center space-x-2 cursor-pointer"><input type="radio" value="schedule" checked={sendOption === 'schedule'} onChange={(e) => setSendOption(e.target.value)} /><span>Schedule for Later</span></label>
-                             </div>
+                            <label className="text-base font-semibold text-gray-800 mb-3 flex items-center"><FaCalendarAlt className="mr-2 text-blue-500" /> Sending Options</label>
+                            <div className="flex flex-wrap gap-x-6 gap-y-2 mb-4">
+                                <label className="flex items-center space-x-2 cursor-pointer"><input type="radio" value="now" checked={sendOption === 'now'} onChange={(e) => setSendOption(e.target.value)} /><span>Send Now</span></label>
+                                <label className="flex items-center space-x-2 cursor-pointer"><input type="radio" value="schedule" checked={sendOption === 'schedule'} onChange={(e) => setSendOption(e.target.value)} /><span>Schedule for Later</span></label>
+                            </div>
                             <AnimatePresence>
                                 {sendOption === 'schedule' && (
                                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="pt-2">
@@ -110,7 +117,7 @@ const SendNotification = () => {
                                             <div><label className="block text-xs font-medium text-gray-600">Hours</label><input type="number" name="hours" min="0" max="23" value={scheduleDelay.hours} onChange={handleDelayChange} className="mt-1 w-full p-2 border rounded-md text-sm" /></div>
                                             <div><label className="block text-xs font-medium text-gray-600">Minutes</label><input type="number" name="minutes" min="0" max="59" value={scheduleDelay.minutes} onChange={handleDelayChange} className="mt-1 w-full p-2 border rounded-md text-sm" /></div>
                                         </div>
-                                        <div className="mt-2 text-xs text-blue-600 text-center">Will be sent on: {calculatedSendTime.toLocaleString('en-GB')}</div>
+                                        <div className="mt-2 text-xs text-blue-600 text-center">Will be sent on: {calculatedSendTime.toLocaleString(DateTime.DATETIME_SHORT)}</div>
                                     </motion.div>
                                 )}
                             </AnimatePresence>
@@ -127,7 +134,7 @@ const SendNotification = () => {
                         </div>
 
                         {/* Target Inputs */}
-                         <div>
+                        <div>
                             <label className="block text-base font-semibold text-primaryDark font-heading mb-2">Target Audience</label>
                             <p className="text-xs text-gray-500 mb-3">Leave both fields blank to send to **all admins** by default.</p>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -143,7 +150,7 @@ const SendNotification = () => {
                                     </select>
                                 </div>
                             </div>
-                         </div>
+                        </div>
 
                         {status && (
                             <div className={`text-center py-3 rounded-lg font-medium shadow-sm flex items-center justify-center space-x-2 ${status.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>

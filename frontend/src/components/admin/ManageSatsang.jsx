@@ -1,21 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { DateTime } from 'luxon';
 import api from '../../api/api.js'; 
 import Button from '../common/Button.jsx';
 import { FaEdit, FaTrashAlt, FaPlus, FaSpinner, FaLink, FaClock, FaYoutube } from 'react-icons/fa';
 
-// Helper function to format ISO dates for datetime-local input
+// Helper function to format ISO dates to IST for datetime-local input
 const formatDateTimeLocal = (isoString) => {
     if (!isoString) return '';
-    const date = new Date(isoString);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
+    return DateTime.fromISO(isoString, { zone: 'utc' })
+        .setZone('Asia/Kolkata')
+        .toFormat("yyyy-MM-dd'T'HH:mm");
 };
 
+// Helper function to extract the src URL from an iframe string
 const extractSrcFromIframe = (inputString) => {
     if (!inputString || !inputString.trim().startsWith('<iframe')) {
         return inputString;
@@ -100,7 +98,15 @@ const ManageSatsang = () => {
             setError("Invalid iframe code. Could not find a valid 'src' URL inside the tag.");
             return;
         }
-        const linkToSubmit = { ...newLink, youtubeEmbedUrl: processedUrl };
+
+        const linkToSubmit = {
+            ...newLink,
+            youtubeEmbedUrl: processedUrl,
+            // Convert the local datetime-local string to an ISO string in UTC
+            liveFrom: DateTime.fromFormat(newLink.liveFrom, "yyyy-MM-dd'T'HH:mm", { zone: 'Asia/Kolkata' }).toUTC().toISO(),
+            liveTo: DateTime.fromFormat(newLink.liveTo, "yyyy-MM-dd'T'HH:mm", { zone: 'Asia/Kolkata' }).toUTC().toISO(),
+        };
+        
         try {
             await api.post('/satsang/live-links', linkToSubmit);
             setNewLink({ name: '', url: '', youtubeEmbedUrl: '', liveFrom: '', liveTo: '' }); 
@@ -119,7 +125,15 @@ const ManageSatsang = () => {
             setEditingLink(null);
             return;
         }
-        const linkToSubmit = { ...editingLink, youtubeEmbedUrl: processedUrl };
+
+        const linkToSubmit = {
+            ...editingLink,
+            youtubeEmbedUrl: processedUrl,
+            // Convert the local datetime-local string to an ISO string in UTC
+            liveFrom: DateTime.fromFormat(editingLink.liveFrom, "yyyy-MM-dd'T'HH:mm", { zone: 'Asia/Kolkata' }).toUTC().toISO(),
+            liveTo: DateTime.fromFormat(editingLink.liveTo, "yyyy-MM-dd'T'HH:mm", { zone: 'Asia/Kolkata' }).toUTC().toISO(),
+        };
+        
         try {
             await api.put(`/satsang/live-links/${editingLink._id}`, linkToSubmit);
             setEditingLink(null);
@@ -198,12 +212,12 @@ const ManageSatsang = () => {
                     </div>
                     
                     <div className="md:col-span-1">
-                        <label className="text-sm font-medium text-gray-700 flex items-center"><FaClock className="mr-1 text-gray-500"/> Live From</label>
+                        <label className="text-sm font-medium text-gray-700 flex items-center"><FaClock className="mr-1 text-gray-500"/> Live From (IST)</label>
                         <input type="datetime-local" value={newLink.liveFrom} onChange={(e) => setNewLink({ ...newLink, liveFrom: e.target.value })} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-500" required />
                     </div>
 
                     <div className="md:col-span-1">
-                        <label className="text-sm font-medium text-gray-700 flex items-center"><FaClock className="mr-1 text-gray-500"/> Live To</label>
+                        <label className="text-sm font-medium text-gray-700 flex items-center"><FaClock className="mr-1 text-gray-500"/> Live To (IST)</label>
                         <input type="datetime-local" value={newLink.liveTo} onChange={(e) => setNewLink({ ...newLink, liveTo: e.target.value })} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-500" required />
                     </div>
                     
@@ -223,8 +237,8 @@ const ManageSatsang = () => {
                         <tr>
                             <th className="px-6 py-3 text-left text-xs font-medium font-heading text-primaryDark uppercase tracking-wider">Name</th>
                             <th className="px-6 py-3 text-left text-xs font-medium font-heading text-primaryDark uppercase tracking-wider">Marquee URL</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium font-heading text-primaryDark uppercase tracking-wider">Live From</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium font-heading text-primaryDark uppercase tracking-wider">Live To</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium font-heading text-primaryDark uppercase tracking-wider">Live From (IST)</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium font-heading text-primaryDark uppercase tracking-wider">Live To (IST)</th>
                             <th className="px-6 py-3 text-left text-xs font-medium font-heading text-primaryDark uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
@@ -238,8 +252,12 @@ const ManageSatsang = () => {
                                         <span className="truncate max-w-[200px]">{link.url}</span>
                                     </a>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{new Date(link.liveFrom).toLocaleString()}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{new Date(link.liveTo).toLocaleString()}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                    {link.liveFrom ? DateTime.fromISO(link.liveFrom, { zone: 'utc' }).setZone('Asia/Kolkata').toLocaleString(DateTime.DATETIME_SHORT) : 'N/A'}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                    {link.liveTo ? DateTime.fromISO(link.liveTo, { zone: 'utc' }).setZone('Asia/Kolkata').toLocaleString(DateTime.DATETIME_SHORT) : 'N/A'}
+                                </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                                     <div className="flex space-x-3">
                                         <button onClick={() => openEditModal(link)} className="text-pink-500 hover:text-pink-700 transition-colors" title="Edit Link">
@@ -291,12 +309,12 @@ const ManageSatsang = () => {
 
                             <div className='grid grid-cols-2 gap-4'>
                                 <div>
-                                    <label className="text-sm font-medium text-gray-700 flex items-center"><FaClock className="mr-1 text-gray-500"/> Live From</label>
+                                    <label className="text-sm font-medium text-gray-700 flex items-center"><FaClock className="mr-1 text-gray-500"/> Live From (IST)</label>
                                     <input type="datetime-local" name="liveFrom" value={editingLink.liveFrom} onChange={(e) => setEditingLink({ ...editingLink, liveFrom: e.target.value })} className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-500" required />
                                 </div>
                                 
                                 <div>
-                                    <label className="text-sm font-medium text-gray-700 flex items-center"><FaClock className="mr-1 text-gray-500"/> Live To</label>
+                                    <label className="text-sm font-medium text-gray-700 flex items-center"><FaClock className="mr-1 text-gray-500"/> Live To (IST)</label>
                                     <input type="datetime-local" name="liveTo" value={editingLink.liveTo} onChange={(e) => setEditingLink({ ...editingLink, liveTo: e.target.value })} className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-500" required />
                                 </div>
                             </div>
