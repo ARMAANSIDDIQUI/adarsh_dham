@@ -32,7 +32,7 @@ const NavLink = ({ to, icon, text, onClick, end = false }) => (
             `flex items-center whitespace-nowrap space-x-2 px-3 py-2 transition-colors duration-300 rounded-md text-base font-medium ` +
             (isActive
                 ? 'bg-primary/20 text-primaryDark'
-                : 'text-gray-700 hover:bg-card hover:text-primaryDark') // CORRECTED: Hover background
+                : 'text-gray-700 hover:bg-card hover:text-primaryDark')
         }
     >
         {icon}
@@ -69,10 +69,8 @@ const Header = () => {
 
     return (
         <>
-            {/* CORRECTED: Header background is now darker beige */}
             <header className="bg-background shadow-soft sticky top-0 z-[999] font-body border-b border-card">
                 <nav className="container mx-auto flex items-center justify-between px-4 py-3 max-w-7xl">
-                    {/* CORRECTED: Icon and text are now both dark pink */}
                     <Link to="/" className="text-2xl font-bold mr-5 text-primaryDark hover:text-opacity-80 transition-colors duration-200 flex items-center gap-x-1 font-heading">
                         <FaOm className="text-primaryDark text-3xl pr-2" />
                         <span>Adarsh Dham</span>
@@ -129,10 +127,10 @@ const Header = () => {
                             animate={{ x: 0 }}
                             exit={{ x: "100%" }}
                             transition={{ type: "tween", ease: "easeInOut", duration: 0.4 }}
-                            className="fixed inset-0 z-[998] bg-card"
+                            className="fixed top-0 right-0 h-full w-4/5 max-w-sm z-[998] bg-card overflow-y-auto shadow-xl"
                         >
-                            <div className="flex flex-col h-full justify-center p-6">
-                                <div className="flex flex-col items-center gap-y-6 text-2xl">
+                            <div className="flex flex-col h-full p-6 pt-24">
+                                <div className="flex flex-col items-start gap-y-6 text-xl">
                                     <NavLink to="/" icon={<FaHome />} text="Home" onClick={handleMenuToggle} end />
                                     <NavLink to="/about" icon={<FaInfoCircle />} text="About" onClick={handleMenuToggle} />
                                     <NavLink to="/calendar" icon={<FaCalendarAlt />} text="Calendar" onClick={handleMenuToggle} />
@@ -140,7 +138,7 @@ const Header = () => {
                                     <NavLink to="/comments" icon={<FaComments />} text="Comments" onClick={handleMenuToggle} />
                                     <NavLink to="/contact" icon={<FaPhone />} text="Contact" onClick={handleMenuToggle} />
                                     
-                                    <div className="w-1/2 border-t border-background my-4"></div>
+                                    <div className="w-full border-t border-background my-4"></div>
                                     
                                     {isAuthenticated ? (
                                         <>
