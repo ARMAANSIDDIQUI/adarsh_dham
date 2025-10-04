@@ -41,7 +41,7 @@ const Home = () => {
   const { isAuthenticated } = useSelector((state) => state.auth);
   const [liveLinks, setLiveLinks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [imagesLoaded, setImagesLoaded] = useState(false); // New state for image loading
+  const [imagesLoaded, setImagesLoaded] = useState(false);
 
   // Carousel state
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -66,8 +66,7 @@ const Home = () => {
         setImagesLoaded(true);
       } catch (error) {
         console.error("Failed to load carousel images:", error);
-        // Still proceed even if some images fail to load
-        setImagesLoaded(true); 
+        setImagesLoaded(true);
       }
     };
 
@@ -95,13 +94,16 @@ const Home = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Auto-slide every 10 seconds
+  // Auto-slide every 10 seconds — disabled if live video exists
   useEffect(() => {
-    if (imagesLoaded) { // Only start auto-slide after images are loaded
-      const interval = setInterval(() => slide(1), 10000);
-      return () => clearInterval(interval);
-    }
-  }, [currentSlide, imagesLoaded]);
+    if (!imagesLoaded) return;
+
+    const hasLiveVideo = liveLinks.some((link) => link.youtubeEmbedUrl);
+    if (hasLiveVideo) return;
+
+    const interval = setInterval(() => slide(1), 10000);
+    return () => clearInterval(interval);
+  }, [currentSlide, imagesLoaded, liveLinks]);
 
   const slide = (dir) => {
     setDirection(dir);
@@ -199,7 +201,7 @@ const Home = () => {
     );
   };
 
-  if (loading || !imagesLoaded) { // Wait for both API and images to load
+  if (loading || !imagesLoaded) {
     return (
       <div className="text-center mt-10 text-xl text-primary font-body">
         <FaSpinner className="animate-spin inline mr-2" /> Loading...
@@ -340,26 +342,49 @@ const Home = () => {
 
         {/* Quick Links */}
         <section className="mt-20 text-center">
-          <h2 className="text-3xl font-bold font-heading mb-10 text-primaryDark border-b-2 border-primary inline-block pb-1">Quick Links</h2>
+          <h2 className="text-3xl font-bold font-heading mb-10 text-primaryDark border-b-2 border-primary inline-block pb-1">
+            Quick Links
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Link to="/my-bookings" className="w-full block">
-              <motion.div whileHover={{ scale: 1.03 }} className="bg-card p-8 rounded-2xl shadow-soft hover:shadow-accent transition-all duration-300 transform border-t-4 border-primary flex flex-col items-center">
-                <div className="bg-background p-4 rounded-full mb-4"><FaBell className="text-4xl text-primary" /></div>
-                <h3 className="text-xl font-semibold font-heading text-primaryDark">My Bookings</h3>
+              <motion.div
+                whileHover={{ scale: 1.03 }}
+                className="bg-card p-8 rounded-2xl shadow-soft hover:shadow-accent transition-all duration-300 transform border-t-4 border-primary flex flex-col items-center"
+              >
+                <div className="bg-background p-4 rounded-full mb-4">
+                  <FaBell className="text-4xl text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold font-heading text-primaryDark">
+                  My Bookings
+                </h3>
               </motion.div>
             </Link>
 
             <Link to="/events" className="w-full block">
-              <motion.div whileHover={{ scale: 1.03 }} className="bg-card p-8 rounded-2xl shadow-soft hover:shadow-accent transition-all duration-300 transform border-t-4 border-primary flex flex-col items-center">
-                <div className="bg-background p-4 rounded-full mb-4"><FaCalendarAlt className="text-4xl text-primary" /></div>
-                <h3 className="text-xl font-semibold font-heading text-primaryDark">Events</h3>
+              <motion.div
+                whileHover={{ scale: 1.03 }}
+                className="bg-card p-8 rounded-2xl shadow-soft hover:shadow-accent transition-all duration-300 transform border-t-4 border-primary flex flex-col items-center"
+              >
+                <div className="bg-background p-4 rounded-full mb-4">
+                  <FaCalendarAlt className="text-4xl text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold font-heading text-primaryDark">
+                  Events
+                </h3>
               </motion.div>
             </Link>
 
             <Link to="/calendar" className="w-full block">
-              <motion.div whileHover={{ scale: 1.03 }} className="bg-card p-8 rounded-2xl shadow-soft hover:shadow-accent transition-all duration-300 transform border-t-4 border-primary flex flex-col items-center">
-                <div className="bg-background p-4 rounded-full mb-4"><FaCalendarAlt className="text-4xl text-primary" /></div>
-                <h3 className="text-xl font-semibold font-heading text-primaryDark">Calendar</h3>
+              <motion.div
+                whileHover={{ scale: 1.03 }}
+                className="bg-card p-8 rounded-2xl shadow-soft hover:shadow-accent transition-all duration-300 transform border-t-4 border-primary flex flex-col items-center"
+              >
+                <div className="bg-background p-4 rounded-full mb-4">
+                  <FaCalendarAlt className="text-4xl text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold font-heading text-primaryDark">
+                  Calendar
+                </h3>
               </motion.div>
             </Link>
           </div>
