@@ -66,46 +66,46 @@ const AllocationsView = ({ filters, dateFilterType, debouncedSearchTerm, paginat
     };
 
     return (
-        <div className="bg-white shadow-xl rounded-xl overflow-x-auto border border-gray-200">
-            <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-pink-100">
+        <div className="bg-card shadow-soft rounded-2xl overflow-x-auto font-body">
+            <table className="min-w-full divide-y divide-background">
+                <thead className="bg-background/50">
                     <tr>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Person Details</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Booking Details</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Event</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Stay Dates</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Allocation</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Actions</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold font-heading text-primaryDark uppercase">Person Details</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold font-heading text-primaryDark uppercase">Booking Details</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold font-heading text-primaryDark uppercase">Event</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold font-heading text-primaryDark uppercase">Stay Dates</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold font-heading text-primaryDark uppercase">Allocation</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold font-heading text-primaryDark uppercase">Actions</th>
                     </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-100">
+                <tbody className="bg-card divide-y divide-background">
                     {loading ? (
-                        <tr><td colSpan="6" className="text-center py-8"><FaSpinner className="animate-spin text-pink-500 text-3xl mx-auto" /></td></tr>
+                        <tr><td colSpan="6" className="text-center py-8"><FaSpinner className="animate-spin text-primary text-3xl mx-auto" /></td></tr>
                     ) : people.length > 0 ? (
                         people.map(person => (
-                            <tr key={person._id} className="hover:bg-pink-50">
+                            <tr key={person._id} className="hover:bg-background transition-colors">
                                 <td className="px-4 py-4 whitespace-nowrap text-sm align-top">
-                                    <p className="font-medium text-gray-900">{person.name}</p>
-                                    <p className="text-gray-500">{person.gender}, Age: {person.age}</p>
+                                    <p className="font-semibold text-gray-800">{person.name}</p>
+                                    <p className="text-gray-700">{person.gender}, Age: {person.age}</p>
                                 </td>
                                 <td className="px-4 py-4 whitespace-nowrap text-sm align-top">
-                                    <p className="font-mono text-gray-600">{person.bookingNumber}</p>
-                                    <p className="text-gray-500">{person.city}</p>
+                                    <p className="font-mono text-gray-700">{person.bookingNumber}</p>
+                                    <p className="text-gray-700">{person.city}</p>
                                 </td>
-                                <td className="px-4 py-4 whitespace-now-wrap text-sm align-top text-gray-600">
+                                <td className="px-4 py-4 whitespace-now-wrap text-sm align-top text-gray-700">
                                     {person.eventId?.name || 'N/A'}
                                 </td>
-                                <td className="px-4 py-4 whitespace-nowrap text-sm align-top text-gray-600">
+                                <td className="px-4 py-4 whitespace-nowrap text-sm align-top text-gray-700">
                                     {new Date(person.stayFrom).toLocaleDateString()} - {new Date(person.stayTo).toLocaleDateString()}
                                 </td>
-                                <td className="px-4 py-4 whitespace-nowrap text-sm align-top text-gray-600">
-                                    <p className="font-medium">{person.bedId?.roomId?.buildingId?.name}</p>
+                                <td className="px-4 py-4 whitespace-nowrap text-sm align-top text-gray-700">
+                                    <p className="font-semibold text-gray-800">{person.bedId?.roomId?.buildingId?.name}</p>
                                     <p>Room {person.bedId?.roomId?.roomNumber} / Bed {person.bedId?.name}</p>
                                 </td>
                                 <td className="px-4 py-4 whitespace-nowrap text-sm align-top">
                                     <button 
                                         onClick={() => handleDownloadBookingPdf(person)} 
-                                        className="text-red-500 hover:text-red-700 disabled:opacity-50" 
+                                        className="text-accent hover:text-primaryDark disabled:opacity-50 transition-colors" 
                                         title="Download Full Booking PDF"
                                         disabled={isDownloading === person._id}
                                     >

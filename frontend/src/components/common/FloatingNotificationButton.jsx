@@ -18,9 +18,8 @@ function urlBase64ToUint8Array(base64String) {
 }
 
 const FloatingNotificationButton = ({ variants }) => {
-    // ✨ FIX: State now has three possibilities: 'loading', 'subscribed', 'unsubscribed'
     const [subscriptionState, setSubscriptionState] = useState('loading');
-    const [isActionLoading, setIsActionLoading] = useState(false); // For disabling button during click action
+    const [isActionLoading, setIsActionLoading] = useState(false);
 
     useEffect(() => {
         if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
@@ -36,7 +35,7 @@ const FloatingNotificationButton = ({ variants }) => {
                 setSubscriptionState(subscription ? 'subscribed' : 'unsubscribed');
             } catch (error) {
                 console.error("Error checking initial subscription:", error);
-                setSubscriptionState('unsubscribed'); // Default to unsubscribed on error
+                setSubscriptionState('unsubscribed');
             }
         };
         checkSubscription();
@@ -48,16 +47,12 @@ const FloatingNotificationButton = ({ variants }) => {
             const registration = await navigator.serviceWorker.ready;
             const existingSubscription = await registration.pushManager.getSubscription();
             
-            console.log("Subscription status on click:", existingSubscription ? "SUBSCRIBED" : "NOT SUBSCRIBED");
-
             if (existingSubscription) {
-                // --- UN-SUBSCRIBE LOGIC ---
                 await existingSubscription.unsubscribe();
                 await api.delete('/notifications/unsubscribe', { data: { endpoint: existingSubscription.endpoint } });
                 setSubscriptionState('unsubscribed');
                 toast.info('Notifications disabled.');
             } else {
-                // --- SUBSCRIBE LOGIC ---
                 if (Notification.permission === 'denied') {
                     toast.warn('You have blocked notifications. Please enable them in browser settings.');
                     setIsActionLoading(false);
@@ -88,12 +83,12 @@ const FloatingNotificationButton = ({ variants }) => {
     const isSubscribed = subscriptionState === 'subscribed';
     
     const title = isInitialLoading ? 'Checking...' : (isSubscribed ? "Disable Notifications" : "Enable Notifications");
-    const iconColor = isInitialLoading ? "text-gray-500" : (isSubscribed ? "text-red-500" : "text-green-600");
-    const hoverColor = isInitialLoading ? "hover:bg-gray-100" : (isSubscribed ? "hover:bg-red-100" : "hover:bg-green-100");
+    const iconColor = isInitialLoading ? "text-gray-400" : (isSubscribed ? "text-highlight" : "text-accent");
+    const hoverColor = isInitialLoading ? "hover:bg-background/50" : (isSubscribed ? "hover:bg-highlight/10" : "hover:bg-accent/10");
 
     return (
-        <motion.div variants={variants} className="group relative flex items-center">
-            <div className="absolute right-16 w-max bg-gray-800 text-white text-xs font-bold rounded-md px-3 py-1.5 opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 origin-right">
+        <motion.div variants={variants} className="group relative flex items-center font-body">
+            <div className="absolute right-16 w-max bg-primaryDark text-neutral text-xs font-bold rounded-md px-3 py-1.5 opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 origin-right">
                 {title}
             </div>
             <motion.button
@@ -101,7 +96,7 @@ const FloatingNotificationButton = ({ variants }) => {
                 whileTap={{ scale: 0.95 }}
                 onClick={handleSubscribe}
                 disabled={isInitialLoading || isActionLoading}
-                className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg cursor-pointer transition-colors bg-white disabled:opacity-70 ${hoverColor}`}
+                className={`w-14 h-14 rounded-full flex items-center justify-center shadow-soft cursor-pointer transition-colors bg-card disabled:opacity-70 ${hoverColor}`}
             >
                 {isInitialLoading || isActionLoading
                     ? <FaSpinner size={22} className={`animate-spin ${iconColor}`} />

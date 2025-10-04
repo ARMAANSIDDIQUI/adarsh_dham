@@ -31,8 +31,8 @@ const NavLink = ({ to, icon, text, onClick, end = false }) => (
         className={({ isActive }) =>
             `flex items-center whitespace-nowrap space-x-2 px-3 py-2 transition-colors duration-300 rounded-md text-base font-medium ` +
             (isActive
-                ? 'bg-pink-50 text-pink-600'
-                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900')
+                ? 'bg-primary/20 text-primaryDark'
+                : 'text-gray-700 hover:bg-card hover:text-primaryDark') // CORRECTED: Hover background
         }
     >
         {icon}
@@ -69,10 +69,12 @@ const Header = () => {
 
     return (
         <>
-            <header className="bg-white shadow-sm sticky top-0 z-[999]">
+            {/* CORRECTED: Header background is now darker beige */}
+            <header className="bg-background shadow-soft sticky top-0 z-[999] font-body border-b border-card">
                 <nav className="container mx-auto flex items-center justify-between px-4 py-3 max-w-7xl">
-                    <Link to="/" className="text-2xl font-bold mr-5 text-gray-800 hover:text-pink-600 transition-colors duration-200 flex items-center gap-x-1">
-                        <FaOm className="text-pink-500 text-3xl pr-2" />
+                    {/* CORRECTED: Icon and text are now both dark pink */}
+                    <Link to="/" className="text-2xl font-bold mr-5 text-primaryDark hover:text-opacity-80 transition-colors duration-200 flex items-center gap-x-1 font-heading">
+                        <FaOm className="text-primaryDark text-3xl pr-2" />
                         <span>Adarsh Dham</span>
                     </Link>
 
@@ -87,7 +89,6 @@ const Header = () => {
                             {isAuthenticated && (
                                 <>
                                     <NavLink to="/my-bookings" icon={<FaClipboardList />} text="My Bookings" />
-                                    {/* ✨ NEW NOTIFICATION BUTTON ADDED HERE */}
                                     <NavLink to="/notifications" icon={<FaBell />} text="Notifications" />
                                 </>
                             )}
@@ -104,7 +105,7 @@ const Header = () => {
                     {isMobile && (
                         <button
                             onClick={handleMenuToggle}
-                            className="text-gray-800 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200 z-[1000]"
+                            className="text-primaryDark p-2 rounded-full hover:bg-card transition-colors duration-200 z-[1000]"
                         >
                             <AnimatePresence mode="wait">
                                 <motion.div
@@ -128,7 +129,7 @@ const Header = () => {
                             animate={{ x: 0 }}
                             exit={{ x: "100%" }}
                             transition={{ type: "tween", ease: "easeInOut", duration: 0.4 }}
-                            className="fixed inset-0 z-[998] bg-white"
+                            className="fixed inset-0 z-[998] bg-card"
                         >
                             <div className="flex flex-col h-full justify-center p-6">
                                 <div className="flex flex-col items-center gap-y-6 text-2xl">
@@ -139,7 +140,7 @@ const Header = () => {
                                     <NavLink to="/comments" icon={<FaComments />} text="Comments" onClick={handleMenuToggle} />
                                     <NavLink to="/contact" icon={<FaPhone />} text="Contact" onClick={handleMenuToggle} />
                                     
-                                    <div className="w-1/2 border-t my-4"></div>
+                                    <div className="w-1/2 border-t border-background my-4"></div>
                                     
                                     {isAuthenticated ? (
                                         <>
@@ -149,7 +150,7 @@ const Header = () => {
                                             <NavLink to="/notifications" icon={<FaBell />} text="Notifications History" onClick={handleMenuToggle} />
                                             {isAdmin && <NavLink to="/admin" icon={<FaUserShield/>} text="Admin Panel" onClick={handleMenuToggle} />}
                                             <div className="mt-4">
-                                                <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-2 text-lg text-red-600 bg-red-50 rounded-lg">
+                                                <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-2 text-lg text-highlight bg-highlight/10 rounded-lg">
                                                     <FaSignOutAlt /> Logout
                                                 </button>
                                             </div>

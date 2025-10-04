@@ -13,8 +13,6 @@ const FloatingActionButtons = () => {
     const navigate = useNavigate();
     const menuRef = useRef(null);
 
-    console.log('[Debug] FloatingActionButtons Render. Is authenticated?', isAuthenticated);
-
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -63,13 +61,13 @@ const FloatingActionButtons = () => {
                 variants={itemVariants}
                 className="group relative flex items-center"
             >
-                <div className="absolute right-16 w-max bg-gray-800 text-white text-xs font-bold rounded-md px-3 py-1.5 opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 origin-right">
+                <div className="absolute right-16 w-max bg-primaryDark text-neutral text-xs font-bold rounded-md px-3 py-1.5 opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 origin-right">
                     {title}
                 </div>
                 <motion.div
                     whileHover={{ scale: 1.15 }}
                     whileTap={{ scale: 0.95 }}
-                    className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg cursor-pointer transition-colors ${className}`}
+                    className={`w-14 h-14 rounded-full flex items-center justify-center shadow-soft cursor-pointer transition-colors ${className}`}
                 >
                     {children}
                 </motion.div>
@@ -88,12 +86,12 @@ const FloatingActionButtons = () => {
         >
             <FloatingNotificationButton variants={itemVariants} />
             {isAdmin && (
-                <ActionIcon to="/admin" title="Admin Panel" className="bg-pink-600 text-white hover:bg-pink-700">
+                <ActionIcon to="/admin" title="Admin Panel" className="bg-highlight text-white hover:bg-opacity-90">
                     <FaUserShield size={22} />
                 </ActionIcon>
             )}
             <div className="relative">
-                <ActionIcon title="My Account" onClick={() => setIsUserMenuOpen(!isUserMenuOpen)} className="bg-blue-500 text-white hover:bg-blue-600">
+                <ActionIcon title="My Account" onClick={() => setIsUserMenuOpen(!isUserMenuOpen)} className="bg-primary text-white hover:bg-primaryDark">
                     <FaUserCircle size={24} />
                 </ActionIcon>
                 <AnimatePresence>
@@ -103,17 +101,17 @@ const FloatingActionButtons = () => {
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 10, scale: 0.95 }}
                             transition={{ duration: 0.2, ease: "easeOut" }}
-                            className="absolute top-16 right-0 w-60 bg-white rounded-lg shadow-2xl py-2 border z-[-1]"
+                            className="absolute top-16 right-0 w-60 bg-card rounded-xl shadow-soft py-2 border border-background z-[-1] font-body"
                         >
-                            <div className='px-4 py-3 border-b'>
-                                <p className='font-bold text-gray-800 truncate'>{user.name}</p>
-                                <p className='text-xs text-gray-500'>{user.phone}</p>
+                            <div className='px-4 py-3 border-b border-background'>
+                                <p className='font-bold text-primaryDark truncate'>{user.name}</p>
+                                <p className='text-xs text-gray-700'>{user.phone}</p>
                             </div>
-                            <Link to="/profile" onClick={() => setIsUserMenuOpen(false)} className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100">
+                            <Link to="/profile" onClick={() => setIsUserMenuOpen(false)} className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-background hover:text-primaryDark">
                                 <FaIdBadge className="text-gray-400" /> My Profile
                             </Link>
-                            <button onClick={handleLogout} className="flex items-center gap-3 w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-gray-100 mt-1 border-t">
-                                <FaSignOutAlt className="text-red-400" /> Logout
+                            <button onClick={handleLogout} className="flex items-center gap-3 w-full text-left px-4 py-2.5 text-sm text-highlight hover:bg-background mt-1 border-t border-background">
+                                <FaSignOutAlt className="text-highlight/80" /> Logout
                             </button>
                         </motion.div>
                     )}

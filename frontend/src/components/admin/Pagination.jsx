@@ -10,7 +10,7 @@ const Pagination = ({ pagination, onPageChange, onLimitChange }) => {
     const isLastPage = currentPage === adjustedTotalPages;
 
     return (
-        <div className="flex flex-col sm:flex-row justify-between items-center mt-6 p-4 bg-white rounded-xl shadow-lg border border-gray-200">
+        <div className="flex flex-col sm:flex-row justify-between items-center mt-6 p-4 bg-card rounded-2xl shadow-soft font-body">
             {/* Rows Per Page Selector */}
             <div className="flex items-center gap-2 text-sm text-gray-700">
                 <span>Items per page:</span>
@@ -29,15 +29,15 @@ const Pagination = ({ pagination, onPageChange, onLimitChange }) => {
             {/* Pagination Info */}
             <div className="flex-1 text-center text-sm text-gray-700 my-4 sm:my-0">
                 Showing{' '}
-                <span className="font-semibold text-pink-600">
+                <span className="font-semibold text-highlight">
                     {(currentPage - 1) * limit + 1}
                 </span>{' '}
                 to{' '}
-                <span className="font-semibold text-pink-600">
+                <span className="font-semibold text-highlight">
                     {Math.min(currentPage * limit, totalRecords)}
                 </span>{' '}
                 of{' '}
-                <span className="font-semibold text-pink-600">
+                <span className="font-semibold text-highlight">
                     {totalRecords}
                 </span>{' '}
                 records
@@ -52,7 +52,7 @@ const Pagination = ({ pagination, onPageChange, onLimitChange }) => {
                 >
                     <FaChevronLeft />
                 </button>
-                <span className="px-3 py-1 text-sm font-bold text-gray-700">
+                <span className="px-3 py-1 text-sm font-bold font-heading text-primaryDark">
                     Page {currentPage} of {adjustedTotalPages}
                 </span>
                 <button

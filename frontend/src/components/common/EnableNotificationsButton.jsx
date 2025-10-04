@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import api from '../../api/api';
 import { FaBell, FaBellSlash, FaSpinner } from 'react-icons/fa';
+import api from '../../api/api';
 
 // Your VAPID Public Key
 const VAPID_PUBLIC_KEY = "BBtSN3ZjmBjiT-jODQkhdTKl2Sb9F-4F13B1ibE2ENbRIm6_UPgF8r-X-pUN7Hs_F2Bg_cGdCm4pDDmcgktH_Jg";
@@ -53,11 +53,9 @@ const EnableNotificationsButton = () => {
 
       if (existingSubscription) {
         await existingSubscription.unsubscribe();
-        // Remove subscription from your server as well
         await api.delete('/notifications/unsubscribe', { data: { endpoint: existingSubscription.endpoint } });
         setIsSubscribed(false);
       } else {
-        // Here's the key part: The browser prompt is triggered by this `subscribe` call.
         const applicationServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
         const subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
@@ -87,10 +85,10 @@ const EnableNotificationsButton = () => {
     <button 
       onClick={handleSubscribe} 
       disabled={loading} 
-      className={`flex items-center justify-center w-full sm:w-auto px-6 py-2 text-base font-medium rounded-full transition-colors disabled:opacity-50 ` +
+      className={`flex items-center justify-center w-full sm:w-auto px-6 py-2 text-base font-semibold rounded-full transition-colors disabled:opacity-50 shadow-soft font-body ` +
         (isSubscribed 
-            ? 'bg-red-50 text-red-700 hover:bg-red-100' 
-            : 'bg-green-100 text-green-700 hover:bg-green-200')
+            ? 'bg-highlight/10 text-highlight hover:bg-highlight/20' 
+            : 'bg-accent/10 text-accent hover:bg-accent/20')
       }
     >
       {loading ? <FaSpinner className="animate-spin" /> : (isSubscribed ? <FaBellSlash className="mr-2" /> : <FaBell className="mr-2" />)}

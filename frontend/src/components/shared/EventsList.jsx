@@ -14,8 +14,8 @@ const containerVariants = {
 
 const EventsList = ({ events }) => {
   return (
-    <div className="p-4 md:p-8 bg-gray-50 rounded-xl shadow-xl">
-      <h2 className="text-2xl font-bold text-gray-800 text-center mb-6">All Events</h2>
+    <div className="p-4 md:p-8 bg-card rounded-2xl shadow-soft font-body">
+      <h2 className="text-2xl font-bold font-heading text-primaryDark text-center mb-6">All Events</h2>
       <motion.div
         className="grid grid-cols-1 gap-6"
         variants={containerVariants}
@@ -33,7 +33,7 @@ const EventsList = ({ events }) => {
             </motion.div>
           ))
         ) : (
-          <p className="col-span-full text-center text-gray-600">No upcoming events found.</p>
+          <p className="col-span-full text-center text-gray-700">No upcoming events found.</p>
         )}
       </motion.div>
     </div>

@@ -48,7 +48,7 @@ function App() {
     return (
         <Router>
             <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} />
-            <div className="flex flex-col min-h-screen">
+            <div className="flex flex-col min-h-screen bg-neutral font-body">
                 <Header />
                 <main className="flex-grow">
                     <Routes>
@@ -76,7 +76,12 @@ function App() {
                         />
                         
                         {/* 404 Not Found Route */}
-                        <Route path="*" element={<h1 className="text-center text-4xl mt-10">404 - Page Not Found</h1>} />
+                        <Route path="*" element={
+                            <div className="text-center p-10 min-h-screen flex flex-col justify-center items-center">
+                                <h1 className="text-4xl font-bold font-heading text-primaryDark">404 - Page Not Found</h1>
+                                <p className="text-gray-700 mt-2">The page you're looking for does not exist.</p>
+                            </div>
+                        } />
                     </Routes>
                 </main>
                 <Footer />

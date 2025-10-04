@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import api from '../../api/api.js';
@@ -7,10 +8,10 @@ import { FaEdit, FaTrashAlt, FaPlus, FaSpinner, FaBuilding, FaTimes, FaBed, FaUs
 const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel, confirmText, isAlert = false }) => {
     if (!isOpen) return null;
     return (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full flex items-center justify-center z-[1000] p-4">
-            <div className="bg-white p-6 rounded-xl shadow-2xl w-full max-w-sm m-4 transform transition-all">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">{title}</h3>
-                <p className="text-gray-600 mb-6">{message}</p>
+        <div className="fixed inset-0 bg-black bg-opacity-60 overflow-y-auto h-full w-full flex items-center justify-center z-[1000] p-4 font-body">
+            <div className="bg-card p-6 rounded-2xl shadow-soft w-full max-w-sm m-4 transform transition-all">
+                <h3 className="text-xl font-bold font-heading text-highlight mb-4">{title}</h3>
+                <p className="text-gray-700 mb-6">{message}</p>
                 <div className="flex justify-end space-x-3">
                     {!isAlert && (
                         <Button 
@@ -41,8 +42,6 @@ const ManageBuildings = () => {
     const [editingBuilding, setEditingBuilding] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalData, setModalData] = useState({ title: '', message: '', onConfirm: () => {}, onCancel: () => {}, confirmText: '', isAlert: false });
-
-    // NEW: search/filter state
     const [searchTerm, setSearchTerm] = useState('');
     const [genderFilter, setGenderFilter] = useState('');
 
@@ -74,7 +73,6 @@ const ManageBuildings = () => {
         };
     }, [buildings]);
 
-    // NEW: filtered buildings
     const filteredBuildings = useMemo(() => {
         return buildings.filter(b => 
             b.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
@@ -134,43 +132,43 @@ const ManageBuildings = () => {
         setIsModalOpen(true);
     };
 
-    if (loading) return <div className="text-center mt-10 text-xl text-pink-500"><FaSpinner className="animate-spin inline mr-2" /> Loading Buildings...</div>;
+    if (loading) return <div className="text-center mt-10 text-xl text-primary font-body"><FaSpinner className="animate-spin inline mr-2" /> Loading Buildings...</div>;
 
     return (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-8 bg-gray-100 min-h-screen">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6 border-b-2 border-pink-400 pb-2">
-                <FaBuilding className="inline-block mr-3" /> Manage Buildings
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-8 bg-neutral min-h-screen font-body">
+            <h2 className="text-3xl md:text-4xl font-bold text-primaryDark font-heading mb-6 border-b-2 border-primary pb-2">
+                <FaBuilding className="inline-block mr-3 text-primary" /> Manage Buildings
             </h2>
 
             {error && <div className="bg-red-100 text-red-700 p-3 rounded-xl mb-6 text-center shadow-md">{error}</div>}
 
             {/* SUMMARY STATS */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <div className="bg-white p-4 rounded-lg shadow text-center">
-                    <FaBuilding className="text-2xl text-blue-500 mx-auto mb-2"/>
+                <div className="bg-card p-4 rounded-2xl shadow-soft text-center">
+                    <FaBuilding className="text-2xl text-accent mx-auto mb-2"/>
                     <p className="text-2xl font-bold">{summaryStats.totalBuildings}</p>
                     <p className="text-sm text-gray-500">Total Buildings</p>
                 </div>
-                <div className="bg-white p-4 rounded-lg shadow text-center">
-                    <FaBed className="text-2xl text-purple-500 mx-auto mb-2"/>
+                <div className="bg-card p-4 rounded-2xl shadow-soft text-center">
+                    <FaBed className="text-2xl text-accent mx-auto mb-2"/>
                     <p className="text-2xl font-bold">{summaryStats.totalCapacity}</p>
                     <p className="text-sm text-gray-500">Total Capacity</p>
                 </div>
-                <div className="bg-white p-4 rounded-lg shadow text-center">
-                    <FaUserCheck className="text-2xl text-emerald-500 mx-auto mb-2"/>
+                <div className="bg-card p-4 rounded-2xl shadow-soft text-center">
+                    <FaUserCheck className="text-2xl text-accent mx-auto mb-2"/>
                     <p className="text-2xl font-bold">{summaryStats.totalOccupancy}</p>
                     <p className="text-sm text-gray-500">Total Occupancy</p>
                 </div>
-                 <div className="bg-white p-4 rounded-lg shadow text-center">
-                    <FaUserMinus className="text-2xl text-rose-500 mx-auto mb-2"/>
+                 <div className="bg-card p-4 rounded-2xl shadow-soft text-center">
+                    <FaUserMinus className="text-2xl text-accent mx-auto mb-2"/>
                     <p className="text-2xl font-bold">{summaryStats.totalVacancy}</p>
                     <p className="text-sm text-gray-500">Total Vacancy</p>
                 </div>
             </div>
 
             {/* ADD BUILDING FORM */}
-            <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
-                <h3 className="text-xl font-semibold text-pink-500 mb-4">Add New Building</h3>
+            <div className="bg-card p-6 rounded-2xl shadow-soft mb-8">
+                <h3 className="text-xl font-semibold font-heading text-primaryDark mb-4">Add New Building</h3>
                 <form onSubmit={handleAddBuilding} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Building Name</label>
@@ -225,25 +223,25 @@ const ManageBuildings = () => {
             </div>
 
             {/* TABLE */}
-            <div className="bg-white shadow-lg rounded-xl overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+            <div className="bg-card shadow-soft rounded-2xl overflow-x-auto">
+                <table className="min-w-full divide-y divide-background">
+                    <thead className="bg-background/50">
                         <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Building Name</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Gender</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Rooms</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Capacity</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Occupancy</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Vacancy</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Actions</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium font-heading text-primaryDark uppercase">Building Name</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium font-heading text-primaryDark uppercase">Gender</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium font-heading text-primaryDark uppercase">Rooms</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium font-heading text-primaryDark uppercase">Capacity</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium font-heading text-primaryDark uppercase">Occupancy</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium font-heading text-primaryDark uppercase">Vacancy</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium font-heading text-primaryDark uppercase">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="divide-y divide-background">
                         {filteredBuildings.length > 0 ? filteredBuildings.map(building => {
                             const vacancy = (building.capacity || 0) - (building.occupancy || 0);
                             const vacancyColor = vacancy > 0 ? 'text-emerald-600' : 'text-rose-600';
                             return (
-                                <tr key={building._id} className="hover:bg-pink-50 transition-colors">
+                                <tr key={building._id} className="hover:bg-background transition-colors">
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{building.name}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm capitalize text-gray-600">{building.gender}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm">{building.roomCount}</td>
@@ -273,9 +271,9 @@ const ManageBuildings = () => {
 
             {/* EDIT BUILDING MODAL */}
             {editingBuilding && (
-                <div className="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full flex items-center justify-center z-[1000]">
-                    <motion.div initial={{scale: 0.9, opacity: 0}} animate={{scale: 1, opacity: 1}} className="relative p-8 bg-white w-full max-w-lg rounded-xl shadow-2xl m-4">
-                        <h3 className="text-2xl font-bold text-gray-800 mb-4">Edit Building: {editingBuilding.name}</h3>
+                <div className="fixed inset-0 bg-black bg-opacity-60 overflow-y-auto h-full w-full flex items-center justify-center z-[1000]">
+                    <motion.div initial={{scale: 0.9, opacity: 0}} animate={{scale: 1, opacity: 1}} className="relative p-8 bg-card w-full max-w-lg rounded-2xl shadow-soft m-4">
+                        <h3 className="text-2xl font-bold font-heading text-primaryDark mb-4">Edit Building: {editingBuilding.name}</h3>
                         <form onSubmit={handleUpdateBuilding} className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Building Name</label>

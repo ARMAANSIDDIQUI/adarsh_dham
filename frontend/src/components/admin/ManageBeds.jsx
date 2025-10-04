@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import api from '../../api/api.js';
@@ -8,15 +9,15 @@ const DeleteConfirmationModal = ({ item, type, isOpen, onClose, onDelete }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 bg-gray-800 bg-opacity-75 overflow-y-auto flex items-center justify-center p-4">
-            <div className="relative bg-white w-full max-w-sm mx-auto rounded-xl shadow-2xl p-6">
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-60 overflow-y-auto flex items-center justify-center p-4 font-body">
+            <div className="relative bg-card w-full max-w-sm mx-auto rounded-2xl shadow-soft p-6">
                 <button 
                     onClick={onClose} 
-                    className="absolute top-4 right-4 text-gray-400 hover:text-pink-500 transition-colors"
+                    className="absolute top-4 right-4 text-primaryDark hover:text-accent transition-colors"
                 >
                     <FaTimes className="text-xl" />
                 </button>
-                <h3 className="text-2xl font-bold mb-4 text-red-600 border-b pb-2">Confirm Deletion</h3>
+                <h3 className="text-2xl font-bold font-heading mb-4 text-highlight border-b border-background pb-2">Confirm Deletion</h3>
                 
                 <p className="text-gray-700 mb-6">
                     Are you sure you want to permanently delete the {type} <strong>{item?.name}</strong>? 
@@ -26,13 +27,13 @@ const DeleteConfirmationModal = ({ item, type, isOpen, onClose, onDelete }) => {
                 <div className="flex space-x-3">
                     <Button 
                         onClick={onDelete} 
-                        className="flex-1 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg"
+                        className="flex-1 bg-highlight hover:bg-primaryDark text-white font-medium rounded-lg"
                     >
                         <FaTrashAlt className="mr-2" /> Yes, Delete
                     </Button>
                     <Button 
                         onClick={onClose} 
-                        className="flex-1 bg-gray-400 hover:bg-gray-500 text-white font-medium rounded-lg"
+                        className="flex-1 bg-background hover:bg-opacity-80 text-primaryDark font-medium rounded-lg"
                     >
                         Cancel
                     </Button>
@@ -52,14 +53,7 @@ const ManageBeds = () => {
     const [newBed, setNewBed] = useState({ roomId: '', name: '', type: 'single' });
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [bedToDelete, setBedToDelete] = useState(null);
-
-    const [filters, setFilters] = useState({
-        name: '',
-        buildingId: '',
-        roomId: '',
-        type: '',
-        status: '', // UPDATED: 'occupancy' renamed to 'status' to match API
-    });
+    const [filters, setFilters] = useState({ name: '', buildingId: '', roomId: '', type: '', status: '' });
 
     const fetchAllData = async () => {
         try {
@@ -119,7 +113,6 @@ const ManageBeds = () => {
         return (rooms || []).filter(room => room.buildingId?._id === buildingId);
     };
 
-    // UPDATED: Filter logic now uses the `status` field from the API
     const filteredBeds = useMemo(() => beds.filter(bed => {
         const matchesName = filters.name ? bed.name?.toLowerCase().includes(filters.name.toLowerCase()) : true;
         const matchesBuilding = filters.buildingId ? bed.buildingName === buildings.find(b => b._id === filters.buildingId)?.name : true;
@@ -130,40 +123,40 @@ const ManageBeds = () => {
         return matchesName && matchesBuilding && matchesRoom && matchesType && matchesStatus;
     }), [beds, filters, buildings]);
 
-    if (loading) return <div className="flex justify-center items-center h-screen"><FaSpinner className="animate-spin text-pink-500 text-4xl" /></div>;
+    if (loading) return <div className="flex justify-center items-center h-screen"><FaSpinner className="animate-spin text-primary text-4xl" /></div>;
 
     return (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-8 bg-gray-50 min-h-screen">
-            <h2 className="text-3xl md:text-4xl font-extrabold mb-8 text-gray-800 border-b-4 border-pink-500 pb-2 inline-block">
-                <FaBed className="inline mr-3 text-pink-500"/> Manage Beds
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-8 bg-neutral min-h-screen font-body">
+            <h2 className="text-3xl md:text-4xl font-extrabold mb-8 text-gray-800 border-b-4 border-primary pb-2 inline-block font-heading">
+                <FaBed className="inline mr-3 text-primary"/> Manage Beds
             </h2>
-            {error && <div className="bg-red-100 text-red-700 p-3 rounded-md mb-6 font-medium border border-red-300 text-center">{error}</div>}
+            {error && <div className="bg-highlight/10 text-highlight p-3 rounded-xl mb-6 font-medium text-center">{error}</div>}
             
-            <div className="bg-white p-6 rounded-xl shadow-md mb-6 border border-gray-200">
-                <h3 className="text-lg font-semibold mb-4 text-pink-600 flex items-center">
+            <div className="bg-card p-6 rounded-2xl shadow-soft mb-6">
+                <h3 className="text-lg font-semibold mb-4 text-primaryDark font-heading flex items-center">
                     <FaFilter className="mr-2"/> Filter Beds
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
                     <input type="text" placeholder="Search by name" value={filters.name} onChange={(e) => setFilters({ ...filters, name: e.target.value })}
-                        className="p-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-300"/>
+                        className="p-2 border border-background rounded-lg focus:ring-primary focus:border-primary"/>
                     <select value={filters.buildingId} onChange={(e) => setFilters({ ...filters, buildingId: e.target.value, roomId: '' })}
-                        className="p-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-300">
+                        className="p-2 border border-background rounded-lg focus:ring-primary focus:border-primary">
                         <option value="">All Buildings</option>
                         {buildings.map(b => <option key={b._id} value={b._id}>{b.name}</option>)}
                     </select>
                     <select value={filters.roomId} onChange={(e) => setFilters({ ...filters, roomId: e.target.value })}
-                        className="p-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-300" disabled={!filters.buildingId}>
+                        className="p-2 border border-background rounded-lg focus:ring-primary focus:border-primary" disabled={!filters.buildingId}>
                         <option value="">All Rooms</option>
                         {getRoomsForBuilding(filters.buildingId).map(r => <option key={r._id} value={r._id}>Room {r.roomNumber}</option>)}
                     </select>
                     <select value={filters.type} onChange={(e) => setFilters({ ...filters, type: e.target.value })}
-                        className="p-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-300">
+                        className="p-2 border border-background rounded-lg focus:ring-primary focus:border-primary">
                         <option value="">All Types</option>
                         <option value="single">Single</option>
                         <option value="floor bed">Floor Bed</option>
                     </select>
                     <select value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                        className="p-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-300">
+                        className="p-2 border border-background rounded-lg focus:ring-primary focus:border-primary">
                         <option value="">All Statuses</option>
                         <option value="occupied">Occupied</option>
                         <option value="available">Available</option>
@@ -171,15 +164,15 @@ const ManageBeds = () => {
                 </div>
             </div>
 
-            <div className="bg-white p-6 rounded-xl shadow-lg mb-8 border border-gray-200">
-                <h3 className="text-xl font-semibold mb-4 text-pink-600 flex items-center">
+            <div className="bg-card p-6 rounded-2xl shadow-soft mb-8">
+                <h3 className="text-xl font-semibold mb-4 text-primaryDark font-heading flex items-center">
                     <FaPlus className="mr-2"/> Add New Bed Unit
                 </h3>
                 <form onSubmit={handleAddBed} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-end">
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Building</label>
                         <select value={selectedBuildingId} onChange={(e) => { setSelectedBuildingId(e.target.value); setNewBed({ ...newBed, roomId: '' }); }} 
-                            className="mt-1 block w-full p-2 border border-gray-300 rounded-lg" required>
+                            className="mt-1 block w-full p-2 border border-background rounded-lg" required>
                             <option value="">Select Building</option>
                             {buildings.map(building => <option key={building._id} value={building._id}>{building.name}</option>)}
                         </select>
@@ -187,7 +180,7 @@ const ManageBeds = () => {
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Room</label>
                         <select value={newBed.roomId} onChange={(e) => setNewBed({ ...newBed, roomId: e.target.value })} 
-                            className="mt-1 block w-full p-2 border border-gray-300 rounded-lg disabled:bg-gray-100" disabled={!selectedBuildingId} required>
+                            className="mt-1 block w-full p-2 border border-background rounded-lg disabled:bg-neutral" disabled={!selectedBuildingId} required>
                             <option value="">Select Room</option>
                             {getRoomsForBuilding(selectedBuildingId).map(room => <option key={room._id} value={room._id}>Room {room.roomNumber}</option>)}
                         </select>
@@ -195,51 +188,52 @@ const ManageBeds = () => {
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Bed Name / Number</label>
                         <input type="text" value={newBed.name} onChange={(e) => setNewBed({ ...newBed, name: e.target.value })} 
-                            className="mt-1 block w-full p-2 border border-gray-300 rounded-lg" placeholder="e.g., A1, Bed 3" required />
+                            className="mt-1 block w-full p-2 border border-background rounded-lg" placeholder="e.g., A1, Bed 3" required />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Bed Type</label>
                         <select value={newBed.type} onChange={(e) => setNewBed({ ...newBed, type: e.target.value })} 
-                            className="mt-1 block w-full p-2 border border-gray-300 rounded-lg" required>
+                            className="mt-1 block w-full p-2 border border-background rounded-lg" required>
                             <option value="single">Single</option>
                             <option value="floor bed">Floor Bed</option>
                         </select>
                     </div>
                     <div className="sm:col-span-2 md:col-span-4 flex justify-end pt-2">
-                        <Button type="submit" className="bg-pink-500 hover:bg-pink-600 text-white font-semibold py-2 px-6 rounded-lg shadow-md">
+                        <Button type="submit" className="bg-highlight hover:bg-primaryDark text-white font-semibold py-2 px-6 rounded-lg shadow-soft">
                             <FaPlus className="inline mr-2" /> Add Bed
                         </Button>
                     </div>
                 </form>
             </div>
 
-            <div className="bg-white shadow-xl rounded-xl overflow-x-auto border border-gray-200">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-pink-100">
+            <div className="bg-card shadow-soft rounded-2xl overflow-x-auto">
+                <table className="min-w-full divide-y divide-background">
+                    <thead className="bg-background/50">
                         <tr>
-                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Bed Name</th>
-                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Location</th>
-                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Type</th>
-                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Status (Today)</th>
-                            <th className="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase">Actions</th>
+                            <th className="px-6 py-3 text-left text-xs font-semibold font-heading text-primaryDark uppercase">Bed Name</th>
+                            <th className="px-6 py-3 text-left text-xs font-semibold font-heading text-primaryDark uppercase">Location</th>
+                            <th className="px-6 py-3 text-left text-xs font-semibold font-heading text-primaryDark uppercase">Type</th>
+                            <th className="px-6 py-3 text-left text-xs font-semibold font-heading text-primaryDark uppercase">Status (Today)</th>
+                            <th className="px-6 py-3 text-center text-xs font-semibold font-heading text-primaryDark uppercase">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-100">
+                    <tbody className="divide-y divide-background">
                         {filteredBeds.map(bed => {
-                            const statusColor = bed.status === 'occupied' ? 'text-rose-600' : 'text-emerald-600';
+                            // CORRECTED: 'available' is now green, 'occupied' uses the theme's highlight color.
+                            const statusColor = bed.status === 'occupied' ? 'text-highlight' : 'text-green-600';
                             return (
-                                <tr key={bed._id} className="hover:bg-pink-50 transition-colors">
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{bed.name}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{`${bed.buildingName} / Room ${bed.roomNumber}`}</td>
+                                <tr key={bed._id} className="hover:bg-background transition-colors">
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{bed.name}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{`${bed.buildingName} / Room ${bed.roomNumber}`}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm capitalize">{bed.type}</td>
                                     <td className={`px-6 py-4 whitespace-nowrap text-sm capitalize font-medium ${statusColor}`}>
                                         {bed.status}
                                         {bed.status === 'occupied' && bed.occupant && (
-                                            <span className="block text-xs text-gray-500 font-normal">({bed.occupant.name})</span>
+                                            <span className="block text-xs text-gray-700 font-normal">({bed.occupant.name})</span>
                                         )}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-center">
-                                        <button onClick={() => confirmDeleteBed(bed)} className="text-red-500 hover:text-red-700 p-1" title="Delete Bed">
+                                        <button onClick={() => confirmDeleteBed(bed)} className="text-highlight hover:text-primaryDark p-1 transition-colors" title="Delete Bed">
                                             <FaTrashAlt />
                                         </button>
                                     </td>
@@ -249,7 +243,7 @@ const ManageBeds = () => {
                     </tbody>
                 </table>
                 {filteredBeds.length === 0 && (
-                    <div className="p-6 text-center text-gray-500">No beds match the current filters.</div>
+                    <div className="p-6 text-center text-gray-700">No beds match the current filters.</div>
                 )}
             </div>
 

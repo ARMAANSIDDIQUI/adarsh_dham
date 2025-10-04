@@ -4,15 +4,15 @@ import api from '../../api/api.js';
 import { FaSpinner, FaTrash, FaFilePdf, FaBed, FaBuilding, FaDoorOpen, FaTimesCircle, FaCheckCircle, FaEdit } from 'react-icons/fa';
 import Button from '../../components/common/Button.jsx';
 import { Link, useNavigate } from 'react-router-dom';
-import EditBookingModal from './EditBookingModal.jsx'; // Correctly import the self-contained modal
+import EditBookingModal from './EditBookingModal.jsx';
 
 const BookingCard = ({ booking, onEdit, onDelete, onDownloadPdf, navigateToEvent }) => {
     const getStatusStyles = (status) => {
         switch (status) {
-            case 'approved': return 'bg-green-50 border-green-500 text-green-800';
-            case 'pending': return 'bg-yellow-50 border-yellow-500 text-yellow-800';
-            case 'declined': return 'bg-red-50 border-red-500 text-red-800';
-            default: return 'bg-gray-50 border-gray-500 text-gray-800';
+            case 'approved': return 'bg-accent/10 border-accent text-accent';
+            case 'pending': return 'bg-primary/10 border-primary text-primaryDark';
+            case 'declined': return 'bg-highlight/10 border-highlight text-highlight';
+            default: return 'bg-gray-100 border-gray-400 text-gray-700';
         }
     };
 
@@ -20,40 +20,40 @@ const BookingCard = ({ booking, onEdit, onDelete, onDownloadPdf, navigateToEvent
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`p-5 rounded-xl shadow-xl border-l-4 transition-all duration-300 ${getStatusStyles(booking.status)} hover:shadow-2xl`}
+            className={`p-5 rounded-2xl shadow-soft border-l-4 transition-all duration-300 ${getStatusStyles(booking.status)}`}
         >
             <div className="flex justify-between items-start mb-4">
                 <div>
                     <h3
                         onClick={() => navigateToEvent(booking.eventId)}
-                        className="text-xl font-bold text-pink-600 cursor-pointer hover:underline transition-colors"
+                        className="text-xl font-bold font-heading text-highlight cursor-pointer hover:underline transition-colors"
                     >
                         {booking.eventId?.name || 'Event Details'}
                     </h3>
-                    <p className="text-xs font-mono text-gray-400 mt-1">{booking.bookingNumber}</p>
-                    <div className={`flex items-center space-x-2 font-semibold capitalize mt-1 text-base ${booking.status === 'approved' ? 'text-green-600' : booking.status === 'declined' ? 'text-red-600' : 'text-yellow-600'}`}>
+                    <p className="text-xs font-mono text-gray-500 mt-1">{booking.bookingNumber}</p>
+                    <div className={`flex items-center space-x-2 font-semibold capitalize mt-1 text-base`}>
                         {booking.status === 'approved' && <FaCheckCircle />}
                         {booking.status === 'declined' && <FaTimesCircle />}
                         <span>{booking.status}</span>
                     </div>
                 </div>
-                <span className="text-xs px-3 py-1 rounded-full bg-gray-200 text-gray-700 shadow-inner">
+                <span className="text-xs px-3 py-1 rounded-full bg-background/50 text-gray-700 shadow-inner">
                     Requested: {new Date(booking.createdAt).toLocaleDateString()}
                 </span>
             </div>
 
             {booking.status === 'approved' && (
-                <div className="mt-4 space-y-3 p-4 bg-white rounded-lg shadow-inner">
-                    <h4 className="font-bold text-pink-500 text-md border-b pb-2">Allocation Details:</h4>
+                <div className="mt-4 space-y-3 p-4 bg-card rounded-lg shadow-inner">
+                    <h4 className="font-bold font-heading text-primary text-md border-b border-background pb-2">Allocation Details:</h4>
                     {(booking.allocations || []).map((alloc, i) => {
                         const person = booking.formData.people[i];
                         return (
-                            <div key={i} className="p-3 bg-gray-50 rounded-md text-sm border border-gray-200">
+                            <div key={i} className="p-3 bg-background/50 rounded-md text-sm border border-background">
                                 <p className="font-bold text-gray-800 mb-2">{person?.name} ({person?.gender})</p>
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-y-1 text-gray-600">
-                                    <span className="flex items-center text-sm"><FaBuilding className="mr-2 text-pink-400" />{alloc.buildingId?.name || 'N/A'}</span>
-                                    <span className="flex items-center text-sm"><FaDoorOpen className="mr-2 text-pink-400" />Room {alloc.roomId?.roomNumber || 'N/A'}</span>
-                                    <span className="flex items-center text-sm"><FaBed className="mr-2 text-pink-400" />Bed {alloc.bedId?.name || 'N/A'}</span>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-y-1 text-gray-700">
+                                    <span className="flex items-center text-sm"><FaBuilding className="mr-2 text-primary" />{alloc.buildingId?.name || 'N/A'}</span>
+                                    <span className="flex items-center text-sm"><FaDoorOpen className="mr-2 text-primary" />Room {alloc.roomId?.roomNumber || 'N/A'}</span>
+                                    <span className="flex items-center text-sm"><FaBed className="mr-2 text-primary" />Bed {alloc.bedId?.name || 'N/A'}</span>
                                 </div>
                             </div>
                         );
@@ -61,21 +61,21 @@ const BookingCard = ({ booking, onEdit, onDelete, onDownloadPdf, navigateToEvent
                 </div>
             )}
 
-            {booking.status === 'declined' && <p className="mt-4 text-sm font-medium text-red-700">Booking declined.</p>}
-            {booking.status === 'pending' && <p className="mt-4 text-sm font-medium text-yellow-700">Booking pending approval.</p>}
+            {booking.status === 'declined' && <p className="mt-4 text-sm font-medium text-highlight">Booking declined.</p>}
+            {booking.status === 'pending' && <p className="mt-4 text-sm font-medium text-accent">Booking pending approval.</p>}
 
             <div className="mt-6 flex flex-col sm:flex-row justify-end items-center space-y-2 sm:space-y-0 sm:space-x-2">
                 {booking.status === 'approved' && (
-                    <Button onClick={() => onDownloadPdf(booking)} className="w-full sm:w-auto bg-pink-500 hover:bg-pink-600 text-sm py-2">
+                    <Button onClick={() => onDownloadPdf(booking)} className="w-full sm:w-auto bg-accent hover:bg-primaryDark text-white text-sm py-2">
                         <FaFilePdf className="inline mr-1" /> Download Pass
                     </Button>
                 )}
                 {(booking.status === 'pending' || booking.status === 'approved') && (
-                    <Button onClick={() => onEdit(booking)} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-sm py-2">
+                    <Button onClick={() => onEdit(booking)} className="w-full sm:w-auto bg-primary hover:bg-primaryDark text-white text-sm py-2">
                         <FaEdit className="inline mr-1" /> Edit
                     </Button>
                 )}
-                <Button onClick={() => onDelete(booking._id)} className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-sm py-2">
+                <Button onClick={() => onDelete(booking._id)} className="w-full sm:w-auto bg-highlight hover:bg-primaryDark text-white text-sm py-2">
                     <FaTrash className="inline mr-1" /> Withdraw
                 </Button>
             </div>
@@ -150,17 +150,17 @@ const MyBookings = () => {
         return { finished, ongoing, upcoming };
     }, [bookings]);
 
-    if (loading) return <div className="flex justify-center items-center h-screen"><FaSpinner className="animate-spin text-4xl text-pink-500" /></div>;
-    if (error) return <div className="text-center mt-10 text-red-600">{error}</div>;
+    if (loading) return <div className="flex justify-center items-center h-screen bg-neutral"><FaSpinner className="animate-spin text-4xl text-primary" /></div>;
+    if (error) return <div className="text-center mt-10 p-4 text-highlight bg-highlight/10 rounded-xl">{error}</div>;
 
     if (bookings.length === 0) {
         return (
-            <div className="flex flex-col justify-center items-center h-screen text-center px-4">
-                <FaTimesCircle className="text-6xl text-gray-400 mb-4" />
-                <h2 className="text-2xl font-bold text-gray-700 mb-2">No Bookings Found</h2>
-                <p className="text-gray-500">You haven't made any bookings yet. Explore events and make your first booking!</p>
+            <div className="flex flex-col justify-center items-center h-screen text-center px-4 bg-neutral font-body">
+                <FaTimesCircle className="text-6xl text-background mb-4" />
+                <h2 className="text-2xl font-bold font-heading text-primaryDark mb-2">No Bookings Found</h2>
+                <p className="text-gray-700">You haven't made any bookings yet. Explore events and make your first booking!</p>
                 <Link to="/calendar">
-                    <Button className="mt-6 bg-pink-500 hover:bg-pink-600 text-white">Browse Events</Button>
+                    <Button className="mt-6 bg-primary hover:bg-primaryDark text-white">Browse Events</Button>
                 </Link>
             </div>
         );
@@ -168,22 +168,22 @@ const MyBookings = () => {
 
     return (
         <>
-            <div className="p-4 md:p-8 max-w-5xl mx-auto min-h-screen">
-                <h2 className="text-3xl font-bold mb-6 text-gray-800 border-b-2 border-pink-400 pb-2 text-center">My Bookings</h2>
+            <div className="p-4 md:p-8 max-w-5xl mx-auto min-h-screen bg-neutral font-body">
+                <h2 className="text-3xl font-bold font-heading mb-6 text-primaryDark border-b-2 border-primary pb-2 text-center">My Bookings</h2>
 
                 <input
                     type="text"
                     placeholder="Search by booking number or event..."
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
-                    className="w-full p-3 mb-6 border rounded-lg focus:ring-pink-300 focus:border-pink-500 transition-colors"
+                    className="w-full p-3 mb-6 border border-background rounded-lg focus:ring-primary focus:border-primary transition-colors"
                 />
 
                 {message && (
                     <motion.div
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className={`my-4 p-3 rounded-lg text-center font-medium shadow-md cursor-pointer ${message.type === 'success' ? 'bg-green-100 text-green-700 border border-green-400' : 'bg-red-100 text-red-700 border border-red-400'}`}
+                        className={`my-4 p-3 rounded-xl text-center font-medium shadow-soft cursor-pointer ${message.type === 'success' ? 'bg-accent/10 text-accent border border-accent/20' : 'bg-highlight/10 text-highlight border border-highlight/20'}`}
                         onClick={() => setMessage(null)}
                     >
                         {message.text}
@@ -196,12 +196,12 @@ const MyBookings = () => {
                     );
                     if (filtered.length === 0) return null;
 
-                    const titleColor = category === 'upcoming' ? 'text-pink-500' : category === 'ongoing' ? 'text-yellow-500' : 'text-gray-500';
-                    const titleText = category.charAt(0).toUpperCase() + category.slice(1) + ' Events';
+                    const titleColor = category === 'upcoming' ? 'text-highlight' : category === 'ongoing' ? 'text-accent' : 'text-gray-500';
+                    const titleText = category.charAt(0).toUpperCase() + category.slice(1) + ' Bookings';
 
                     return (
                         <div key={category} className="mb-8">
-                            <h3 className={`text-2xl font-semibold mb-4 ${titleColor}`}>{titleText}</h3>
+                            <h3 className={`text-2xl font-semibold font-heading mb-4 ${titleColor}`}>{titleText}</h3>
                             <div className="space-y-4">
                                 {filtered.map(b => (
                                     <BookingCard
@@ -233,7 +233,7 @@ const MyBookings = () => {
                         b.bookingNumber.includes(searchQuery) || b.eventId?.name?.toLowerCase().includes(searchQuery.toLowerCase())
                     ).length === 0
                 ) && searchQuery && (
-                    <div className="text-center mt-10 text-gray-500">
+                    <div className="text-center mt-10 text-gray-700">
                         No bookings match your search.
                     </div>
                 )}

@@ -4,24 +4,24 @@ import Button from '../common/Button.jsx';
 import { FaFilePdf, FaTrashAlt, FaBed, FaBuilding, FaDoorOpen, FaTimesCircle, FaCheckCircle } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
-// Confirmation Modal component (Local to BookingStatus for self-containment)
+// Confirmation Modal component
 const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-60 overflow-y-auto h-full w-full flex items-center justify-center z-50 font-body">
             <motion.div
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                className="relative p-6 bg-white w-full max-w-sm rounded-xl shadow-2xl text-center"
+                className="relative p-6 bg-card w-full max-w-sm rounded-2xl shadow-soft text-center"
             >
-                <h3 className="text-xl font-bold mb-4 text-gray-800">{title}</h3>
-                <p className="text-gray-600 mb-6">{message}</p>
+                <h3 className="text-xl font-bold font-heading mb-4 text-primaryDark">{title}</h3>
+                <p className="text-gray-700 mb-6">{message}</p>
                 <div className="flex justify-center space-x-4">
-                    <Button onClick={onCancel} className="bg-gray-400 hover:bg-gray-500 text-sm">
+                    <Button onClick={onCancel} className="bg-background hover:bg-opacity-80 text-primaryDark text-sm">
                         Cancel
                     </Button>
-                    <Button onClick={onConfirm} className="bg-red-600 hover:bg-red-700 text-sm">
+                    <Button onClick={onConfirm} className="bg-highlight hover:bg-primaryDark text-sm text-white">
                         <FaTrashAlt className="inline mr-1" /> Confirm Delete
                     </Button>
                 </div>
@@ -62,10 +62,10 @@ const BookingStatus = ({ bookings, onDelete }) => {
 
     if (!bookings || bookings.length === 0) {
         return (
-            <div className="text-center p-8 bg-white rounded-xl shadow-lg border-t-4 border-pink-500">
-                <p className="text-gray-600">
+            <div className="text-center p-8 bg-card rounded-2xl shadow-soft border-t-4 border-primary font-body">
+                <p className="text-gray-700">
                     You have no active bookings. Please proceed to the{' '}
-                    <Link to="/booking" className="text-pink-500 hover:underline font-bold transition-colors">
+                    <Link to="/booking" className="text-highlight hover:underline font-bold transition-colors">
                         booking page
                     </Link>
                     {' '}to submit a request.
@@ -75,41 +75,41 @@ const BookingStatus = ({ bookings, onDelete }) => {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 font-body">
             {bookings.map((booking, index) => (
                 <motion.div
                     key={booking._id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: index * 0.05 }}
-                    className={`p-5 rounded-xl shadow-xl border-l-4 transition-all duration-300 ${getStatusStyles(booking.status)}`}
+                    className={`p-5 rounded-2xl shadow-soft border-l-4 transition-all duration-300 ${getStatusStyles(booking.status)}`}
                 >
                     <div className="flex justify-between items-start mb-4">
                         <div>
-                            <h3 className="text-xl font-bold text-gray-800">{booking.eventId?.name || 'Event Details'}</h3>
+                            <h3 className="text-xl font-bold font-heading text-primaryDark">{booking.eventId?.name || 'Event Details'}</h3>
                             <div className={`flex items-center space-x-2 font-semibold capitalize mt-1 text-base ${booking.status === 'approved' ? 'text-green-600' : booking.status === 'declined' ? 'text-red-600' : 'text-yellow-600'}`}>
                                 {booking.status === 'approved' && <FaCheckCircle />}
                                 {booking.status === 'declined' && <FaTimesCircle />}
                                 <span>{booking.status}</span>
                             </div>
                         </div>
-                        <span className="text-xs px-3 py-1 rounded-full bg-gray-200 text-gray-700 shadow-inner">
+                        <span className="text-xs px-3 py-1 rounded-full bg-background/50 text-gray-700 shadow-inner">
                             Requested: {new Date(booking.createdAt).toLocaleDateString()}
                         </span>
                     </div>
 
                     {booking.status === 'approved' && (
-                        <div className="mt-4 space-y-3 p-4 bg-white rounded-lg shadow-inner">
-                            <h4 className="font-bold text-pink-500 text-md border-b pb-2">Your Allocation Details:</h4>
+                        <div className="mt-4 space-y-3 p-4 bg-card rounded-lg shadow-inner">
+                            <h4 className="font-bold font-heading text-primary mb-2 text-md border-b border-background pb-2">Your Allocation Details:</h4>
                             {(booking.allocations || []).map((alloc, index) => {
                                 const person = booking.formData.people[index];
                                 return (
-                                    <div key={index} className="p-3 bg-gray-50 rounded-md text-sm border border-gray-200">
+                                    <div key={index} className="p-3 bg-background/50 rounded-md text-sm border border-background">
                                         <p className="font-bold text-gray-800 mb-2">{person?.name} ({person?.gender})</p>
-                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-y-1 text-gray-600">
-                                            <span className="flex items-center text-sm"><FaBuilding className="mr-2 text-pink-400" />{alloc.buildingId?.name || 'N/A'}</span>
-                                            <span className="flex items-center text-sm"><FaDoorOpen className="mr-2 text-pink-400" />Room {alloc.roomId?.roomNumber || 'N/A'}</span>
-                                            <span className="flex items-center text-sm"><FaBed className="mr-2 text-pink-400" />Bed {alloc.bedId?.name || 'N/A'}</span>
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-y-1 text-gray-700">
+                                            <span className="flex items-center text-sm"><FaBuilding className="mr-2 text-primary" />{alloc.buildingId?.name || 'N/A'}</span>
+                                            <span className="flex items-center text-sm"><FaDoorOpen className="mr-2 text-primary" />Room {alloc.roomId?.roomNumber || 'N/A'}</span>
+                                            <span className="flex items-center text-sm"><FaBed className="mr-2 text-primary" />Bed {alloc.bedId?.name || 'N/A'}</span>
                                         </div>
                                     </div>
                                 );
@@ -127,11 +127,11 @@ const BookingStatus = ({ bookings, onDelete }) => {
 
                     <div className="mt-6 flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2">
                         {booking.status === 'approved' && (
-                            <Button onClick={() => handleDownloadPdf(booking._id)} className="w-full sm:w-auto bg-pink-500 hover:bg-pink-600 text-sm py-2">
+                            <Button onClick={() => handleDownloadPdf(booking._id)} className="w-full sm:w-auto bg-accent hover:bg-primaryDark text-white text-sm py-2">
                                 <FaFilePdf className="inline mr-1" /> Download Pass
                             </Button>
                         )}
-                        <Button onClick={() => handleDeleteClick(booking._id)} className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-sm py-2">
+                        <Button onClick={() => handleDeleteClick(booking._id)} className="w-full sm:w-auto bg-highlight hover:bg-primaryDark text-white text-sm py-2">
                             <FaTrashAlt className="inline mr-1" /> Delete Booking
                         </Button>
                     </div>

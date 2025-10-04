@@ -3,20 +3,19 @@ import { motion } from 'framer-motion';
 import Button from '../common/Button.jsx';
 import { FaUserPlus, FaMapMarkerAlt, FaPhoneAlt, FaCalendarAlt, FaEnvelope, FaUniversity, FaUsers, FaPen } from 'react-icons/fa';
 
-// UPDATED: ThemedInput now accepts a 'max' prop for date validation
 const ThemedInput = ({ label, name, value, onChange, required, type = "text", icon, min, max, colSpan = "" }) => (
     <div className={colSpan}>
         <label className="text-sm font-medium text-gray-700 flex items-center mb-1">
-            {icon && <span className="mr-2 text-pink-500">{icon}</span>}
+            {icon && <span className="mr-2 text-primary">{icon}</span>}
             {label}
-            {required && <span className="ml-1 text-red-500">*</span>}
+            {required && <span className="ml-1 text-highlight">*</span>}
         </label>
         <input 
             type={type} 
             name={name} 
             value={value} 
             onChange={onChange} 
-            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500 shadow-sm" 
+            className="mt-1 block w-full px-4 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary shadow-sm" 
             required={required} 
             min={min} 
             max={max}
@@ -32,7 +31,7 @@ const InputGroup = ({ label, name, value, onChange }) => (
             name={name} 
             value={value} 
             onChange={onChange} 
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500 shadow-sm" 
+            className="w-full px-3 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary shadow-sm" 
             min="0" 
         />
     </div>
@@ -45,7 +44,6 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
         contactNumber: '', fillingForOthers: false, baijiMahatmaJi: '', baijiContact: '', notes: ''
     });
     
-    // NEW: State for client-side validation errors
     const [validationError, setValidationError] = useState(null);
 
     useEffect(() => {
@@ -100,10 +98,9 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
         const { name, value, type, checked } = e.target;
         const newFormData = { ...formData, [name]: type === 'checkbox' ? checked : value };
 
-        // NEW: Smart date logic
         if (name === 'stayFrom') {
             if (!newFormData.stayTo || new Date(value) > new Date(newFormData.stayTo)) {
-                newFormData.stayTo = value; // Set 'To' date to match 'From' date
+                newFormData.stayTo = value;
             }
         }
         setFormData(newFormData);
@@ -118,15 +115,15 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
             .map((person, index) => ({ person, originalIndex: index }))
             .filter(({ person }) => person.gender === gender)
             .map(({ person, originalIndex }, genderIndex) => (
-                <div key={originalIndex} className="grid grid-cols-2 gap-4 pt-4 border-b-2 border-pink-100 pb-4 last:border-b-0">
-                    <h4 className="col-span-2 font-bold capitalize text-gray-700">{gender} #{genderIndex + 1}</h4>
+                <div key={originalIndex} className="grid grid-cols-2 gap-4 pt-4 border-b-2 border-background pb-4 last:border-b-0">
+                    <h4 className="col-span-2 font-bold capitalize text-primaryDark">{gender} #{genderIndex + 1}</h4>
                     <div>
                         <label className="block text-xs font-medium text-gray-600">Name</label>
-                        <input type="text" name="name" value={person.name} onChange={(e) => handlePersonChange(e, originalIndex)} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg" required />
+                        <input type="text" name="name" value={person.name} onChange={(e) => handlePersonChange(e, originalIndex)} className="mt-1 block w-full px-3 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary" required />
                     </div>
                     <div>
                         <label className="block text-xs font-medium text-gray-600">Age</label>
-                        <input type="number" name="age" value={person.age} onChange={(e) => handlePersonChange(e, originalIndex)} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg" required min="1"/>
+                        <input type="number" name="age" value={person.age} onChange={(e) => handlePersonChange(e, originalIndex)} className="mt-1 block w-full px-3 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary" required min="1"/>
                     </div>
                 </div>
             ));
@@ -134,13 +131,12 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        setValidationError(null); // Clear previous errors
+        setValidationError(null);
 
-        // NEW: Age validation logic
         const ageValidationError = formData.people.find(p => (p.gender === 'boy' || p.gender === 'girl') && parseInt(p.age, 10) > 16);
         if (ageValidationError) {
             setValidationError(`Age for ${ageValidationError.name} (${ageValidationError.gender}) is over 16. Please classify as Male or Female.`);
-            return; // Stop the submission
+            return;
         }
 
         const { numMales, numFemales, numBoys, numGirls, ...submissionData } = formData;
@@ -148,26 +144,23 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
     };
 
     return (
-        <div className="bg-gray-100 p-4 md:p-8 min-h-screen">
-            <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="p-6 md:p-8 bg-white rounded-xl shadow-lg max-w-2xl w-full mx-auto">
-                <h2 className="text-3xl font-bold mb-8 text-center text-gray-800 border-b-2 border-pink-400 pb-3">
+        <div className="bg-neutral p-4 md:p-8 min-h-screen font-body">
+            <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="p-6 md:p-8 bg-card rounded-2xl shadow-soft max-w-2xl w-full mx-auto">
+                <h2 className="text-3xl font-bold font-heading mb-8 text-center text-primaryDark border-b-2 border-background pb-3">
                     {isEditing ? 'Edit Your Booking' : 'Request Accommodation'}
                 </h2>
                 
                 <form onSubmit={handleSubmit} className="space-y-8">
                     <div>
-                        <h3 className="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Period of Stay</h3>
+                        <h3 className="text-xl font-semibold font-heading text-primaryDark mb-4 border-b border-background pb-2">Period of Stay</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* UPDATED: Added max property */}
                             <ThemedInput label="From" name="stayFrom" value={formData.stayFrom} onChange={handleChange} required type="date" icon={<FaCalendarAlt />} max={formData.stayTo} />
-                            {/* UPDATED: Added min property */}
                             <ThemedInput label="To" name="stayTo" value={formData.stayTo} onChange={handleChange} required type="date" icon={<FaCalendarAlt />} min={formData.stayFrom} />
                         </div>
                     </div>
 
-                    {/* ... other form sections (ashram, your details) are unchanged ... */}
                     <div>
-                        <h3 className="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Ashram & Reference Details</h3>
+                        <h3 className="text-xl font-semibold font-heading text-primaryDark mb-4 border-b border-background pb-2">Ashram & Reference Details</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <ThemedInput label="Ashram Name" name="ashramName" value={formData.ashramName} onChange={handleChange} required icon={<FaUniversity />} colSpan="md:col-span-2" />
                             <ThemedInput label="Baiji / Mahatma Ji Name (Optional)" name="baijiMahatmaJi" value={formData.baijiMahatmaJi} onChange={handleChange} />
@@ -176,7 +169,7 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
                     </div>
 
                     <div>
-                        <h3 className="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Your Details</h3>
+                        <h3 className="text-xl font-semibold font-heading text-primaryDark mb-4 border-b border-background pb-2">Your Details</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <ThemedInput label="Email (Optional)" name="email" type="email" value={formData.email} onChange={handleChange} icon={<FaEnvelope />} />
                             <ThemedInput label="Contact Number" name="contactNumber" value={formData.contactNumber} onChange={handleChange} required icon={<FaPhoneAlt />} />
@@ -186,19 +179,19 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
                     </div>
                     
                     <div>
-                        <h3 className="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Group Details</h3>
+                        <h3 className="text-xl font-semibold font-heading text-primaryDark mb-4 border-b border-background pb-2">Group Details</h3>
                         <div className="space-y-6">
-                            <div className="p-4 border border-gray-200 bg-gray-50 rounded-lg">
+                            <div className="p-4 border border-background bg-background/50 rounded-lg">
                                 <label className="text-sm font-medium text-gray-700 flex items-center mb-2">
-                                    <FaUsers className="mr-2 text-pink-500" /> Are you filling this form for others?
+                                    <FaUsers className="mr-2 text-primary" /> Are you filling this form for others?
                                 </label>
                                 <div className="flex items-center space-x-6">
-                                    <label className="flex items-center cursor-pointer"><input type="radio" name="fillingForOthers" value="true" checked={formData.fillingForOthers === true} onChange={handleRadioChange} className="form-radio h-4 w-4 text-pink-600" /><span className="ml-2 text-gray-700">Yes</span></label>
-                                    <label className="flex items-center cursor-pointer"><input type="radio" name="fillingForOthers" value="false" checked={formData.fillingForOthers === false} onChange={handleRadioChange} className="form-radio h-4 w-4 text-pink-600" /><span className="ml-2 text-gray-700">No</span></label>
+                                    <label className="flex items-center cursor-pointer"><input type="radio" name="fillingForOthers" value="true" checked={formData.fillingForOthers === true} onChange={handleRadioChange} className="form-radio h-4 w-4 text-primary focus:ring-primary" /><span className="ml-2 text-gray-700">Yes</span></label>
+                                    <label className="flex items-center cursor-pointer"><input type="radio" name="fillingForOthers" value="false" checked={formData.fillingForOthers === false} onChange={handleRadioChange} className="form-radio h-4 w-4 text-primary focus:ring-primary" /><span className="ml-2 text-gray-700">No</span></label>
                                 </div>
                             </div>
-                            <div className="p-4 border border-pink-100 bg-pink-50 rounded-lg shadow-inner">
-                                <label className="text-base font-semibold text-gray-800 flex items-center mb-3"><FaUserPlus className="mr-2 text-pink-500" /> Member Details</label>
+                            <div className="p-4 border border-primary/20 bg-primary/10 rounded-lg shadow-inner">
+                                <label className="text-base font-semibold text-primaryDark flex items-center mb-3"><FaUserPlus className="mr-2 text-primary" /> Member Details</label>
                                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                                     <InputGroup label="Males" name="numMales" value={formData.numMales} onChange={handleGroupChange} />
                                     <InputGroup label="Females" name="numFemales" value={formData.numFemales} onChange={handleGroupChange} />
@@ -218,19 +211,18 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
                     </div>
                     
                     <div>
-                        <h3 className="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Additional Information</h3>
+                        <h3 className="text-xl font-semibold font-heading text-primaryDark mb-4 border-b border-background pb-2">Additional Information</h3>
                         <div>
-                            <label className="text-sm font-medium text-gray-700 flex items-center mb-1"><FaPen className="mr-2 text-pink-500"/> Special Requests / Notes</label>
-                            <textarea name="notes" value={formData.notes} onChange={handleChange} rows="3" className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500 shadow-sm" />
+                            <label className="text-sm font-medium text-gray-700 flex items-center mb-1"><FaPen className="mr-2 text-primary"/> Special Requests / Notes</label>
+                            <textarea name="notes" value={formData.notes} onChange={handleChange} rows="3" className="mt-1 block w-full px-4 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary shadow-sm" />
                         </div>
                     </div>
                     
-                    {/* NEW: Display validation error */}
-                    {validationError && <p className="text-red-700 bg-red-100/50 border border-red-400 p-3 rounded-lg text-sm text-center font-medium">{validationError}</p>}
-                    {error && <p className="text-red-700 bg-red-100/50 border border-red-400 p-3 rounded-lg text-sm text-center font-medium">{error}</p>}
+                    {validationError && <p className="text-highlight bg-highlight/10 border border-highlight/20 p-3 rounded-lg text-sm text-center font-medium">{validationError}</p>}
+                    {error && <p className="text-highlight bg-highlight/10 border border-highlight/20 p-3 rounded-lg text-sm text-center font-medium">{error}</p>}
                     
                     <div className="pt-4">
-                        <Button type="submit" className="w-full text-lg py-3 shadow-md" disabled={loading}>
+                        <Button type="submit" className="w-full text-lg py-3 shadow-soft bg-highlight hover:bg-primaryDark" disabled={loading}>
                             {loading ? 'Submitting...' : (isEditing ? 'Update Booking' : 'Submit Request')}
                         </Button>
                     </div>

@@ -4,19 +4,17 @@ import api from '../../api/api';
 import Button from '../common/Button';
 import { FaLock, FaSpinner } from 'react-icons/fa';
 
-// ✅ MOVED OUTSIDE: This component is now defined only once, which preserves focus.
-// It now also accepts an `onChange` handler as a prop.
 const PasswordInput = ({ name, placeholder, value, onChange }) => (
     <div className="mt-1 relative">
-        <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+        <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-accent" />
         <input
             type="password"
             name={name}
             value={value}
-            onChange={onChange} // Use the passed-in handler
+            onChange={onChange}
             required
             minLength="6"
-            className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500"
+            className="w-full pl-10 pr-3 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary shadow-sm"
             placeholder={placeholder}
         />
     </div>
@@ -42,7 +40,6 @@ const ChangePasswordForm = () => {
         }
         setLoading(true);
         try {
-            // Using the correct endpoint from your userController
             const { data } = await api.put('/users/change-password', {
                 currentPassword: formData.currentPassword,
                 newPassword: formData.newPassword
@@ -57,8 +54,8 @@ const ChangePasswordForm = () => {
     };
 
     return (
-        <div className="bg-white p-6 rounded-lg shadow-sm">
-            <h3 className="text-xl font-semibold mb-4 text-gray-700">Change Password</h3>
+        <div className="bg-card p-6 rounded-2xl shadow-soft font-body">
+            <h3 className="text-xl font-semibold font-heading mb-4 text-primaryDark">Change Password</h3>
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                     <label className="text-sm font-medium text-gray-700">Current Password</label>
@@ -66,7 +63,7 @@ const ChangePasswordForm = () => {
                         name="currentPassword" 
                         placeholder="Enter your current password" 
                         value={formData.currentPassword} 
-                        onChange={handleChange} // Pass the handler
+                        onChange={handleChange}
                     />
                 </div>
                 <div>
@@ -75,7 +72,7 @@ const ChangePasswordForm = () => {
                         name="newPassword" 
                         placeholder="Minimum 6 characters" 
                         value={formData.newPassword} 
-                        onChange={handleChange} // Pass the handler
+                        onChange={handleChange}
                     />
                 </div>
                 <div>
@@ -84,11 +81,11 @@ const ChangePasswordForm = () => {
                         name="confirmNewPassword" 
                         placeholder="Re-enter new password" 
                         value={formData.confirmNewPassword} 
-                        onChange={handleChange} // Pass the handler
+                        onChange={handleChange}
                     />
                 </div>
                 <div className="text-right pt-2">
-                    <Button type="submit" disabled={loading}>
+                    <Button type="submit" disabled={loading} className="bg-highlight hover:bg-primaryDark text-white">
                         {loading && <FaSpinner className="animate-spin mr-2" />}
                         {loading ? 'Updating...' : 'Update Password'}
                     </Button>

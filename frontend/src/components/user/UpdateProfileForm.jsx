@@ -18,7 +18,6 @@ const UpdateProfileForm = () => {
         setLoading(true);
 
         try {
-            // ✅ CORRECTED: The URL now correctly points to "/users/profile"
             const res = await api.put(`/users/profile`, { name });
             
             dispatch(updateUser(res.data));
@@ -33,7 +32,7 @@ const UpdateProfileForm = () => {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6 font-body">
             <ThemedInput 
                 label="Name" 
                 name="name" 
@@ -49,9 +48,9 @@ const UpdateProfileForm = () => {
                 disabled 
                 icon={<FaPhoneAlt />}
             />
-            <p className="text-xs text-gray-500 -mt-2">Phone number cannot be changed.</p>
+            <p className="text-xs text-gray-700 -mt-2">Phone number cannot be changed.</p>
             
-            <Button type="submit" className="w-full text-lg py-3 shadow-md" disabled={loading}>
+            <Button type="submit" className="w-full text-lg py-3 shadow-soft bg-primary hover:bg-primaryDark text-white" disabled={loading}>
                 {loading ? 'Updating...' : 'Update Details'}
             </Button>
         </form>

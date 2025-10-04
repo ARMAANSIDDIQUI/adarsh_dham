@@ -12,18 +12,18 @@ const OccupantDetailsModal = ({ isOpen, person, onClose }) => {
     return (
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
+                <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4 font-body">
                     <motion.div
                         initial={{ scale: 0.8, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0.8, opacity: 0 }}
-                        className="relative bg-white p-6 rounded-xl shadow-2xl w-full max-w-md"
+                        className="relative bg-card p-6 rounded-2xl shadow-soft w-full max-w-md"
                     >
-                        <button onClick={onClose} className="absolute top-3 right-3 text-gray-400 hover:text-gray-600">
+                        <button onClick={onClose} className="absolute top-3 right-3 text-primaryDark hover:text-accent">
                             <FaTimes size={20} />
                         </button>
                         
-                        <h3 className="text-2xl font-bold text-pink-600 mb-4 border-b pb-2">{person.name}</h3>
+                        <h3 className="text-2xl font-bold font-heading text-highlight mb-4 border-b border-background pb-2">{person.name}</h3>
                         
                         <div className="space-y-3 text-gray-700">
                             <p className="flex items-center"><FaHashtag className="mr-3 text-gray-400"/>Booking No: <span className="font-semibold ml-2">{person.bookingNumber}</span></p>
@@ -31,8 +31,7 @@ const OccupantDetailsModal = ({ isOpen, person, onClose }) => {
                             <p className="flex items-center"><FaCity className="mr-3 text-gray-400"/>City: <span className="font-semibold ml-2">{person.city}</span></p>
                             <p className="flex items-center"><FaPhone className="mr-3 text-gray-400"/>Contact: <span className="font-semibold ml-2">{person.contactNumber}</span></p>
                             <p className="flex items-center"><FaUserTag className="mr-3 text-gray-400"/>Reference: <span className="font-semibold ml-2">{person.baijiMahatmaJi || 'N/A'}</span></p>
-                            {/* <p className="flex items-center"><FaUserCheck className="mr-3 text-gray-400"/>Booked By: <span className="font-semibold ml-2">{person.userId?.name}</span></p> */}
-                            <p className="mt-4 pt-4 border-t text-sm text-center">Stay: {formatDate(person.stayFrom)} to {formatDate(person.stayTo)}</p>
+                            <p className="mt-4 pt-4 border-t border-background text-sm text-center">Stay: {formatDate(person.stayFrom)} to {formatDate(person.stayTo)}</p>
                         </div>
                     </motion.div>
                 </div>
@@ -47,8 +46,6 @@ const StructureView = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-
-    // NEW: State to manage the details modal
     const [modalData, setModalData] = useState({ isOpen: false, person: null });
 
     useEffect(() => {
@@ -93,14 +90,14 @@ const StructureView = () => {
         return { totalCapacity, totalOccupancy, totalVacancy: totalCapacity - totalOccupancy };
     }, [buildings, occupancyMap]);
 
-    if (loading) return <div className="flex justify-center items-center h-screen"><FaSpinner className="animate-spin text-pink-500 text-4xl" /></div>;
+    if (loading) return <div className="flex justify-center items-center h-screen"><FaSpinner className="animate-spin text-primary text-4xl" /></div>;
 
     return (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-8 bg-gray-100 min-h-screen">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-8 bg-neutral min-h-screen font-body">
             <div className="flex flex-wrap justify-between items-center mb-6">
-                <h2 className="text-3xl font-bold text-gray-800">Live Occupancy View</h2>
+                <h2 className="text-3xl font-bold font-heading text-primaryDark">Live Occupancy View</h2>
                 <div className="flex items-center space-x-2">
-                    <label htmlFor="date-picker" className="font-semibold">Select Date:</label>
+                    <label htmlFor="date-picker" className="font-semibold text-gray-700">Select Date:</label>
                     <input type="date" id="date-picker" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} className="p-2 border rounded-lg shadow-sm" />
                 </div>
             </div>
@@ -108,18 +105,18 @@ const StructureView = () => {
             {error && <p className="text-red-600 bg-red-100 p-3 rounded-md mb-6">{error}</p>}
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                <div className="bg-white p-4 rounded-lg shadow text-center">
-                    <FaBed className="text-2xl text-purple-500 mx-auto mb-2"/>
+                <div className="bg-card p-4 rounded-2xl shadow-soft text-center">
+                    <FaBed className="text-2xl text-accent mx-auto mb-2"/>
                     <p className="text-3xl font-bold">{summaryStats.totalCapacity}</p>
                     <p className="text-sm text-gray-500">Total Capacity</p>
                 </div>
-                <div className="bg-white p-4 rounded-lg shadow text-center">
-                    <FaUserCheck className="text-2xl text-emerald-500 mx-auto mb-2"/>
+                <div className="bg-card p-4 rounded-2xl shadow-soft text-center">
+                    <FaUserCheck className="text-2xl text-accent mx-auto mb-2"/>
                     <p className="text-3xl font-bold">{summaryStats.totalOccupancy}</p>
                     <p className="text-sm text-gray-500">Current Occupancy</p>
                 </div>
-                 <div className="bg-white p-4 rounded-lg shadow text-center">
-                    <FaUserMinus className="text-2xl text-rose-500 mx-auto mb-2"/>
+                 <div className="bg-card p-4 rounded-2xl shadow-soft text-center">
+                    <FaUserMinus className="text-2xl text-accent mx-auto mb-2"/>
                     <p className="text-3xl font-bold">{summaryStats.totalVacancy}</p>
                     <p className="text-sm text-gray-500">Current Vacancy</p>
                 </div>
@@ -131,14 +128,14 @@ const StructureView = () => {
                     const buildingOccupancy = building.rooms.reduce((acc, room) => acc + room.beds.filter(bed => occupancyMap.has(bed._id)).length, 0);
 
                     return (
-                        <div key={building._id} className="bg-white p-4 rounded-xl shadow-lg border-l-4 border-blue-500">
+                        <div key={building._id} className="bg-card p-4 rounded-2xl shadow-soft border-l-4 border-primary">
                             <div className="flex justify-between items-center mb-3">
-                                <h3 className="text-xl font-bold text-gray-700 flex items-center"><FaBuilding className="mr-3 text-blue-500"/>{building.name}</h3>
+                                <h3 className="text-xl font-bold font-heading text-primaryDark flex items-center"><FaBuilding className="mr-3 text-primary"/>{building.name}</h3>
                                 <span className="font-semibold text-gray-600">Occupancy: {buildingOccupancy} / {buildingCapacity}</span>
                             </div>
                             <div className="space-y-4">
                                 {building.rooms.map(room => (
-                                    <div key={room._id} className="pl-4 border-l-2 ml-2">
+                                    <div key={room._id} className="pl-4 border-l-2 ml-2 border-background">
                                         <h4 className="font-semibold text-gray-600">Room {room.roomNumber}</h4>
                                         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 mt-2">
                                             {room.beds.map(bed => {
@@ -148,12 +145,11 @@ const StructureView = () => {
                                                     <div 
                                                          key={bed._id}
                                                          title={isOccupied ? `Occupied by: ${occupant.name}` : `Available`}
-                                                         // NEW: onClick handler and conditional styling
                                                          onClick={() => isOccupied && setModalData({ isOpen: true, person: occupant })}
                                                          className={`p-2 rounded-md text-center text-xs border transition-all duration-200 ${
-                                                            isOccupied 
-                                                            ? 'bg-pink-100 border-pink-300 cursor-pointer hover:bg-pink-200 hover:shadow-md' 
-                                                            : 'bg-green-100 border-green-300'
+                                                             isOccupied 
+                                                             ? 'bg-pink-100 border-pink-300 cursor-pointer hover:bg-pink-200 hover:shadow-md' 
+                                                             : 'bg-green-100 border-green-300'
                                                          }`}
                                                     >
                                                         <p className="font-bold text-gray-800">{bed.name}</p>
@@ -172,7 +168,6 @@ const StructureView = () => {
                 })}
             </div>
 
-            {/* NEW: Render the modal component */}
             <OccupantDetailsModal 
                 isOpen={modalData.isOpen}
                 person={modalData.person}

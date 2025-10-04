@@ -42,41 +42,41 @@ const EventCard = ({ event }) => {
 
   return (
     <motion.div
-      className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 flex flex-col h-full border border-gray-100"
+      className="bg-card p-6 rounded-2xl shadow-soft hover:shadow-accent transition-all duration-300 transform hover:-translate-y-0.5 flex flex-col h-full font-body"
       variants={itemVariants}
     >
-      <h2 className="text-2xl font-bold text-gray-800 mb-2 border-b border-pink-100 pb-2">
+      <h2 className="text-2xl font-bold font-heading text-primaryDark mb-2 border-b border-background pb-2">
         {event.name}
       </h2>
-      <p className="text-gray-600 mb-4 flex-grow text-sm md:text-base">
+      <p className="text-gray-700 mb-4 flex-grow text-sm md:text-base">
         {event.description}
       </p>
       
       {/* Details Section */}
       <div className="text-sm text-gray-700 space-y-2 mb-6">
         <p className="flex items-center space-x-2">
-          <FaMapMarkerAlt className="text-pink-500 flex-shrink-0" />
+          <FaMapMarkerAlt className="text-primary flex-shrink-0" />
           <span><strong>Location:</strong> {event.location}</span>
         </p>
         <p className="flex items-center space-x-2">
-          <FaCalendarAlt className="text-pink-500 flex-shrink-0" />
+          <FaCalendarAlt className="text-primary flex-shrink-0" />
           <span><strong>Dates:</strong> {new Date(event.startDate).toLocaleDateString()} - {new Date(event.endDate).toLocaleDateString()}</span>
         </p>
         <p className="flex items-center space-x-2">
-          <FaTicketAlt className="text-pink-500 flex-shrink-0" />
+          <FaTicketAlt className="text-primary flex-shrink-0" />
           <span><strong>Booking Window:</strong> {new Date(event.bookingStartDate).toLocaleDateString()} - {new Date(event.bookingEndDate).toLocaleDateString()}</span>
         </p>
       </div>
 
       {/* Live Links Section */}
       {event.name.toLowerCase().includes('satsang') && liveLinks.length > 0 && (
-        <div className="mb-6 p-3 bg-pink-50 rounded-lg border border-pink-100">
-          <h4 className="font-semibold text-gray-800 mb-2 flex items-center space-x-1">
-            <FaPlayCircle className="text-pink-500" /> <span>Live Stream Links:</span>
+        <div className="mb-6 p-3 bg-background/50 rounded-lg border border-background">
+          <h4 className="font-semibold font-heading text-primaryDark mb-2 flex items-center space-x-1">
+            <FaPlayCircle className="text-primary" /> <span>Live Stream Links:</span>
           </h4>
           <ul className="space-y-1">
             {liveLinks.map(link => (
-              <li key={link._id} className="text-pink-600 text-sm">
+              <li key={link._id} className="text-highlight text-sm">
                 <a 
                   href={link.url} 
                   target="_blank" 

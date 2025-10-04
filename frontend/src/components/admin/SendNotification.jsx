@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import api from '../../api/api.js';
+import api from '../../api/api.js'; 
 import Button from '../common/Button.jsx';
 import { FaPaperPlane, FaClock, FaExclamationCircle, FaCalendarAlt } from 'react-icons/fa';
 
@@ -9,17 +9,12 @@ const SendNotification = () => {
     const [target, setTarget] = useState({ userId: '', role: '', targetGroup: 'allAdmins' });
     const [status, setStatus] = useState(null);
     const [loading, setLoading] = useState(false);
-    
-    // --- UPDATED: State for scheduling ---
-    const [sendOption, setSendOption] = useState('now'); // 'now' or 'schedule'
+    const [sendOption, setSendOption] = useState('now');
     const [scheduleDelay, setScheduleDelay] = useState({ days: 0, hours: 0, minutes: 5 });
-    
     const [ttl, setTtl] = useState({ days: 1, hours: 0, minutes: 0 });
     const [totalTtlMinutes, setTotalTtlMinutes] = useState(1440);
-
     const roles = ['user', 'admin', 'super-admin', 'super-operator', 'operator', 'satsang-operator'];
 
-    // --- UPDATED: Helper to calculate the scheduled send time ---
     const calculatedSendTime = useMemo(() => {
         if (sendOption === 'now') return new Date();
         const now = new Date();
@@ -47,21 +42,18 @@ const SendNotification = () => {
         setScheduleDelay(prev => ({ ...prev, [name]: parseInt(value, 10) || 0 }));
     };
 
-    // --- UPDATED: handleSubmit to include scheduling and correct payload ---
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setStatus(null);
-
         let targetGroup;
         if (target.userId) {
             targetGroup = 'user';
         } else if (target.role) {
             targetGroup = 'role';
         } else {
-            targetGroup = 'all'; // Default to all users if nothing is specified
+            targetGroup = 'all';
         }
-
         const payload = {
             message,
             targetGroup,
@@ -69,7 +61,6 @@ const SendNotification = () => {
             role: target.role || undefined,
             ttlMinutes: totalTtlMinutes
         };
-        
         if (sendOption === 'schedule') {
              if (calculatedSendTime <= new Date()) {
                 setStatus({ type: 'error', message: 'Scheduled time must be in the future.' });
@@ -78,9 +69,7 @@ const SendNotification = () => {
             }
             payload.sendAt = calculatedSendTime.toISOString();
         }
-        
         try {
-            // Note: The endpoint is '/notifications', not '/notifications/send'
             await api.post('/notifications', payload);
             setStatus({ type: 'success', message: sendOption === 'now' ? 'Notification sent successfully!' : 'Notification scheduled successfully!' });
             setMessage('');
@@ -93,12 +82,12 @@ const SendNotification = () => {
     };
 
     return (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-8 bg-gray-100 min-h-screen flex justify-center">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-8 bg-neutral min-h-screen flex justify-center font-body">
             <div className="w-full max-w-2xl">
-                <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6 border-b-2 border-pink-400 pb-2 text-center">
+                <h2 className="text-3xl md:text-4xl font-bold font-heading text-primaryDark mb-6 border-b-2 border-primary pb-2 text-center">
                     Send Notification
                 </h2>
-                <div className="bg-white p-6 rounded-xl shadow-lg">
+                <div className="bg-card p-6 rounded-2xl shadow-soft">
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {/* Message Input */}
                         <div>
@@ -106,13 +95,13 @@ const SendNotification = () => {
                             <textarea value={message} onChange={(e) => setMessage(e.target.value)} rows="4" className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-500" placeholder="Enter the message content..." required />
                         </div>
 
-                        {/* --- UPDATED: Scheduling UI --- */}
+                        {/* Scheduling UI */}
                         <div className="p-4 border border-blue-100 bg-blue-50 rounded-lg">
                              <label className="text-base font-semibold text-gray-800 mb-3 flex items-center"><FaCalendarAlt className="mr-2 text-blue-500" /> Sending Options</label>
                              <div className="flex flex-wrap gap-x-6 gap-y-2 mb-4">
-                                <label className="flex items-center space-x-2 cursor-pointer"><input type="radio" value="now" checked={sendOption === 'now'} onChange={(e) => setSendOption(e.target.value)} /><span>Send Now</span></label>
-                                <label className="flex items-center space-x-2 cursor-pointer"><input type="radio" value="schedule" checked={sendOption === 'schedule'} onChange={(e) => setSendOption(e.target.value)} /><span>Schedule for Later</span></label>
-                            </div>
+                                 <label className="flex items-center space-x-2 cursor-pointer"><input type="radio" value="now" checked={sendOption === 'now'} onChange={(e) => setSendOption(e.target.value)} /><span>Send Now</span></label>
+                                 <label className="flex items-center space-x-2 cursor-pointer"><input type="radio" value="schedule" checked={sendOption === 'schedule'} onChange={(e) => setSendOption(e.target.value)} /><span>Schedule for Later</span></label>
+                             </div>
                             <AnimatePresence>
                                 {sendOption === 'schedule' && (
                                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="pt-2">
@@ -139,7 +128,7 @@ const SendNotification = () => {
 
                         {/* Target Inputs */}
                          <div>
-                            <label className="block text-base font-semibold text-gray-800 mb-2">Target Audience</label>
+                            <label className="block text-base font-semibold text-primaryDark font-heading mb-2">Target Audience</label>
                             <p className="text-xs text-gray-500 mb-3">Leave both fields blank to send to **all admins** by default.</p>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>

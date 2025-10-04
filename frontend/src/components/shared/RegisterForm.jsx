@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import api from '../../api/api';
 import Button from '../common/Button';
 import { motion } from 'framer-motion';
@@ -35,9 +35,9 @@ const RegisterForm = () => {
     };
 
     return (
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="p-4 md:p-8 min-h-screen flex items-center justify-center ">
-            <div className="bg-white rounded-xl shadow-lg max-w-md w-full p-6 md:p-8 border-t-4 border-pink-500">
-                <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">Create Account</h2>
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="p-4 md:p-8 min-h-screen flex items-center justify-center bg-neutral font-body">
+            <div className="bg-card rounded-2xl shadow-soft max-w-md w-full p-6 md:p-8 border border-background">
+                <h2 className="text-3xl font-bold font-heading mb-6 text-center text-primaryDark">Create Account</h2>
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
                         <label htmlFor="name" className="block text-sm font-medium text-gray-700">Full Name</label>
@@ -46,7 +46,7 @@ const RegisterForm = () => {
                             id="name"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-shadow"
+                            className="mt-1 block w-full px-4 py-2 border border-background rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-shadow"
                             required
                         />
                     </div>
@@ -57,7 +57,7 @@ const RegisterForm = () => {
                             id="phone"
                             value={phone}
                             onChange={(e) => setPhone(e.target.value)}
-                            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-shadow"
+                            className="mt-1 block w-full px-4 py-2 border border-background rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-shadow"
                             placeholder="e.g., 9876543210"
                             required
                         />
@@ -69,7 +69,7 @@ const RegisterForm = () => {
                             id="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-shadow"
+                            className="mt-1 block w-full px-4 py-2 border border-background rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-shadow"
                             required
                         />
                     </div>
@@ -80,20 +80,20 @@ const RegisterForm = () => {
                             id="confirmPassword"
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
-                            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-shadow"
+                            className="mt-1 block w-full px-4 py-2 border border-background rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-shadow"
                             required
                         />
                     </div>
 
-                    {error && <p className="text-sm text-center py-2 px-3 rounded-lg bg-red-100/50 border border-red-400 text-red-600 font-medium">{error}</p>}
-                    {success && <p className="text-sm text-center py-2 px-3 rounded-lg bg-green-100/50 border border-green-400 text-green-600 font-medium">{success}</p>}
+                    {error && <p className="text-sm text-center py-2 px-3 rounded-lg bg-highlight/10 border border-highlight/20 text-highlight font-medium">{error}</p>}
+                    {success && <p className="text-sm text-center py-2 px-3 rounded-lg bg-accent/10 border border-accent/20 text-accent font-medium">{success}</p>}
 
-                    <Button type="submit" className="w-full text-lg py-3">
+                    <Button type="submit" className="w-full text-lg py-3 bg-highlight hover:bg-primaryDark">
                         Register
                     </Button>
-                    <p className="text-center text-sm text-gray-600 pt-2">
+                    <p className="text-center text-sm text-gray-700 pt-2">
                         Already have an account? 
-                        <Link to="/login" className="text-pink-600 hover:text-pink-700 font-semibold ml-1 transition-colors">
+                        <Link to="/login" className="text-highlight hover:underline font-semibold ml-1 transition-colors">
                             Login here
                         </Link>
                     </p>

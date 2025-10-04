@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
+// @ts-nocheck
+import React, { useEffect, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../api/api.js';
 import Button from '../common/Button.jsx';
@@ -55,14 +56,14 @@ const RoomOccupantsModal = ({ isOpen, room, occupants, onClose }) => {
             {isOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-[1001] p-4">
                     <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
-                        className="bg-white p-6 rounded-xl shadow-2xl w-full max-w-md">
-                        <h3 className="text-xl font-bold text-gray-800 mb-4">Occupants in Room {room.roomNumber || room.roomId || '—'}</h3>
+                        className="bg-card p-6 rounded-2xl shadow-soft w-full max-w-md">
+                        <h3 className="text-xl font-bold font-heading text-primaryDark mb-4">Occupants in Room {room.roomNumber || room.roomId || '—'}</h3>
                         <div className="max-h-60 overflow-y-auto space-y-2">
                             {safeOccupants.length > 0 ? (
                                 safeOccupants.map((person) => {
                                     if (!person) return null;
                                     return (
-                                        <div key={person._id || person.bookingNumber || Math.random()} className="bg-gray-100 p-3 rounded-lg text-sm border-l-4 border-pink-400">
+                                        <div key={person._id || person.bookingNumber || Math.random()} className="bg-background p-3 rounded-lg text-sm border-l-4 border-primary">
                                             <div className="flex justify-between items-start">
                                                 <div>
                                                     <p className="font-bold text-gray-900">{person.name || 'Unknown'}</p>
@@ -119,12 +120,10 @@ const AccordionItem = ({ title, children }) => {
 const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, buildings, rooms, people, onShowRoomDetails, setError }) => {
     const { formData = {}, userId = {}, status, _id: bookingId, bookingNumber, allocations: savedAllocations, eventId = {} } = booking || {};
     const pendingAllocations = allocations?.[bookingId] || [];
-
     const safeSavedAllocations = Array.isArray(savedAllocations) ? savedAllocations : [];
-
     const [notificationOption, setNotificationOption] = useState('sendNow');
     const [scheduleDelay, setScheduleDelay] = useState({ days: 0, hours: 0, minutes: 5, seconds: 0 });
-    const [notificationTtlMinutes, setNotificationTtlMinutes] = useState(10080); // 7 days
+    const [notificationTtlMinutes, setNotificationTtlMinutes] = useState(10080);
 
     const calculateFutureDate = useMemo(() => {
         const now = new Date();
@@ -146,7 +145,6 @@ const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, b
     const handleDecision = (action) => {
         setError('');
         let payload = { status: action, allocations: pendingAllocations };
-
         if (notificationOption === 'schedule') {
             payload.notificationOption = 'schedule';
             payload.scheduledSendTime = calculateFutureDate.toISOString();
@@ -154,7 +152,6 @@ const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, b
         } else if (notificationOption === 'dontSend') {
             payload.notificationOption = 'dontSend';
         }
-
         onAction(bookingId, action, payload);
     };
 
@@ -169,7 +166,6 @@ const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, b
             if (!person) return false;
             if (String(person.bookingId) === String(currentBooking._id)) return false;
             const bedInRoom = beds.some(bed => String(bed._id) === String(person.bedId?._id || person.bedId));
-            // Safety checks for person's stay dates
             return bedInRoom && person.stayFrom && person.stayTo && datesOverlap(currentBooking.formData.stayFrom, currentBooking.formData.stayTo, person.stayFrom, person.stayTo);
         }).length;
         return { capacity, occupied: occupiedCount, vacant: capacity - occupiedCount };
@@ -180,12 +176,10 @@ const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, b
         if (!room || !Array.isArray(room.beds)) return [];
         const bookingStart = currentBooking?.formData?.stayFrom ? new Date(currentBooking.formData.stayFrom) : null;
         const bookingEnd = currentBooking?.formData?.stayTo ? new Date(currentBooking.formData.stayTo) : null;
-        // Globally occupied by other bookings/people whose stay overlaps
         const globallyOccupiedBedIds = new Set(
             (people || []).filter(p => p && String(p.bookingId) !== String(currentBooking._id) && p.stayFrom && p.stayTo && datesOverlap(bookingStart, bookingEnd, p.stayFrom, p.stayTo))
             .map(p => String(p.bedId?._id || p.bedId))
         );
-        // Tentatively occupied in this booking's pendingAllocations
         const tentativelyOccupiedBedIds = new Set(
             (pendingAllocations || []).filter((alloc, index) => index !== currentPersonIndex && alloc?.bedId).map(alloc => String(alloc.bedId))
         );
@@ -217,10 +211,10 @@ const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, b
     };
 
     return (
-        <div className={`bg-white p-5 rounded-xl shadow-lg border-l-4 ${getStatusBorderColor(status)}`}>
+        <div className={`bg-card p-5 rounded-2xl shadow-soft border-l-4 ${getStatusBorderColor(status)}`}>
             <div className="flex justify-between items-start border-b pb-3 mb-4">
                 <div>
-                    <h4 className="text-xl font-bold text-gray-800">{userId?.name || 'Unknown'}</h4>
+                    <h4 className="text-xl font-bold font-heading text-primaryDark">{userId?.name || 'Unknown'}</h4>
                     <p className="text-xs font-mono text-gray-500 mt-1">{bookingNumber || bookingId}</p>
                 </div>
                 <span className="text-sm font-semibold capitalize bg-gray-100 px-3 py-1 rounded-full">{status}</span>
@@ -260,7 +254,7 @@ const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, b
 
             {status === 'pending' && (
                 <div className="mt-4 pt-4 border-t border-gray-100">
-                    <h5 className="font-bold mb-3 text-pink-600 flex items-center"><FaEdit className="mr-2" /> Allocate ({formData?.people?.length || 0} People)</h5>
+                    <h5 className="font-bold mb-3 text-pink-600 flex items-center font-heading"><FaEdit className="mr-2" /> Allocate ({formData?.people?.length || 0} People)</h5>
                     <div className="space-y-4">
                         {(formData?.people || []).map((person, index) => {
                             const personAllocated = pendingAllocations[index] || {};
@@ -376,7 +370,7 @@ const BookingSection = ({ title, color = 'pink', bookings, ...props }) => {
 
     return (
         <div className="space-y-4">
-            <h3 className={`text-2xl font-semibold mb-4 pb-2 border-b-4 ${classes.border} ${classes.text}`}>
+            <h3 className={`text-2xl font-semibold mb-4 pb-2 border-b-4 ${classes.border} ${classes.text} font-heading`}>
                 {title} ({safeBookings.length})
             </h3>
             {safeBookings.length === 0 ? (
@@ -409,7 +403,6 @@ const ManageAllocations = () => {
                 api.get('/buildings'),
                 api.get('/people'),
             ]);
-            // Ensure arrays
             const fetchedBookings = bookingsRes?.data;
             const fetchedRooms = roomsRes?.data;
             const fetchedBuildings = buildingsRes?.data;
@@ -423,7 +416,6 @@ const ManageAllocations = () => {
         } catch (err) {
             setError('Failed to fetch data. Please try again.');
             console.error(err);
-            // keep existing state but ensure arrays
             setBookings(prev => Array.isArray(prev) ? prev : []);
             setRooms(prev => Array.isArray(prev) ? prev : []);
             setBuildings(prev => Array.isArray(prev) ? prev : []);
@@ -438,8 +430,6 @@ const ManageAllocations = () => {
     const handleAction = async (bookingId, action, allocationData = null) => {
         try {
             setError(null);
-
-            // Optimistic UI update
             setBookings(prev => (prev || []).map(b => {
                 if (b._id === bookingId) {
                     const newBooking = { ...b, status: action };
@@ -452,24 +442,16 @@ const ManageAllocations = () => {
                 }
                 return b;
             }));
-
-            // Call the API
             await api.put(`/bookings/${bookingId}/status`, { status: action, allocations: allocationData });
-
-            // Clear pending allocations for this booking
             setAllocations(prev => {
                 const newAlloc = { ...(prev || {}) };
                 delete newAlloc[bookingId];
                 return newAlloc;
             });
-
-            // Re-fetch all data to ensure consistency
             await fetchAllData();
-
         } catch (err) {
             setError(err?.response?.data?.message || `Failed to perform action: ${action}. Please reload.`);
             console.error(err);
-            // revert by re-fetching
             await fetchAllData();
         }
     };
@@ -497,15 +479,12 @@ const ManageAllocations = () => {
             setRoomDetailsModal({ isOpen: false, room: null, occupants: [] });
             return;
         }
-        // Find occupants: people with bed in this room and overlapping stay
         const safePeople = Array.isArray(people) ? people : [];
         const occupants = safePeople.filter(person => {
-            if (!person) return false;
-            if (!person.bedId) return false;
+            if (!person || !person.bedId) return false;
             const beds = Array.isArray(room.beds) ? room.beds : [];
             const bedInRoom = beds.some(bed => String(bed._id) === String(person.bedId?._id || person.bedId));
             if (!bedInRoom) return false;
-            // Use person's stayFrom/stayTo (not person.formData)
             return !!(person.stayFrom && person.stayTo && datesOverlap(currentBooking?.formData?.stayFrom, currentBooking?.formData?.stayTo, person.stayFrom, person.stayTo));
         });
         setRoomDetailsModal({ isOpen: true, room, occupants });
@@ -528,20 +507,20 @@ const ManageAllocations = () => {
         return true;
     }), [bookings, filters]);
 
-    if (loading) return <div className="flex justify-center items-center h-screen"><FaSpinner className="animate-spin text-pink-500 text-4xl" /></div>;
+    if (loading) return <div className="flex justify-center items-center h-screen"><FaSpinner className="animate-spin text-primary text-4xl" /></div>;
 
     const pendingBookings = (filteredBookings || []).filter(b => b.status === 'pending');
     const approvedBookings = (filteredBookings || []).filter(b => b.status === 'approved');
     const declinedBookings = (filteredBookings || []).filter(b => b.status === 'declined');
 
     return (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-8 bg-gray-50 min-h-screen">
-            <h2 className="text-3xl md:text-4xl font-extrabold mb-8 text-gray-800 border-b-4 border-pink-500 pb-2 inline-block">
-                <FaUserShield className="inline mr-3 text-pink-500" /> Manage Allocations
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-8 bg-neutral min-h-screen font-body">
+            <h2 className="text-3xl md:text-4xl font-extrabold mb-8 text-primaryDark border-b-4 border-primary pb-2 inline-block font-heading">
+                <FaUserShield className="inline mr-3 text-primary" /> Manage Allocations
             </h2>
 
-            <div className="bg-white shadow-md rounded-xl p-5 mb-8 border border-gray-200">
-                <h3 className="text-xl font-semibold mb-4 flex items-center text-gray-700"><FaFilter className="mr-2 text-pink-500" /> Filters</h3>
+            <div className="bg-card shadow-soft rounded-2xl p-5 mb-8">
+                <h3 className="text-xl font-semibold mb-4 flex items-center text-primaryDark font-heading"><FaFilter className="mr-2 text-primary" /> Filters</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 text-sm">
                     <input type="text" placeholder="User Name" value={filters.userName} onChange={(e) => setFilters({ ...filters, userName: e.target.value })} className="p-2 border rounded-lg w-full" />
                     <input type="text" placeholder="Email" value={filters.email} onChange={(e) => setFilters({ ...filters, email: e.target.value })} className="p-2 border rounded-lg w-full" />
@@ -568,7 +547,7 @@ const ManageAllocations = () => {
 
             {error && <p className="text-red-600 bg-red-100 p-3 rounded-md mb-6">{error}</p>}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <BookingSection title="Pending" color="pink" bookings={pendingBookings} onAction={handleAction} allocations={allocations} handleAllocationChange={handleAllocationChange} buildings={buildings} rooms={rooms} people={people} onShowRoomDetails={handleShowRoomDetails} setError={setError} />
                 <BookingSection title="Approved" color="emerald" bookings={approvedBookings} onAction={handleAction} allocations={allocations} handleAllocationChange={handleAllocationChange} buildings={buildings} rooms={rooms} people={people} onShowRoomDetails={handleShowRoomDetails} setError={setError} />
                 <BookingSection title="Declined" color="rose" bookings={declinedBookings} onAction={handleAction} allocations={allocations} handleAllocationChange={handleAllocationChange} buildings={buildings} rooms={rooms} people={people} onShowRoomDetails={handleShowRoomDetails} setError={setError} />

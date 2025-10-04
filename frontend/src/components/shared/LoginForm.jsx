@@ -72,24 +72,24 @@ const LoginForm = () => {
         <motion.div 
             initial={{ opacity: 0, scale: 0.9 }} 
             animate={{ opacity: 1, scale: 1 }} 
-            className="p-8 md:p-10 bg-white/80 backdrop-blur-lg rounded-2xl shadow-2xl max-w-sm w-full border border-white/50"
+            className="p-8 md:p-10 bg-card rounded-2xl shadow-soft max-w-sm w-full font-body"
         >
             <div className="text-center mb-8">
-                <h2 className="text-xl font-bold text-gray-500">Welcome to</h2>
-                <h1 className="text-3xl font-extrabold text-pink-600">Adarsh Dham</h1>
+                <h2 className="text-xl font-bold text-gray-700 font-heading">Welcome to</h2>
+                <h1 className="text-3xl font-extrabold text-primaryDark font-heading">Adarsh Dham</h1>
             </div>
             
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                     <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
                     <div className="relative">
-                        <FaPhoneAlt className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                        <FaPhoneAlt className="absolute left-3 top-1/2 transform -translate-y-1/2 text-accent" />
                         <input
                             type="tel"
                             id="phone"
                             value={phone}
                             onChange={(e) => setPhone(e.target.value)}
-                            className="block w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all"
+                            className="block w-full pl-10 pr-4 py-2 border border-background rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                             placeholder="10-digit mobile number"
                             required
                         />
@@ -98,36 +98,34 @@ const LoginForm = () => {
                 <div>
                     <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
                     <div className="relative">
-                        <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                        <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-accent" />
                         <input
                             type="password"
                             id="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="block w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all"
+                            className="block w-full pl-10 pr-4 py-2 border border-background rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                             placeholder="••••••••"
                             required
                         />
                     </div>
-                    {/* ✨ FIX: "Forgot Password?" link is now integrated here */}
                     <div className="text-right mt-2">
-                        <Link to="/forgot-password" className="text-sm font-medium text-pink-600 hover:underline">
+                        <Link to="/forgot-password" className="text-sm font-medium text-highlight hover:underline">
                             Forgot Password?
                         </Link>
                     </div>
                 </div>
                 
-                {error && <p className="text-red-600 text-sm text-center bg-red-50 p-3 rounded-lg border border-red-200">{error}</p>}
+                {error && <p className="text-highlight text-sm text-center bg-highlight/10 p-3 rounded-lg border border-highlight/20">{error}</p>}
                 
-                <Button type="submit" className="w-full text-lg py-2.5" disabled={loading}>
+                <Button type="submit" className="w-full text-lg py-2.5 bg-highlight hover:bg-primaryDark" disabled={loading}>
                     {loading ? 'Logging in...' : 'Login'}
                 </Button>
             </form>
             
-            {/* ✨ FIX: The duplicate link was removed. This is the only "Register" link. */}
             <div className="mt-6 text-center">
-                <p className="text-sm text-gray-600">
-                    Don't have an account? <Link to="/register" className="text-pink-600 hover:underline font-semibold">Register here</Link>
+                <p className="text-sm text-gray-700">
+                    Don't have an account? <Link to="/register" className="text-highlight hover:underline font-semibold">Register here</Link>
                 </p>
             </div>
         </motion.div>

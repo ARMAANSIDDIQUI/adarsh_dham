@@ -9,10 +9,10 @@ import { useNavigate } from 'react-router-dom';
 const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel, confirmText, isAlert = false }) => {
     if (!isOpen) return null;
     return (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full flex items-center justify-center z-[1000]">
-            <div className="bg-white p-6 rounded-xl shadow-2xl w-full max-w-sm m-4 transform transition-all">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">{title}</h3>
-                <p className="text-gray-600 mb-6">{message}</p>
+        <div className="fixed inset-0 bg-black bg-opacity-60 overflow-y-auto h-full w-full flex items-center justify-center z-[1000] font-body">
+            <div className="bg-card p-6 rounded-2xl shadow-soft w-full max-w-sm m-4 transform transition-all">
+                <h3 className="text-xl font-bold font-heading text-primaryDark mb-4">{title}</h3>
+                <p className="text-gray-700 mb-6">{message}</p>
                 <div className="flex justify-end space-x-3">
                     {!isAlert && (
                         <Button onClick={onCancel} className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium px-4 py-2 rounded-lg transition-colors">Cancel</Button>
@@ -26,18 +26,18 @@ const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel, confir
 
 // Subcomponent for rendering tables
 const EventTable = ({ events, handleEdit, handleDelete }) => (
-    <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+    <table className="min-w-full divide-y divide-background">
+        <thead className="bg-background/50">
             <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Event Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Location</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Dates</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium font-heading text-primaryDark uppercase tracking-wider">Event Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium font-heading text-primaryDark uppercase tracking-wider">Location</th>
+                <th className="px-6 py-3 text-left text-xs font-medium font-heading text-primaryDark uppercase tracking-wider">Dates</th>
+                <th className="px-6 py-3 text-left text-xs font-medium font-heading text-primaryDark uppercase tracking-wider">Actions</th>
             </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+        <tbody className="bg-card divide-y divide-background">
             {events.map(event => (
-                <tr key={event._id} className="hover:bg-pink-50 transition-colors">
+                <tr key={event._id} className="hover:bg-background transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{event.name}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{event.location}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
@@ -140,7 +140,7 @@ const ManageEvents = () => {
         setIsModalOpen(true);
     };
 
-    if (loading) return <div className="text-center mt-10 text-xl text-pink-500"><FaSpinner className="animate-spin inline mr-2" /> Loading Events...</div>;
+    if (loading) return <div className="text-center mt-10 text-xl text-primary font-body"><FaSpinner className="animate-spin inline mr-2" /> Loading Events...</div>;
 
     // Divide events
     const today = new Date();
@@ -149,13 +149,13 @@ const ManageEvents = () => {
     const upcomingEvents = events.filter(e => new Date(e.startDate) > today);
 
     return (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-8 bg-gray-100 min-h-screen">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6 border-b-2 border-pink-400 pb-2">Manage Events</h2>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-8 bg-neutral min-h-screen font-body">
+            <h2 className="text-3xl md:text-4xl font-bold text-primaryDark font-heading mb-6 border-b-2 border-primary pb-2">Manage Events</h2>
             {error && <div className="bg-red-100 text-red-700 p-3 rounded-xl mb-6 text-center shadow-md">{error}</div>}
 
             {/* Add New Event */}
-            <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
-                <h3 className="text-xl font-semibold text-pink-500 mb-4">Add New Event</h3>
+            <div className="bg-card p-6 rounded-2xl shadow-soft mb-8">
+                <h3 className="text-xl font-semibold font-heading text-primaryDark mb-4">Add New Event</h3>
                 <form onSubmit={handleAddEvent} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <input type="text" placeholder="Event Name" value={newEvent.name} onChange={e => setNewEvent({ ...newEvent, name: e.target.value })} className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-500" required />
                     <input type="text" placeholder="Location" value={newEvent.location} onChange={e => setNewEvent({ ...newEvent, location: e.target.value })} className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-500" required />
@@ -186,29 +186,29 @@ const ManageEvents = () => {
 
             {/* Event Sections */}
             {finishedEvents.length > 0 && (
-                <div className="bg-white shadow-lg rounded-xl overflow-x-auto mb-6">
-                    <h3 className="text-xl font-semibold p-4 text-gray-800 border-b border-gray-200">Finished Events</h3>
+                <div className="bg-card shadow-soft rounded-2xl overflow-x-auto mb-6">
+                    <h3 className="text-xl font-semibold font-heading p-4 text-primaryDark border-b border-background">Finished Events</h3>
                     <EventTable events={finishedEvents} handleEdit={setEditingEvent} handleDelete={handleDeleteEvent} />
                 </div>
             )}
             {ongoingEvents.length > 0 && (
-                <div className="bg-white shadow-lg rounded-xl overflow-x-auto mb-6">
-                    <h3 className="text-xl font-semibold p-4 text-gray-800 border-b border-gray-200">Ongoing Events</h3>
+                <div className="bg-card shadow-soft rounded-2xl overflow-x-auto mb-6">
+                    <h3 className="text-xl font-semibold font-heading p-4 text-primaryDark border-b border-background">Ongoing Events</h3>
                     <EventTable events={ongoingEvents} handleEdit={setEditingEvent} handleDelete={handleDeleteEvent} />
                 </div>
             )}
             {upcomingEvents.length > 0 && (
-                <div className="bg-white shadow-lg rounded-xl overflow-x-auto mb-6">
-                    <h3 className="text-xl font-semibold p-4 text-gray-800 border-b border-gray-200">Upcoming Events</h3>
+                <div className="bg-card shadow-soft rounded-2xl overflow-x-auto mb-6">
+                    <h3 className="text-xl font-semibold font-heading p-4 text-primaryDark border-b border-background">Upcoming Events</h3>
                     <EventTable events={upcomingEvents} handleEdit={setEditingEvent} handleDelete={handleDeleteEvent} />
                 </div>
             )}
 
             {/* Edit Modal */}
             {editingEvent && (
-                <div className="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full flex items-center justify-center z-[1000]">
-                    <div className="relative p-8 bg-white w-full max-w-lg rounded-xl shadow-2xl m-4">
-                        <h3 className="text-2xl font-bold text-gray-800 mb-4">Edit Event: {editingEvent.name}</h3>
+                <div className="fixed inset-0 bg-black bg-opacity-60 overflow-y-auto h-full w-full flex items-center justify-center z-[1000]">
+                    <motion.div initial={{scale: 0.9, opacity: 0}} animate={{scale: 1, opacity: 1}} className="relative p-8 bg-card w-full max-w-lg rounded-2xl shadow-soft m-4">
+                        <h3 className="text-2xl font-bold font-heading text-primaryDark mb-4">Edit Event: {editingEvent.name}</h3>
                         <form onSubmit={handleUpdateEvent} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <input type="text" placeholder="Event Name" value={editingEvent.name} onChange={e => setEditingEvent({ ...editingEvent, name: e.target.value })} className="px-4 py-2 border border-gray-300 rounded-lg" required />
                             <input type="text" placeholder="Location" value={editingEvent.location} onChange={e => setEditingEvent({ ...editingEvent, location: e.target.value })} className="px-4 py-2 border border-gray-300 rounded-lg" required />
@@ -235,7 +235,7 @@ const ManageEvents = () => {
                             </div>
                         </form>
                         <button onClick={() => setEditingEvent(null)} className="absolute top-4 right-4 text-gray-600 hover:text-gray-800 text-xl">&times;</button>
-                    </div>
+                    </motion.div>
                 </div>
             )}
 

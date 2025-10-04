@@ -16,40 +16,28 @@ const formatDateTimeLocal = (isoString) => {
     return `${year}-${month}-${day}T${hours}:${minutes}`;
 };
 
-/**
- * Extracts the URL from an iframe's src attribute.
- * @param {string} inputString - The iframe HTML string or a regular URL.
- * @returns {string} The extracted URL or the original string if no iframe is found.
- */
 const extractSrcFromIframe = (inputString) => {
-    // If the input doesn't look like an iframe tag, return it as is.
     if (!inputString || !inputString.trim().startsWith('<iframe')) {
         return inputString;
     }
-    
     const srcRegex = /src="([^"]+)"/;
     const match = inputString.match(srcRegex);
-    
-    // Return the captured group (the URL) if found, otherwise return an empty string
-    // indicating a failed extraction from an iframe tag.
     return match && match[1] ? match[1] : '';
 };
 
-
-// Custom Modal Component for Delete Confirmation and Alerts
 const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel, confirmText, isAlert = false }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full flex items-center justify-center z-[1000]">
+        <div className="fixed inset-0 bg-black bg-opacity-60 overflow-y-auto h-full w-full flex items-center justify-center z-[1000] font-body">
             <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.8, opacity: 0 }}
-                className="bg-white p-6 rounded-xl shadow-2xl w-full max-w-sm m-4 transform transition-all"
+                className="bg-card p-6 rounded-2xl shadow-soft w-full max-w-sm m-4 transform transition-all"
             >
-                <h3 className="text-xl font-bold text-gray-800 mb-4">{title}</h3>
-                <p className="text-gray-600 mb-6">{message}</p>
+                <h3 className="text-xl font-bold font-heading text-primaryDark mb-4">{title}</h3>
+                <p className="text-gray-700 mb-6">{message}</p>
                 <div className="flex justify-end space-x-3">
                     {!isAlert && (
                         <Button 
@@ -106,18 +94,13 @@ const ManageSatsang = () => {
 
     const handleAddLink = async (e) => {
         e.preventDefault();
-        setError(null); // Clear previous errors
-
+        setError(null); 
         const processedUrl = extractSrcFromIframe(newLink.youtubeEmbedUrl);
-
-        // Check if the user entered an iframe but extraction failed
         if (newLink.youtubeEmbedUrl && newLink.youtubeEmbedUrl.includes('<iframe') && !processedUrl) {
             setError("Invalid iframe code. Could not find a valid 'src' URL inside the tag.");
-            return; // Stop the submission
+            return;
         }
-
         const linkToSubmit = { ...newLink, youtubeEmbedUrl: processedUrl };
-
         try {
             await api.post('/satsang/live-links', linkToSubmit);
             setNewLink({ name: '', url: '', youtubeEmbedUrl: '', liveFrom: '', liveTo: '' }); 
@@ -130,18 +113,13 @@ const ManageSatsang = () => {
     const handleUpdateLink = async (e) => {
         e.preventDefault();
         setError(null);
-
         const processedUrl = extractSrcFromIframe(editingLink.youtubeEmbedUrl);
-        
         if (editingLink.youtubeEmbedUrl && editingLink.youtubeEmbedUrl.includes('<iframe') && !processedUrl) {
             setError("Invalid iframe code. Could not find a valid 'src' URL inside the tag.");
-            // Don't close the modal, let the user fix it. Or close it and show the error. Let's close it.
             setEditingLink(null);
             return;
         }
-
         const linkToSubmit = { ...editingLink, youtubeEmbedUrl: processedUrl };
-        
         try {
             await api.put(`/satsang/live-links/${editingLink._id}`, linkToSubmit);
             setEditingLink(null);
@@ -191,18 +169,18 @@ const ManageSatsang = () => {
         setIsModalOpen(true);
     };
 
-    if (loading) return <div className="text-center mt-10 text-xl text-pink-500"><FaSpinner className="animate-spin inline mr-2" /> Loading Links...</div>;
+    if (loading) return <div className="text-center mt-10 text-xl text-primary font-body"><FaSpinner className="animate-spin inline mr-2" /> Loading Links...</div>;
 
     return (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-8 bg-gray-100 min-h-screen">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6 border-b-2 border-pink-400 pb-2">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-8 bg-neutral min-h-screen font-body">
+            <h2 className="text-3xl md:text-4xl font-bold font-heading text-primaryDark mb-6 border-b-2 border-primary pb-2">
                 Manage Satsang Live Links
             </h2>
             {error && <div className="bg-red-100 text-red-700 p-3 rounded-xl mb-6 text-center shadow-md">{error}</div>}
 
             {/* Add New Link Section */}
-            <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
-                <h3 className="text-xl font-semibold text-pink-500 mb-4">Add New Live Link</h3>
+            <div className="bg-card p-6 rounded-2xl shadow-soft mb-8">
+                <h3 className="text-xl font-semibold font-heading text-primaryDark mb-4">Add New Live Link</h3>
                 <form onSubmit={handleAddLink} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div className="md:col-span-1">
                         <label className="block text-sm font-medium text-gray-700">Link Name</label>
@@ -238,21 +216,21 @@ const ManageSatsang = () => {
             </div>
 
             {/* Existing Links Table */}
-            <div className="bg-white shadow-lg rounded-xl overflow-x-auto">
-                <h3 className="text-xl font-semibold p-4 text-gray-800 border-b border-gray-200">Existing Live Links</h3>
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+            <div className="bg-card shadow-soft rounded-2xl overflow-x-auto">
+                <h3 className="text-xl font-semibold font-heading p-4 text-primaryDark border-b border-background">Existing Live Links</h3>
+                <table className="min-w-full divide-y divide-background">
+                    <thead className="bg-background/50">
                         <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Name</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Marquee URL</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Live From</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Live To</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Actions</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium font-heading text-primaryDark uppercase tracking-wider">Name</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium font-heading text-primaryDark uppercase tracking-wider">Marquee URL</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium font-heading text-primaryDark uppercase tracking-wider">Live From</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium font-heading text-primaryDark uppercase tracking-wider">Live To</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium font-heading text-primaryDark uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="divide-y divide-background">
                         {(liveLinks || []).map(link => (
-                            <tr key={link._id} className="hover:bg-pink-50 transition-colors">
+                            <tr key={link._id} className="hover:bg-background transition-colors">
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{link.name}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                                     <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-pink-500 hover:text-pink-700 flex items-center space-x-1">
@@ -286,14 +264,14 @@ const ManageSatsang = () => {
             {/* Edit Link Modal */}
             <AnimatePresence>
             {editingLink && (
-                <div className="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full flex items-center justify-center z-[1000]">
+                <div className="fixed inset-0 bg-black bg-opacity-60 overflow-y-auto h-full w-full flex items-center justify-center z-[1000]">
                     <motion.div
                         initial={{ scale: 0.8, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0.8, opacity: 0 }}
-                        className="relative p-8 bg-white w-full max-w-lg rounded-xl shadow-2xl m-4"
+                        className="relative p-8 bg-card w-full max-w-lg rounded-2xl shadow-soft m-4"
                     >
-                        <h3 className="text-2xl font-bold text-gray-800 mb-6">Edit Live Link: {editingLink.name}</h3>
+                        <h3 className="text-2xl font-bold font-heading text-primaryDark mb-6">Edit Live Link: {editingLink.name}</h3>
                         <form onSubmit={handleUpdateLink} className="space-y-4">
                             
                             <div>

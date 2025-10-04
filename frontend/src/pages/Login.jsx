@@ -32,7 +32,6 @@ const Login = () => {
         try {
             await dispatch(login(formData)).unwrap();
             toast.success('Logged in successfully!');
-            // Redirect is handled by the useEffect hook
         } catch (error) {
             toast.error(error.message || 'Login failed. Please check your credentials.');
         } finally {
@@ -41,50 +40,46 @@ const Login = () => {
     };
     
     return (
-        <div className="min-h-screen w-full bg-gray-100 flex items-center justify-center p-4">
+        <div className="min-h-screen w-full bg-neutral flex items-center justify-center p-4 font-body">
             <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-lg"
+                className="w-full max-w-md p-8 space-y-6 bg-card rounded-2xl shadow-soft"
             >
                 <div className="text-center">
-                    <h2 className="text-3xl font-bold text-gray-800">Login to your Account</h2>
+                    <h2 className="text-3xl font-bold font-heading text-primaryDark">Login to your Account</h2>
                 </div>
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Phone Input */}
                     <div>
-                        <label htmlFor="phone-login" className="sr-only">Phone Number</label>
+                        <label htmlFor="phone-login" className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
                         <div className="mt-1 relative">
-                            <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                            <input id="phone-login" name="phone" type="tel" value={formData.phone} onChange={handleChange} required className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500" placeholder="Phone Number" />
+                            <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-accent" />
+                            <input id="phone-login" name="phone" type="tel" value={formData.phone} onChange={handleChange} required className="w-full pl-10 pr-3 py-2 border border-background rounded-md focus:ring-primary focus:border-primary" placeholder="Phone Number" />
                         </div>
                     </div>
-                    {/* Password Input */}
                     <div>
-                        <label htmlFor="password-login" className="sr-only">Password</label>
+                        <label htmlFor="password-login" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
                         <div className="mt-1 relative">
-                            <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                            <input id="password-login" name="password" type="password" value={formData.password} onChange={handleChange} required className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500" placeholder="Password" />
+                            <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-accent" />
+                            <input id="password-login" name="password" type="password" value={formData.password} onChange={handleChange} required className="w-full pl-10 pr-3 py-2 border border-background rounded-md focus:ring-primary focus:border-primary" placeholder="Password" />
                         </div>
                     </div>
-                    {/* Forgot Password Link */}
                     <div className="text-sm text-right">
-                        <Link to="/forgot-password" className="font-medium text-pink-600 hover:text-pink-500">
+                        <Link to="/forgot-password" className="font-medium text-highlight hover:underline">
                             Forgot password?
                         </Link>
                     </div>
-                    {/* Submit Button */}
                     <div>
-                        <Button type="submit" disabled={loading} className="w-full inline-flex justify-center items-center">
+                        <Button type="submit" disabled={loading} className="w-full inline-flex justify-center items-center bg-highlight hover:bg-primaryDark text-white">
                             {loading ? <FaSpinner className="animate-spin mr-2" /> : <FaSignInAlt className="mr-2" />}
                             {loading ? 'Logging in...' : 'Login'}
                         </Button>
                     </div>
                 </form>
                 <div className="text-center">
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-gray-700">
                         Don't have an account?{' '}
-                        <Link to="/register" className="font-medium text-pink-600 hover:text-pink-500">
+                        <Link to="/register" className="font-medium text-highlight hover:underline">
                             Register here
                         </Link>
                     </p>

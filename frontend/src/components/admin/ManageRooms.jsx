@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import api from '../../api/api.js';
 import Button from '../common/Button.jsx';
@@ -9,10 +9,10 @@ const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel, confir
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full flex items-center justify-center z-[1000]">
-            <div className="bg-white p-6 rounded-xl shadow-2xl w-full max-w-sm m-4 transform transition-all">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">{title}</h3>
-                <p className="text-gray-600 mb-6">{message}</p>
+        <div className="fixed inset-0 bg-black bg-opacity-60 overflow-y-auto h-full w-full flex items-center justify-center z-[1000] font-body">
+            <div className="bg-card p-6 rounded-2xl shadow-soft w-full max-w-sm m-4 transform transition-all">
+                <h3 className="text-xl font-bold font-heading text-primaryDark mb-4">{title}</h3>
+                <p className="text-gray-700 mb-6">{message}</p>
                 <div className="flex justify-end space-x-3">
                     {!isAlert && (
                         <Button 
@@ -162,9 +162,8 @@ const ManageRooms = () => {
         }
     };
 
-    if (loading) return <div className="text-center mt-10 text-xl text-pink-500"><FaSpinner className="animate-spin inline mr-2" /> Loading Rooms...</div>;
+    if (loading) return <div className="text-center mt-10 text-xl text-primary font-body"><FaSpinner className="animate-spin inline mr-2" /> Loading Rooms...</div>;
 
-    // Filter rooms based on search and building selection
     const filteredRooms = rooms.filter(room => {
         const matchesSearch = room.roomNumber.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesBuilding = selectedBuilding ? room.buildingId?._id === selectedBuilding : true;
@@ -172,15 +171,15 @@ const ManageRooms = () => {
     });
 
     return (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-8 bg-gray-100 min-h-screen">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6 border-b-2 border-pink-400 pb-2">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-8 bg-neutral min-h-screen font-body">
+            <h2 className="text-3xl md:text-4xl font-bold text-primaryDark font-heading mb-6 border-b-2 border-primary pb-2">
                 Manage Rooms
             </h2>
             {error && <div className="bg-red-100 text-red-700 p-3 rounded-xl mb-6 text-center shadow-md">{error}</div>}
 
             {/* Create New Room Section */}
-            <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
-                <h3 className="text-xl font-semibold text-pink-500 mb-4">Create New Room</h3>
+            <div className="bg-card p-6 rounded-2xl shadow-soft mb-8">
+                <h3 className="text-xl font-semibold font-heading text-primaryDark mb-4">Create New Room</h3>
                 <form onSubmit={handleCreateRoom} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -208,8 +207,8 @@ const ManageRooms = () => {
                     </div>
                     
                     {/* Beds Section */}
-                    <div className="border border-gray-200 p-4 rounded-lg">
-                        <h4 className="text-lg font-semibold text-gray-800 mb-3">Beds in this Room</h4>
+                    <div className="border border-background p-4 rounded-lg">
+                        <h4 className="text-lg font-semibold text-primaryDark mb-3">Beds in this Room</h4>
                         {newRoomData.beds.map((bed, index) => (
                             <div key={index} className="grid grid-cols-5 md:grid-cols-7 gap-3 items-center mt-2 pb-2 border-b last:border-b-0">
                                 <div className="col-span-2">
@@ -285,21 +284,21 @@ const ManageRooms = () => {
             </div>
 
             {/* Existing Rooms Table */}
-            <div className="bg-white shadow-lg rounded-xl overflow-x-auto">
-                <h3 className="text-xl font-semibold p-4 text-gray-800 border-b border-gray-200">All Rooms</h3>
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+            <div className="bg-card shadow-soft rounded-2xl overflow-x-auto">
+                <h3 className="text-xl font-semibold font-heading p-4 text-primaryDark border-b border-background">All Rooms</h3>
+                <table className="min-w-full divide-y divide-background">
+                    <thead className="bg-background/50">
                         <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Room #</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Building</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Capacity</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Occupancy</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Actions</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium font-heading text-primaryDark uppercase">Room #</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium font-heading text-primaryDark uppercase">Building</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium font-heading text-primaryDark uppercase">Capacity</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium font-heading text-primaryDark uppercase">Occupancy</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium font-heading text-primaryDark uppercase">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="divide-y divide-background">
                         {filteredRooms.map(room => (
-                            <tr key={room._id} className="hover:bg-pink-50 transition-colors">
+                            <tr key={room._id} className="hover:bg-background transition-colors">
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{room.roomNumber}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{room.buildingId?.name || 'N/A'}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{room.capacity}</td>
@@ -326,9 +325,9 @@ const ManageRooms = () => {
             </div>
             
             {editingRoom && (
-                <div className="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full flex items-center justify-center z-[1000]">
-                    <motion.div initial={{scale: 0.9, opacity: 0}} animate={{scale: 1, opacity: 1}} className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md m-4">
-                        <h3 className="text-2xl font-bold text-gray-800 mb-4">Edit Room Number</h3>
+                <div className="fixed inset-0 bg-black bg-opacity-60 overflow-y-auto h-full w-full flex items-center justify-center z-[1000]">
+                    <motion.div initial={{scale: 0.9, opacity: 0}} animate={{scale: 1, opacity: 1}} className="bg-card p-8 rounded-2xl shadow-soft w-full max-w-md m-4">
+                        <h3 className="text-2xl font-bold font-heading text-primaryDark mb-4">Edit Room Number</h3>
                         <form onSubmit={handleUpdateRoom}>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Room Number</label>

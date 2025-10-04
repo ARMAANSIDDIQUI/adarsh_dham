@@ -9,15 +9,13 @@ const AdminLayout = ({ children }) => {
     const navigate = useNavigate();
     const { user } = useSelector((state) => state.auth);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [isMobile, setIsMobile] = useState(window.innerWidth < 768); // ✨ Corrected: Added state
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
-    // ✨ Corrected: Added useEffect to handle resizing
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
-
 
     if (!user) {
         return null;
@@ -52,12 +50,11 @@ const AdminLayout = ({ children }) => {
         { name: 'Occupancy Report', to: '/admin/occupancy-report', icon: <FaListAlt />, roles: ['admin', 'super-admin', 'operator', 'super-operator'] },
         { name: 'Live Structure View', to: '/admin/structure-view', icon: <FaSitemap />, roles: ['admin', 'super-admin', 'operator', 'super-operator'] },
         { name: 'Manage Satsang', to: '/admin/manage-satsang', icon: <FaWifi />, roles: ['satsang-operator'] },
-        // { name: 'Export Data', to: '/admin/export-data', icon: <FaFileExport />, roles: ['admin'] },
         { name: 'Send Notification', to: '/admin/send-notification', icon: <FaBell />, roles: ['admin', 'super-admin'] },
     ];
 
     return (
-        <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">
+        <div className="flex flex-col md:flex-row min-h-screen bg-neutral font-body">
             {isSidebarOpen && (
                 <div 
                     className="fixed inset-0 z-[590] bg-black opacity-50 md:hidden"
@@ -65,10 +62,10 @@ const AdminLayout = ({ children }) => {
                 ></div>
             )}
             
-            <aside className={`bg-gray-800 text-white w-64 p-4 md:p-6 shadow-2xl fixed md:static top-0 bottom-0 left-0 z-[650] transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:flex md:flex-col`}>
+            <aside className={`bg-primaryDark text-white w-64 p-4 md:p-6 shadow-soft fixed md:static top-0 bottom-0 left-0 z-[650] transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:flex md:flex-col`}>
                 <div className="flex justify-between items-center mb-6 pt-4">
-                    <h2 className="text-xl font-bold">Admin Panel</h2>
-                    <button onClick={handleMenuToggle} className="md:hidden text-white hover:text-red-400 p-1">
+                    <h2 className="text-xl font-bold font-heading">Admin Panel</h2>
+                    <button onClick={handleMenuToggle} className="md:hidden hover:text-accent p-1">
                         <FaTimes className="text-xl" />
                     </button>
                 </div>
@@ -76,14 +73,16 @@ const AdminLayout = ({ children }) => {
                     <ul className="space-y-2">
                         {navLinks.filter(link => link.roles.some(role => hasRole(role))).map((link) => (
                             <li key={link.name}>
-                                <Link to={link.to} onClick={() => isMobile && setIsSidebarOpen(false)} className="flex items-center space-x-2 py-2 px-3 rounded-lg hover:bg-gray-700 hover:text-pink-300 transition-colors duration-200 text-sm font-medium">
-                                    {link.icon}
+                                <Link to={link.to} onClick={() => isMobile && setIsSidebarOpen(false)} className="flex items-center space-x-3 py-2 px-3 rounded-lg hover:bg-primary/20 hover:text-accent transition-colors duration-200 text-sm font-medium">
+                                    <span className="w-6 h-6 flex items-center justify-center text-lg">
+                                        {link.icon}
+                                    </span>
                                     <span>{link.name}</span>
                                 </Link>
                             </li>
                         ))}
-                        <li className="mt-4 pt-2 border-t border-gray-700">
-                            <button onClick={handleLogout} className="flex items-center justify-center space-x-2 w-full py-2 px-4 rounded-lg bg-red-600 hover:bg-red-700 text-white transition-colors duration-200 font-medium">
+                        <li className="mt-4 pt-4 border-t border-primary/30">
+                            <button onClick={handleLogout} className="flex items-center justify-center space-x-2 w-full py-2 px-4 rounded-lg bg-highlight hover:bg-opacity-80 text-white transition-colors duration-200 font-medium">
                                 <FaSignOutAlt />
                                 <span>Logout</span>
                             </button>
@@ -93,12 +92,12 @@ const AdminLayout = ({ children }) => {
             </aside>
 
             <div className="flex-1 flex flex-col">
-                <header className="bg-white shadow-lg p-4 flex justify-between items-center md:hidden z-[700]">
-                    <button onClick={handleMenuToggle} className="text-gray-800 text-2xl hover:text-pink-500">
+                <header className="bg-card shadow-soft p-4 flex justify-between items-center md:hidden z-[500] border-b border-background">
+                    <button onClick={handleMenuToggle} className="text-gray-800 text-2xl hover:text-accent">
                         <FaBars />
                     </button>
-                    <h1 className="text-lg font-bold text-gray-800">Admin</h1>
-                    <button onClick={handleLogout} className="text-red-600 hover:text-red-800 text-lg">
+                    <h1 className="text-lg font-bold font-heading text-gray-800">Admin</h1>
+                    <button onClick={handleLogout} className="text-highlight hover:text-primaryDark text-lg">
                         <FaSignOutAlt />
                     </button>
                 </header>

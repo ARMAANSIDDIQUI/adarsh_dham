@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import api from '../../api/api.js';
+import Button from '../common/Button.jsx';
 import { FaUsers, FaFilter, FaSearch } from 'react-icons/fa';
 import AllocationsView from './AllocationsView';
 import Pagination from './Pagination';
@@ -66,7 +67,6 @@ const OccupancyReport = () => {
         const { name, value } = e.target;
         
         let filterValue = value;
-        // Map 'Boy' to 'male' and 'Girl' to 'female'
         if (name === 'gender') {
             if (value === 'Boy') {
                 filterValue = 'male';
@@ -103,30 +103,30 @@ const OccupancyReport = () => {
     };
 
     return (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-8 bg-gray-50 min-h-screen">
-            <h2 className="text-3xl md:text-4xl font-extrabold mb-8 text-gray-800 border-b-4 border-pink-500 pb-2 inline-block">
-                <FaUsers className="inline mr-3 text-pink-500"/> Occupancy Report
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-8 bg-neutral min-h-screen font-body">
+            <h2 className="text-3xl md:text-4xl font-extrabold mb-8 text-primaryDark border-b-4 border-primary pb-2 inline-block font-heading">
+                <FaUsers className="inline mr-3 text-primary"/> Occupancy Report
             </h2>
             {error && <p className="text-red-600 bg-red-100 p-3 rounded-md mb-6">{error}</p>}
             
-            <div className="bg-white p-4 rounded-xl shadow-lg mb-8 border border-gray-200">
-                <h3 className="font-semibold text-lg mb-4 flex items-center"><FaFilter className="mr-2 text-pink-500"/>Filters</h3>
+            <div className="bg-card p-4 rounded-2xl shadow-soft mb-8">
+                <h3 className="font-semibold font-heading text-lg mb-4 flex items-center text-primaryDark"><FaFilter className="mr-2 text-primary"/>Filters</h3>
                 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pb-4 border-b mb-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pb-4 border-b border-background mb-4">
                     <label className="font-semibold sm:col-span-1">Date Range Applies To:</label>
                     <div className="flex items-center gap-4 sm:col-span-2">
                         <label htmlFor="stayRange" className="flex items-center cursor-pointer">
                             <input type="radio" id="stayRange" name="dateFilterType" value="stayRange"
-                                    checked={dateFilterType === 'stayRange'}
-                                    onChange={(e) => setDateFilterType(e.target.value)}
-                                    className="h-4 w-4 text-pink-600 border-gray-300 focus:ring-pink-500" />
+                                checked={dateFilterType === 'stayRange'}
+                                onChange={(e) => setDateFilterType(e.target.value)}
+                                className="h-4 w-4 text-pink-600 border-gray-300 focus:ring-pink-500" />
                             <span className="ml-2 text-gray-700">Stay Dates</span>
                         </label>
                         <label htmlFor="bookingDate" className="flex items-center cursor-pointer">
                             <input type="radio" id="bookingDate" name="dateFilterType" value="bookingDate"
-                                    checked={dateFilterType === 'bookingDate'}
-                                    onChange={(e) => setDateFilterType(e.target.value)}
-                                    className="h-4 w-4 text-pink-600 border-gray-300 focus:ring-pink-500" />
+                                checked={dateFilterType === 'bookingDate'}
+                                onChange={(e) => setDateFilterType(e.target.value)}
+                                className="h-4 w-4 text-pink-600 border-gray-300 focus:ring-pink-500" />
                             <span className="ml-2 text-gray-700">Booking Creation Dates</span>
                         </label>
                     </div>

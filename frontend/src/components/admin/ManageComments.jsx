@@ -43,25 +43,25 @@ const ManageComments = () => {
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="p-4 md:p-8 bg-gray-100 min-h-screen"
+            className="p-4 md:p-8 bg-neutral min-h-screen font-body"
         >
-            <h2 className="text-3xl font-bold mb-6 text-gray-800 border-b-4 border-pink-500 pb-2">Manage User Comments</h2>
+            <h2 className="text-3xl font-bold font-heading mb-6 text-gray-800 border-b-4 border-primary pb-2">Manage User Comments</h2>
             
             {loading ? (
                 <div className="flex justify-center items-center h-64">
-                    <FaSpinner className="animate-spin text-pink-500 text-4xl" />
+                    <FaSpinner className="animate-spin text-primary text-4xl" />
                 </div>
             ) : error ? (
-                <p className="text-red-600 bg-red-100 p-3 rounded-md text-center">{error}</p>
+                <p className="text-highlight bg-highlight/10 p-3 rounded-xl text-center shadow-soft">{error}</p>
             ) : (
-                <div className="bg-white rounded-xl shadow-lg p-6">
+                <div className="bg-card rounded-2xl shadow-soft p-6">
                     {comments.length > 0 ? (
                         <div className="space-y-4">
                             {comments.map(comment => (
-                                <div key={comment._id} className="p-4 border rounded-lg bg-gray-50 flex flex-col sm:flex-row justify-between">
+                                <div key={comment._id} className="p-4 border border-background rounded-xl bg-background/50 flex flex-col sm:flex-row justify-between">
                                     <div className="flex-1 mb-4 sm:mb-0">
-                                        <p className="text-gray-800 italic">"{comment.content}"</p>
-                                        <div className="text-xs text-gray-500 mt-2 flex items-center">
+                                        <p className="text-gray-700 italic">"{comment.content}"</p>
+                                        <div className="text-xs text-gray-700 mt-2 flex items-center flex-wrap">
                                             <FaUser className="mr-2" />
                                             <span>By: <strong>{comment.user?.name || 'Unknown User'}</strong> ({comment.user?.phone})</span>
                                             <span className="mx-2">|</span>
@@ -69,10 +69,10 @@ const ManageComments = () => {
                                         </div>
                                     </div>
                                     <div className="flex space-x-2 self-end sm:self-center">
-                                        <Button onClick={() => handleAction(comment._id, 'approve')} className="bg-emerald-500 hover:bg-emerald-600 text-white text-xs px-3 py-1">
+                                        <Button onClick={() => handleAction(comment._id, 'approve')} className="bg-primary hover:bg-primaryDark text-white text-xs px-3 py-1 rounded-lg">
                                             <FaCheck className="inline mr-1" /> Approve
                                         </Button>
-                                        <Button onClick={() => handleAction(comment._id, 'reject')} className="bg-rose-500 hover:bg-rose-600 text-white text-xs px-3 py-1">
+                                        <Button onClick={() => handleAction(comment._id, 'reject')} className="bg-highlight hover:bg-primaryDark text-white text-xs px-3 py-1 rounded-lg">
                                             <FaTimes className="inline mr-1" /> Reject
                                         </Button>
                                     </div>
@@ -80,7 +80,7 @@ const ManageComments = () => {
                             ))}
                         </div>
                     ) : (
-                        <p className="text-center text-gray-500 py-8">No pending comments to review.</p>
+                        <p className="text-center text-gray-700 py-8">No pending comments to review.</p>
                     )}
                 </div>
             )}
