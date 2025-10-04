@@ -1,10 +1,11 @@
 import React from 'react';
-import { FaYoutube, FaMapMarkerAlt, FaEnvelope, FaPhone, FaCalendarAlt, FaAddressCard } from 'react-icons/fa';
-import { Link } from 'react-router-dom'; // Assuming you have react-router-dom setup for internal links
+import { FaYoutube, FaMapMarkerAlt, FaEnvelope, FaPhone } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
-    // Contact and Navigation data provided by the user
+    // Contact and Navigation data
     const contactInfo = [
+        // FIX: Removed the invalid inline rotation from the array definition.
         { icon: FaPhone, text: '+91 98370 50318', href: 'tel:+919837050318' },
         { icon: FaEnvelope, text: 'ssdn.kashipur@gmail.com', href: 'mailto:ssdn.kashipur@gmail.com' },
         { icon: FaMapMarkerAlt, text: 'View Location on Map', href: 'https://maps.app.goo.gl/EecnPGYRw3JgQThV6', target: '_blank' },
@@ -57,25 +58,31 @@ const Footer = () => {
                     <div>
                         <h4 className="text-lg font-semibold text-white mb-4 uppercase tracking-wider">Get in Touch</h4>
                         <ul className="space-y-3">
-                            {contactInfo.map((item, index) => (
-                                <li key={index} className="flex items-start text-sm">
-                                    <item.icon className="w-4 h-4 mr-3 mt-1 flex-shrink-0 text-accent" />
-                                    <a 
-                                        href={item.href} 
-                                        target={item.target || '_self'}
-                                        rel={item.target === '_blank' ? 'noopener noreferrer' : ''}
-                                        className="text-neutral/80 hover:text-accent transition-colors duration-200 break-all"
-                                    >
-                                        {item.text}
-                                    </a>
-                                </li>
-                            ))}
+                            {contactInfo.map((item, index) => {
+                                // Determine additional classes for the icon (only rotation for FaPhone)
+                                const iconClasses = item.icon === FaPhone ? 'rotate-90' : '';
+                                
+                                return (
+                                    <li key={index} className="flex items-start text-sm">
+                                        {/* FIX: Apply rotation class directly here, using item.icon as the component reference */}
+                                        <item.icon className={`w-4 h-4 mr-3 mt-1 flex-shrink-0 text-accent ${iconClasses}`} />
+                                        <a 
+                                            href={item.href} 
+                                            target={item.target || '_self'}
+                                            rel={item.target === '_blank' ? 'noopener noreferrer' : ''}
+                                            className="text-neutral/80 hover:text-accent transition-colors duration-200 break-all"
+                                        >
+                                            {item.text}
+                                        </a>
+                                    </li>
+                                );
+                            })}
                         </ul>
                     </div>
                     
-                    {/* Column 4: Social Media & Legal */}
+                    {/* Column 4: Social Media & Connect */}
                     <div>
-                        <h4 className="text-lg font-semibold text-white mb-4 uppercase tracking-wider">Connect {/* & Legal */} </h4>
+                        <h4 className="text-lg font-semibold text-white mb-4 uppercase tracking-wider">Connect</h4>
                         
                         <div className="flex space-x-4 mb-6">
                             {socialLinks.map((link, index) => (
@@ -93,18 +100,6 @@ const Footer = () => {
                         </div>
                         
                         <div className="flex flex-col space-y-2 text-sm font-medium">
-                            {/* <a 
-                                href="/privacy-policy" 
-                                className="text-neutral/80 hover:text-accent transition-colors duration-200"
-                            >
-                                Privacy Policy
-                            </a>
-                            <a 
-                                href="/terms" 
-                                className="text-neutral/80 hover:text-accent transition-colors duration-200"
-                            >
-                                Terms of Service
-                            </a> */}
                         </div>
                     </div>
 

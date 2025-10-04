@@ -94,7 +94,7 @@ const EventsPage = () => {
     
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="container mx-auto p-4 md:p-10 min-h-screen bg-neutral font-body">
-            <div className="p-4 md:p-8 bg-card rounded-2xl shadow-soft">
+            <div className="p-4 md:p-8 bg-[#FFEAD9] rounded-2xl shadow-soft">
                 <h2 className="text-2xl font-bold font-heading text-primaryDark text-center mb-4">
                     {date ? `Events on ${new Date(date).toDateString()}` : 'All Events'}
                 </h2>

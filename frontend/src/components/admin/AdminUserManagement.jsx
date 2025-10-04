@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../api/api.js';
 import Button from '../common/Button.jsx';
-import { FaSpinner, FaLock, FaUser, FaCheck, FaTimes, FaKey, FaSearch } from 'react-icons/fa';
+import { FaSpinner, FaLock, FaUser, FaCheck, FaTimes, FaKey, FaSearch, FaEye, FaEyeSlash } from 'react-icons/fa'; // FaEye and FaEyeSlash are now correctly imported
 import { motion, AnimatePresence } from 'framer-motion';
 
 const PasswordModal = ({
@@ -14,6 +14,16 @@ const PasswordModal = ({
     passwordInput,
     onPasswordChange
 }) => {
+    // New state to toggle password visibility
+    const [showPassword, setShowPassword] = useState(false);
+
+    // Reset visibility state when modal opens/closes
+    useEffect(() => {
+        if (!isOpen) {
+            setShowPassword(false);
+        }
+    }, [isOpen]);
+
     return (
         <AnimatePresence>
             {isOpen && user && (
@@ -37,17 +47,28 @@ const PasswordModal = ({
                                 <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-2">
                                     New Password (Min 6 chars)
                                 </label>
-                                <input
-                                    id="newPassword"
-                                    type="password"
-                                    value={passwordInput}
-                                    onChange={onPasswordChange}
-                                    className={`w-full px-4 py-2 border rounded-lg shadow-sm transition-colors ${error ? 'border-highlight focus:border-highlight focus:ring-highlight' : 'border-background focus:border-primary focus:ring-primary'}`}
-                                    minLength="6"
-                                    required
-                                    autoFocus
-                                    disabled={loading}
-                                />
+                                <div className="relative">
+                                    {/* Input field with dynamic type */}
+                                    <input
+                                        id="newPassword"
+                                        type={showPassword ? "text" : "password"} 
+                                        value={passwordInput}
+                                        onChange={onPasswordChange}
+                                        // Increased right padding for the toggle icon
+                                        className={`w-full pr-10 pl-4 py-2 border rounded-lg shadow-sm transition-colors ${error ? 'border-highlight focus:border-highlight focus:ring-highlight' : 'border-background focus:border-primary focus:ring-primary'}`}
+                                        minLength="6"
+                                        required
+                                        autoFocus
+                                        disabled={loading}
+                                    />
+                                    {/* Password Toggle Icon */}
+                                    <span
+                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-400 hover:text-gray-600"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                    >
+                                        {showPassword ? <FaEyeSlash /> : <FaEye />}
+                                    </span>
+                                </div>
                             </div>
                             
                             {error && (
@@ -68,7 +89,7 @@ const PasswordModal = ({
                                     className="bg-highlight hover:bg-primaryDark text-white"
                                     disabled={loading}
                                 >
-                                    {loading ? <FaSpinner className="animate-spin" /> : <><FaKey className="inline-block mr-2"/> Set New Password</>}
+                                    {loading ? <FaSpinner className="animate-spin inline-block mr-2" /> : <><FaKey className="inline-block mr-2"/> Set New Password</>}
                                 </Button>
                             </div>
                         </form>

@@ -17,7 +17,31 @@ const useDebounce = (value, delay) => {
     return debouncedValue;
 };
 
+// Helper function to format date objects as YYYY-MM-DD strings for input fields
 const formatDateForInput = (date) => date.toISOString().split('T')[0];
+
+/**
+ * Helper function to get the current date/month boundaries locked to IST (UTC + 5:30).
+ * This ensures the UI defaults to the correct calendar month (e.g., Oct 1st to Oct 31st).
+ */
+const getIstDateBoundaries = () => {
+    // Current date/time in IST
+    const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
+    const nowIst = new Date(new Date().getTime() + IST_OFFSET_MS);
+    
+    // Get year and month based on IST
+    const year = nowIst.getUTCFullYear();
+    const month = nowIst.getUTCMonth();
+
+    // First Day of Month (IST) -> 1st day of the current month
+    // We create it as a UTC date to ensure correct formatting later
+    const firstDayOfMonth = new Date(Date.UTC(year, month, 1));
+    
+    // Last Day of Month (IST) -> Last day of the current month
+    const lastDayOfMonth = new Date(Date.UTC(year, month + 1, 0));
+
+    return { firstDayOfMonth, lastDayOfMonth };
+};
 
 const OccupancyReport = () => {
     const [events, setEvents] = useState([]);
@@ -25,14 +49,14 @@ const OccupancyReport = () => {
     const [error, setError] = useState(null);
     const [dateFilterType, setDateFilterType] = useState('stayRange');
 
-    const today = new Date();
-    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    // Calculate initial date range locked to IST for UI display
+    const { firstDayOfMonth, lastDayOfMonth } = useMemo(getIstDateBoundaries, []);
 
     const [filters, setFilters] = useState({
         eventId: '',
         buildingId: '',
         gender: '',
+        // UI always shows the human-readable first day of the month (X)
         startDate: formatDateForInput(firstDayOfMonth),
         endDate: formatDateForInput(lastDayOfMonth),
     });
@@ -95,12 +119,25 @@ const OccupancyReport = () => {
         }));
     };
 
-    const adjustedStartDate = new Date(filters.startDate);
-    adjustedStartDate.setDate(adjustedStartDate.getDate() - 1);
-    const adjustedFilters = {
-        ...filters,
-        startDate: formatDateForInput(adjustedStartDate),
-    };
+    /**
+     * Calculates the API filter object.
+     * The `startDate` sent to the API is always the date selected by the user MINUS 1 day,
+     * to correctly handle the IST midnight time zone boundary issue.
+     */
+    const adjustedFilters = useMemo(() => {
+        // 1. Get the date the user selected (e.g., '2025-10-01')
+        const userSelectedDate = new Date(filters.startDate); 
+        
+        // 2. Subtract one day (X-1) to ensure the API queries records starting at 00:00:00 on the user's selected date.
+        const apiStartDate = new Date(userSelectedDate);
+        apiStartDate.setDate(apiStartDate.getDate() - 1);
+        
+        return {
+            ...filters,
+            startDate: formatDateForInput(apiStartDate), // Send X-1 to API (e.g., Sept 30th)
+        };
+    }, [filters]);
+
 
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-8 bg-neutral min-h-screen font-body">
@@ -139,8 +176,19 @@ const OccupancyReport = () => {
                             value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-pink-500 focus:border-pink-500"/>
                     </div>
-                    <input type="date" name="startDate" value={filters.startDate} onChange={handleFilterChange} className="p-2 border rounded-lg"/>
-                    <input type="date" name="endDate" value={filters.endDate} onChange={handleFilterChange} className="p-2 border rounded-lg"/>
+                    
+                    {/* UI Field: Displays the user's intended date (X) */}
+                    <div className="flex items-center space-x-2 border border-background rounded-lg p-1 bg-white shadow-sm">
+                        <span className="text-sm font-medium text-gray-600">From:</span>
+                        <input type="date" name="startDate" value={filters.startDate} onChange={handleFilterChange} className="p-1 w-full focus:outline-none"/>
+                    </div>
+                    
+                    {/* UI Field: Displays the user's intended date */}
+                    <div className="flex items-center space-x-2 border border-background rounded-lg p-1 bg-white shadow-sm">
+                        <span className="text-sm font-medium text-gray-600">To:</span>
+                        <input type="date" name="endDate" value={filters.endDate} onChange={handleFilterChange} className="p-1 w-full focus:outline-none"/>
+                    </div>
+                    
                     <select name="eventId" value={filters.eventId} onChange={handleFilterChange} className="p-2 border rounded-lg">
                         <option value="">All Events</option>
                         {events.map(e => <option key={e._id} value={e._id}>{e.name}</option>)}
@@ -162,7 +210,7 @@ const OccupancyReport = () => {
             </div>
 
             <AllocationsView 
-                filters={adjustedFilters} 
+                filters={adjustedFilters} // Sends adjusted (X-1) start date to API
                 dateFilterType={dateFilterType}
                 debouncedSearchTerm={debouncedSearchTerm} 
                 pagination={pagination} 

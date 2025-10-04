@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 import { login } from '../../redux/slices/authSlice';
 import Button from '../common/Button';
 import { motion } from 'framer-motion';
-import { FaLock, FaPhoneAlt } from 'react-icons/fa';
+import { FaLock, FaPhoneAlt, FaEye, FaEyeSlash } from 'react-icons/fa'; // FaEye and FaEyeSlash imported
 import api from '../../api/api';
 
 // Your VAPID Public Key for Web Push notifications
@@ -15,10 +15,17 @@ const LoginForm = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false); // State to toggle visibility
+    
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const location = useLocation();
     const from = location.state?.from?.pathname || '/';
+
+    // Toggle function for password visibility
+    const togglePasswordVisibility = () => {
+        setShowPassword(prev => !prev);
+    };
 
     // This function handles the push notification subscription process
     const subscribeToPushNotifications = async () => {
@@ -100,14 +107,23 @@ const LoginForm = () => {
                     <div className="relative">
                         <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-accent" />
                         <input
-                            type="password"
+                            // Dynamic type based on state
+                            type={showPassword ? "text" : "password"} 
                             id="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="block w-full pl-10 pr-4 py-2 border border-background rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                            // Increased right padding to accommodate the icon
+                            className="block w-full pl-10 pr-10 py-2 border border-background rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                             placeholder="••••••••"
                             required
                         />
+                        {/* Toggle button using FaEye/FaEyeSlash */}
+                        <span
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-400 hover:text-gray-600"
+                            onClick={togglePasswordVisibility}
+                        >
+                            {showPassword ? <FaEyeSlash /> : <FaEye />}
+                        </span>
                     </div>
                     <div className="text-right mt-2">
                         <Link to="/forgot-password" className="text-sm font-medium text-highlight hover:underline">

@@ -83,7 +83,7 @@ const Header = () => {
                             <NavLink to="/calendar" icon={<FaCalendarAlt />} text="Calendar" />
                             <NavLink to="/events" icon={<FaClipboardList />} text="Event List" />
                             <NavLink to="/comments" icon={<FaComments />} text="Comments" />
-                            <NavLink to="/contact" icon={<FaPhone />} text="Contact" />
+                            <NavLink to="/contact" icon={<FaPhone className="rotate-90" />} text="Contact" />
                             {isAuthenticated && (
                                 <>
                                     <NavLink to="/my-bookings" icon={<FaClipboardList />} text="My Bookings" />

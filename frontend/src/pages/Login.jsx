@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { motion } from 'framer-motion';
-import { FaUser, FaLock, FaSignInAlt, FaSpinner } from 'react-icons/fa';
+import { FaUser, FaLock, FaSignInAlt, FaSpinner, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { login } from '../redux/slices/authSlice';
 import { toast } from 'react-toastify';
 import Button from '../components/common/Button';
@@ -14,6 +14,7 @@ const Login = () => {
     const dispatch = useDispatch();
     const [formData, setFormData] = useState({ phone: '', password: '' });
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     useEffect(() => {
         const from = location.state?.from?.pathname || '/';
@@ -39,6 +40,10 @@ const Login = () => {
         }
     };
     
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
+    };
+
     return (
         <div className="min-h-screen w-full bg-neutral flex items-center justify-center p-4 font-body">
             <motion.div
@@ -61,7 +66,22 @@ const Login = () => {
                         <label htmlFor="password-login" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
                         <div className="mt-1 relative">
                             <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-accent" />
-                            <input id="password-login" name="password" type="password" value={formData.password} onChange={handleChange} required className="w-full pl-10 pr-3 py-2 border border-background rounded-md focus:ring-primary focus:border-primary" placeholder="Password" />
+                            <input
+                                id="password-login"
+                                name="password"
+                                type={showPassword ? "text" : "password"}
+                                value={formData.password}
+                                onChange={handleChange}
+                                required
+                                className="w-full pl-10 pr-10 py-2 border border-background rounded-md focus:ring-primary focus:border-primary"
+                                placeholder="Password"
+                            />
+                            <span
+                                className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-400 hover:text-gray-600"
+                                onClick={togglePasswordVisibility}
+                            >
+                                {showPassword ? <FaEyeSlash /> : <FaEye />}
+                            </span>
                         </div>
                     </div>
                     <div className="text-sm text-right">

@@ -41,11 +41,38 @@ const Home = () => {
   const { isAuthenticated } = useSelector((state) => state.auth);
   const [liveLinks, setLiveLinks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [imagesLoaded, setImagesLoaded] = useState(false); // New state for image loading
 
   // Carousel state
   const [currentSlide, setCurrentSlide] = useState(0);
   const [direction, setDirection] = useState(1);
   const numSlides = carouselImages.length;
+
+  // Preload images
+  useEffect(() => {
+    const loadImage = (src) => {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.src = src;
+        img.onload = () => resolve(src);
+        img.onerror = (err) => reject(err);
+      });
+    };
+
+    const loadAllImages = async () => {
+      try {
+        const promises = carouselImages.map((image) => loadImage(image.src));
+        await Promise.all(promises);
+        setImagesLoaded(true);
+      } catch (error) {
+        console.error("Failed to load carousel images:", error);
+        // Still proceed even if some images fail to load
+        setImagesLoaded(true); 
+      }
+    };
+
+    loadAllImages();
+  }, []);
 
   // Fetch live links
   useEffect(() => {
@@ -70,9 +97,11 @@ const Home = () => {
 
   // Auto-slide every 10 seconds
   useEffect(() => {
-    const interval = setInterval(() => slide(1), 10000);
-    return () => clearInterval(interval);
-  }, [currentSlide]);
+    if (imagesLoaded) { // Only start auto-slide after images are loaded
+      const interval = setInterval(() => slide(1), 10000);
+      return () => clearInterval(interval);
+    }
+  }, [currentSlide, imagesLoaded]);
 
   const slide = (dir) => {
     setDirection(dir);
@@ -85,17 +114,22 @@ const Home = () => {
       x: dir > 0 ? "100%" : "-100%",
       opacity: 1,
     }),
-    center: { x: "0%", opacity: 1 },
+    center: {
+      x: "0%",
+      opacity: 1,
+      transition: {
+        x: { type: "spring", stiffness: 120, damping: 20 },
+        opacity: { duration: 0.2 },
+      },
+    },
     exit: (dir) => ({
       x: dir > 0 ? "-100%" : "100%",
       opacity: 1,
+      transition: {
+        x: { type: "spring", stiffness: 120, damping: 20 },
+        opacity: { duration: 0.2 },
+      },
     }),
-  };
-
-  // Feature card animation
-  const featureCardVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: { y: 0, opacity: 1 },
   };
 
   // Live marquee component
@@ -165,7 +199,7 @@ const Home = () => {
     );
   };
 
-  if (loading) {
+  if (loading || !imagesLoaded) { // Wait for both API and images to load
     return (
       <div className="text-center mt-10 text-xl text-primary font-body">
         <FaSpinner className="animate-spin inline mr-2" /> Loading...
@@ -182,8 +216,8 @@ const Home = () => {
       <LiveMarquee links={liveLinks} />
 
       {/* Carousel */}
-      <section className="relative w-full h-[60vh] md:h-[70vh] overflow-hidden "      >
-        <AnimatePresence custom={direction} initial={false} mode="wait">
+      <section className="relative w-full h-[60vh] md:h-[70vh] overflow-hidden">
+        <AnimatePresence custom={direction} initial={false}>
           <motion.div
             key={currentSlide}
             custom={direction}
@@ -191,10 +225,6 @@ const Home = () => {
             initial="enter"
             animate="center"
             exit="exit"
-            transition={{
-              x: { type: "spring", stiffness: 120, damping: 20 },
-              opacity: { duration: 0.2 },
-            }}
             className="absolute top-0 left-0 w-full h-full bg-cover bg-center"
             style={{ backgroundImage: `url(${carouselImages[currentSlide].src})` }}
           >
@@ -220,18 +250,17 @@ const Home = () => {
 
         {/* Carousel arrows */}
         <button
-        onClick={() => slide(1)} // LEFT arrow now moves to next slide
-        className="absolute left-4 top-1/2 transform -translate-y-1/2 p-3 bg-black/30 rounded-full text-white hover:bg-black/50 z-30"
+          onClick={() => slide(-1)}
+          className="absolute left-4 top-1/2 transform -translate-y-1/2 p-3 bg-black/30 rounded-full text-white hover:bg-black/50 z-30"
         >
-        ‹
+          ‹
         </button>
         <button
-        onClick={() => slide(-1)} // RIGHT arrow now moves to previous slide
-        className="absolute right-4 top-1/2 transform -translate-y-1/2 p-3 bg-black/30 rounded-full text-white hover:bg-black/50 z-30"
+          onClick={() => slide(1)}
+          className="absolute right-4 top-1/2 transform -translate-y-1/2 p-3 bg-black/30 rounded-full text-white hover:bg-black/50 z-30"
         >
-        ›
+          ›
         </button>
-
 
         {/* Dots */}
         <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2 z-30">
@@ -263,7 +292,7 @@ const Home = () => {
             variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
           >
             <motion.div
-              variants={featureCardVariants}
+              variants={{ hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1 } }}
               className="bg-card p-8 rounded-2xl shadow-soft hover:shadow-accent transition-all duration-300 transform hover:-translate-y-1 border-t-4 border-primary flex flex-col items-center"
             >
               <div className="bg-background p-4 rounded-full mb-4">
@@ -278,7 +307,7 @@ const Home = () => {
             </motion.div>
 
             <motion.div
-              variants={featureCardVariants}
+              variants={{ hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1 } }}
               className="bg-card p-8 rounded-2xl shadow-soft hover:shadow-accent transition-all duration-300 transform hover:-translate-y-1 border-t-4 border-primary flex flex-col items-center"
             >
               <div className="bg-background p-4 rounded-full mb-4">
@@ -293,7 +322,7 @@ const Home = () => {
             </motion.div>
 
             <motion.div
-              variants={featureCardVariants}
+              variants={{ hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1 } }}
               className="bg-card p-8 rounded-2xl shadow-soft hover:shadow-accent transition-all duration-300 transform hover:-translate-y-1 border-t-4 border-primary flex flex-col items-center"
             >
               <div className="bg-background p-4 rounded-full mb-4">
@@ -336,7 +365,6 @@ const Home = () => {
           </div>
         </section>
       </main>
-
     </motion.div>
   );
 };

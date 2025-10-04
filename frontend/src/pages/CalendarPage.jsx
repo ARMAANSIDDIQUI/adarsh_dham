@@ -12,7 +12,7 @@ const theme = {
     background: '#E6BEAE',
     primary: '#E29C9C',
     primaryDark: '#C9788A',
-    accent: '#D4A373',
+    accent: '#FF82B6',
     highlight: '#DB2777',
     bodyFont: "'Poppins', sans-serif",
 };
@@ -80,7 +80,7 @@ const calendarStyles = `
 }
 .highlight:enabled:hover,
 .highlight:enabled:focus {
-    background-color: ${theme.primaryDark};
+    background-color: #C9308A;
 }
 `;
 
