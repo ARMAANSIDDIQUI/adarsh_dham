@@ -6,7 +6,7 @@ import { FaSpinner } from 'react-icons/fa';
 
 // Configuration object for EmailJS keys
 const emailJsConfig = {
-  serviceID: 'service_9s61191',
+  serviceID: 'service_yyxrhyc',
   templateID: 'template_ave6g79',
   publicKey: 'dVjQ8g-uLP6BiH_zF',
 };
@@ -15,6 +15,7 @@ const emailJsConfig = {
 const FaMapMarkerAlt = (props) => (
     <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 384 512" {...props}><path d="M172.268 501.67C26.97 291.031 0 269.413 0 192 0 85.961 85.961 0 192 0s192 85.961 192 192c0 77.413-26.97 99.031-172.268 309.67-9.535 13.774-29.93 13.773-39.464 0zM192 272c44.183 0 80-35.817 80-80s-35.817-80-80-80-80 35.817-80 80 35.817 80 80 80z"></path></svg>
 );
+// FIX: Corrected viewBox to 0 0 512 512 to resolve rendering error
 const FaEnvelope = (props) => (
     <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 512 512" {...props}><path d="M502.3 190.8c3.9-3.1 9.7-.2 9.7 4.7V400c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V195.6c0-5 5.7-7.8 9.7-4.7 22.4 17.4 52.1 39.5 154.1 113.6 21.1 15.4 56.7 47.8 92.2 47.6 35.7.3 72-32.8 92.3-47.6 102-74.1 131.6-96.3 142.8-104.7 173.4-128.7 5.8-4.5 9.2-11.5 9.2-18.9v-19c0-26.5-21.5-48-48-48H48C21.5 64 0 85.5 0 112v19c0 7.4 3.4 14.3 9.2 18.9 30.6 23.9 40.7 32.4 173.4 128.7 16.8 12.2 50.2 41.8 73.4 41.4zM256 320c23.2.4 56.6-29.2 73.4-41.4 132.7-96.3 142.8-104.7 173.4-128.7 5.8-4.5 9.2-11.5 9.2-18.9v-19c0-26.5-21.5-48-48-48H48C21.5 64 0 85.5 0 112v19c0 7.4 3.4 14.3 9.2 18.9 30.6 23.9 40.7 32.4 173.4 128.7 16.8 12.2 50.2 41.8 73.4 41.4z"></path></svg>
 );
@@ -56,7 +57,10 @@ const Contact = () => {
                 },
                 (error) => {
                     console.log('FAILED...', error.text);
-                    toast.error('Failed to send message. Please try again later.');
+                    // The 400 error is likely here due to placeholder keys or title
+                    toast.error(error.status === 400 
+                        ? 'Failed to send: Check EmailJS template/key configuration.' 
+                        : 'Failed to send message. Please try again later.');
                 }
             ).finally(() => {
                 setLoading(false);
@@ -82,7 +86,7 @@ const Contact = () => {
                 )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 border-b pb-6 border-background">
-                    {/* 1. Address Block - Adjusted text size and spacing for better fit */}
+                    {/* 1. Address Block */}
                     <div className="flex flex-col items-center space-y-3 p-4 bg-background rounded-xl">
                         <FaMapMarkerAlt className="text-primaryDark w-6 h-6 flex-shrink-0" />
                         <h3 className="text-xl font-semibold font-heading text-gray-800">Address</h3>
@@ -90,14 +94,14 @@ const Contact = () => {
                             Shri Adarsh Dham, 9th KM Stone, Kashipur-Ramnagar Road, Village Bhogpur, Kashipur (Uttarakhand) Pin-244713
                         </p>
                     </div>
-                    {/* 2. Email Block - Fine-tuned spacing */}
+                    {/* 2. Email Block */}
                     <div className="flex flex-col items-center space-y-3 p-4 bg-background rounded-xl">
                         <FaEnvelope className="text-primaryDark w-6 h-6 flex-shrink-0" />
                         <h3 className="text-xl font-semibold font-heading text-gray-800">Email</h3>
                         <a href="mailto:ssdn.kashipur@gmail.com" className="text-sm text-gray-700 hover:text-highlight transition-colors whitespace-nowrap">ssdn.kashipur@gmail.com</a>
                         <div className="h-4"></div> {/* Spacer to balance height with the Phone block */}
                     </div>
-                    {/* 3. Phone Block - Adjusted time text for cleaner look */}
+                    {/* 3. Phone Block */}
                     <div className="flex flex-col items-center space-y-3 p-4 bg-background rounded-xl">
                         <FaPhone className="text-primaryDark w-6 h-6 flex-shrink-0" />
                         <h3 className="text-xl font-semibold font-heading text-gray-800">Phone</h3>
@@ -112,6 +116,10 @@ const Contact = () => {
 
                 <form ref={form} onSubmit={sendEmail} className="mt-8 space-y-4 pt-4">
                     <h3 className="text-2xl font-bold font-heading text-primaryDark mb-4 text-center">Send Us a Message</h3>
+                    
+                    {/* HIDDEN INPUT FOR TEMPLATE SUBJECT/TITLE */}
+                    <input type="hidden" name="title" value="New Contact Inquiry from Adarsh Dham Website" />
+
                     <div>
                         <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
                         <input 
