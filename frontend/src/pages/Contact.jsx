@@ -57,7 +57,7 @@ const Contact = () => {
           <div className="flex flex-col items-center space-y-3 p-4 bg-background rounded-xl">
             <FaMapMarkerAlt className="text-primaryDark w-6 h-6" />
             <h3 className="text-xl font-semibold font-heading text-gray-800">Address</h3>
-            <p className="text-sm text-gray-700 text-center">Adarsh Dham, 72C2+H73, Bhogpurkashipur, Uttarakhand 244713</p>
+            <p className="text-sm text-gray-700 text-center">Shri Adarsh Dham ,9th KM Stone, Kashipur-Ramnagar Road ,Village Bhogpur Kashipur ( Uttarakhand) Pin-244713</p>
           </div>
           <div className="flex flex-col items-center space-y-3 p-4 bg-background rounded-xl">
             <FaEnvelope className="text-primaryDark w-6 h-6" />
@@ -68,6 +68,7 @@ const Contact = () => {
             <FaPhone className="text-primaryDark w-6 h-6" />
             <h3 className="text-xl font-semibold font-heading text-gray-800">Phone</h3>
             <a href="tel:+919837050318" className="text-sm text-gray-700 hover:text-highlight transition-colors">+91 98370 50318</a>
+            <p>9:00 A.M - 1:00 P.M </p> & <p>4:00 P.M - 6:00 P.M</p>
           </div>
         </div>
 

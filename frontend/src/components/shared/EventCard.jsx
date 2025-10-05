@@ -40,6 +40,13 @@ const EventCard = ({ event }) => {
 
   const isBookingActive = new Date() >= new Date(event.bookingStartDate) && new Date() <= new Date(event.bookingEndDate);
 
+  // Base classes for the button
+  const baseButtonClasses = "w-full py-3 text-white font-semibold rounded-lg shadow-soft transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-primary/50";
+
+  // Dynamic classes based on booking status
+  const activeClasses = "bg-highlight hover:bg-primaryDark";
+  const inactiveClasses = "bg-gray-400 hover:bg-gray-500 cursor-not-allowed"; // Changed to use gray colors for 'dull' look
+
   return (
     <motion.div
       className="bg-card p-6 rounded-2xl shadow-soft hover:shadow-accent transition-all duration-300 transform hover:-translate-y-0.5 flex flex-col h-full font-body"
@@ -94,13 +101,19 @@ const EventCard = ({ event }) => {
       {/* Action Button */}
       <div className="mt-auto">
         {isBookingActive ? (
-          <Button onClick={handleBooking} className="w-full py-3">
+          <button 
+            onClick={handleBooking} 
+            className={`${baseButtonClasses} ${activeClasses}`}
+          >
             Request Booking
-          </Button>
+          </button>
         ) : (
-          <Button className="w-full py-3 bg-gray-400 hover:bg-gray-500 cursor-not-allowed" disabled>
+          <button 
+            className={`${baseButtonClasses} ${inactiveClasses}`} 
+            disabled
+          >
             Booking Closed
-          </Button>
+          </button>
         )}
       </div>
     </motion.div>

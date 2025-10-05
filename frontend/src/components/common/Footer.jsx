@@ -8,7 +8,7 @@ const Footer = () => {
         // FIX: Removed the invalid inline rotation from the array definition.
         { icon: FaPhone, text: '+91 98370 50318', href: 'tel:+919837050318' },
         { icon: FaEnvelope, text: 'ssdn.kashipur@gmail.com', href: 'mailto:ssdn.kashipur@gmail.com' },
-        { icon: FaMapMarkerAlt, text: 'View Location on Map', href: 'https://maps.app.goo.gl/EecnPGYRw3JgQThV6', target: '_blank' },
+        { icon: FaMapMarkerAlt, text: 'View Location on Map', href: 'https://maps.app.goo.gl/6PoBTt7PZsXmXT5n8?g_st=awb', target: '_blank' },
     ];
 
     const socialLinks = [

@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import Button from '../common/Button.jsx';
 import { FaUserPlus, FaMapMarkerAlt, FaPhoneAlt, FaCalendarAlt, FaEnvelope, FaUniversity, FaUsers, FaPen } from 'react-icons/fa';
 
-const ThemedInput = ({ label, name, value, onChange, required, type = "text", icon, min, max, colSpan = "" }) => (
+const ThemedInput = ({ label, name, value, onChange, required, type = "text", icon, min, max, colSpan = "", pattern, title, maxLength }) => (
     <div className={colSpan}>
         <label className="text-sm font-medium text-gray-700 flex items-center mb-1">
             {icon && <span className="mr-2 text-primary">{icon}</span>}
@@ -19,6 +19,9 @@ const ThemedInput = ({ label, name, value, onChange, required, type = "text", ic
             required={required} 
             min={min} 
             max={max}
+            pattern={pattern}
+            title={title}
+            maxLength={maxLength}
         />
     </div>
 );
@@ -139,6 +142,18 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
             return;
         }
 
+        // Additional validation for the 10-digit number
+        if (formData.contactNumber.length !== 10) {
+            setValidationError("Please enter a valid 10-digit contact number.");
+            return;
+        }
+
+        // Additional validation for Baiji/Mahatma Ji fields
+        if (formData.baijiMahatmaJi === '' || formData.baijiContact === '') {
+            setValidationError("Baiji / Mahatma Ji's name and contact are mandatory fields.");
+            return;
+        }
+
         const { numMales, numFemales, numBoys, numGirls, ...submissionData } = formData;
         onSubmit(submissionData);
     };
@@ -163,8 +178,9 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
                         <h3 className="text-xl font-semibold font-heading text-primaryDark mb-4 border-b border-background pb-2">Ashram & Reference Details</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <ThemedInput label="Ashram Name" name="ashramName" value={formData.ashramName} onChange={handleChange} required icon={<FaUniversity />} colSpan="md:col-span-2" />
-                            <ThemedInput label="Baiji / Mahatma Ji Name (Optional)" name="baijiMahatmaJi" value={formData.baijiMahatmaJi} onChange={handleChange} />
-                            <ThemedInput label="Baiji / Mahatma Ji Contact (Optional)" name="baijiContact" value={formData.baijiContact} onChange={handleChange} />
+                            {/* Made Baiji / Mahatma Ji fields mandatory with required attribute */}
+                            <ThemedInput label="Baiji / Mahatma Ji Name" name="baijiMahatmaJi" value={formData.baijiMahatmaJi} onChange={handleChange} required={true} />
+                            <ThemedInput label="Baiji / Mahatma Ji Contact" name="baijiContact" value={formData.baijiContact} onChange={handleChange} required={true} />
                         </div>
                     </div>
 
@@ -172,7 +188,19 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
                         <h3 className="text-xl font-semibold font-heading text-primaryDark mb-4 border-b border-background pb-2">Your Details</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <ThemedInput label="Email (Optional)" name="email" type="email" value={formData.email} onChange={handleChange} icon={<FaEnvelope />} />
-                            <ThemedInput label="Contact Number" name="contactNumber" value={formData.contactNumber} onChange={handleChange} required icon={<FaPhoneAlt />} />
+                            {/* Changed type to "tel" and added both maxLength and pattern */}
+                            <ThemedInput 
+                                label="Contact Number" 
+                                name="contactNumber" 
+                                type="tel" 
+                                value={formData.contactNumber} 
+                                onChange={handleChange} 
+                                required 
+                                icon={<FaPhoneAlt />} 
+                                pattern="[0-9]{10}" 
+                                title="Please enter a 10-digit mobile number."
+                                maxLength="10" 
+                            />
                             <ThemedInput label="Address" name="address" value={formData.address} onChange={handleChange} required icon={<FaMapMarkerAlt />} colSpan="md:col-span-2" />
                             <ThemedInput label="City" name="city" value={formData.city} onChange={handleChange} required icon={<FaMapMarkerAlt />} colSpan="md:col-span-2" />
                         </div>

@@ -5,7 +5,8 @@ import { motion } from 'framer-motion';
 import { FaUser, FaLock, FaSignInAlt, FaSpinner, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { login } from '../redux/slices/authSlice';
 import { toast } from 'react-toastify';
-import Button from '../components/common/Button';
+// Removed Button import as it's no longer used
+// import Button from '../components/common/Button'; 
 
 const Login = () => {
     const { isAuthenticated } = useSelector((state) => state.auth);
@@ -15,6 +16,9 @@ const Login = () => {
     const [formData, setFormData] = useState({ phone: '', password: '' });
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+
+    // Determines if the login button should be disabled
+    const isFormIncomplete = formData.phone.trim() === '' || formData.password.trim() === '';
 
     useEffect(() => {
         const from = location.state?.from?.pathname || '/';
@@ -29,6 +33,13 @@ const Login = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Prevent submission if form is incomplete
+        if (isFormIncomplete) {
+            toast.error('Please enter both phone number and password.');
+            return;
+        }
+
         setLoading(true);
         try {
             await dispatch(login(formData)).unwrap();
@@ -59,7 +70,16 @@ const Login = () => {
                         <label htmlFor="phone-login" className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
                         <div className="mt-1 relative">
                             <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-accent" />
-                            <input id="phone-login" name="phone" type="tel" value={formData.phone} onChange={handleChange} required className="w-full pl-10 pr-3 py-2 border border-background rounded-md focus:ring-primary focus:border-primary" placeholder="Phone Number" />
+                            <input 
+                                id="phone-login" 
+                                name="phone" 
+                                type="tel" 
+                                value={formData.phone} 
+                                onChange={handleChange} 
+                                required 
+                                className="w-full pl-10 pr-3 py-2 border border-background rounded-md focus:ring-primary focus:border-primary" 
+                                placeholder="Phone Number" 
+                            />
                         </div>
                     </div>
                     <div>
@@ -90,10 +110,18 @@ const Login = () => {
                         </Link>
                     </div>
                     <div>
-                        <Button type="submit" disabled={loading} className="w-full inline-flex justify-center items-center bg-highlight hover:bg-primaryDark text-white">
+                        {/* Implemented native button with dynamic class structure for color control */}
+                        <button 
+                            type="submit" 
+                            disabled={loading || isFormIncomplete} 
+                            // Conditional styles:
+                            // Disabled: opacity-50 and cursor-not-allowed
+                            // Enabled: bg-highlight, hover:bg-primaryDark
+                            className={`w-full inline-flex justify-center items-center px-4 py-3 text-white font-semibold rounded-lg shadow-soft transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-primary/50 bg-highlight hover:bg-primaryDark disabled:opacity-50 disabled:cursor-not-allowed`}
+                        >
                             {loading ? <FaSpinner className="animate-spin mr-2" /> : <FaSignInAlt className="mr-2" />}
                             {loading ? 'Logging in...' : 'Login'}
-                        </Button>
+                        </button>
                     </div>
                 </form>
                 <div className="text-center">

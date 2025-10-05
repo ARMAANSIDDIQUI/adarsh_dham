@@ -10,6 +10,7 @@ import {
     FaPhone,
     FaCalendarAlt,
     FaBars,
+    FaBookOpen,
     FaTimes,
     FaClipboardList,
     FaComments,
@@ -17,7 +18,6 @@ import {
     FaUserCircle,
     FaBell,
     FaSignOutAlt,
-    FaOm
 } from 'react-icons/fa';
 import { logout } from '../../redux/slices/authSlice.js';
 import FloatingActionButtons from './FloatingActionButtons';
@@ -72,8 +72,7 @@ const Header = () => {
             <header className="bg-background shadow-soft sticky top-0 z-[999] font-body border-b border-card">
                 <nav className="container mx-auto flex items-center justify-between px-4 py-3 max-w-7xl">
                     <Link to="/" className="text-2xl font-bold mr-5 text-primaryDark hover:text-opacity-80 transition-colors duration-200 flex items-center gap-x-1 font-heading">
-                        <FaOm className="text-primaryDark text-3xl pr-2" />
-                        <span>Adarsh Dham</span>
+                        <span className="whitespace-nowrap">Adarsh Dham</span>
                     </Link>
 
                     {!isMobile && (
@@ -82,6 +81,7 @@ const Header = () => {
                             <NavLink to="/about" icon={<FaInfoCircle />} text="About" />
                             <NavLink to="/calendar" icon={<FaCalendarAlt />} text="Calendar" />
                             <NavLink to="/events" icon={<FaClipboardList />} text="Event List" />
+                            <NavLink to="/events" icon={<FaBookOpen />} text="Request Booking" />
                             <NavLink to="/comments" icon={<FaComments />} text="Comments" />
                             <NavLink to="/contact" icon={<FaPhone className="rotate-90" />} text="Contact" />
                             {isAuthenticated && (
@@ -135,8 +135,9 @@ const Header = () => {
                                     <NavLink to="/about" icon={<FaInfoCircle />} text="About" onClick={handleMenuToggle} />
                                     <NavLink to="/calendar" icon={<FaCalendarAlt />} text="Calendar" onClick={handleMenuToggle} />
                                     <NavLink to="/events" icon={<FaClipboardList />} text="Event List" onClick={handleMenuToggle} />
+                                    <NavLink to="/events" icon={<FaBookOpen />} text="Request Booking" />
                                     <NavLink to="/comments" icon={<FaComments />} text="Comments" onClick={handleMenuToggle} />
-                                    <NavLink to="/contact" icon={<FaPhone />} text="Contact" onClick={handleMenuToggle} />
+                                    <NavLink to="/contact" icon={<FaPhone className="rotate-90"/>} text="Contact" onClick={handleMenuToggle} />
                                     
                                     <div className="w-full border-t border-background my-4"></div>
                                     

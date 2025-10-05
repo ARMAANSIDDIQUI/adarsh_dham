@@ -18,6 +18,9 @@ const RegisterForm = () => {
     
     const navigate = useNavigate();
 
+    // Checks if all required fields are filled to enable the button
+    const isFormIncomplete = name.trim() === '' || phone.trim() === '' || password.trim() === '' || confirmPassword.trim() === '';
+
     // Toggle handlers
     const togglePasswordVisibility = () => setShowPassword(prev => !prev);
     const toggleConfirmPasswordVisibility = () => setShowConfirmPassword(prev => !prev);
@@ -29,6 +32,12 @@ const RegisterForm = () => {
 
         if (password !== confirmPassword) {
             setError('Passwords do not match.');
+            return;
+        }
+
+        // Prevent submission if form is incomplete (extra safety check)
+        if (isFormIncomplete) {
+            setError('Please fill out all required fields.');
             return;
         }
 
@@ -132,7 +141,15 @@ const RegisterForm = () => {
                     {error && <p className="text-sm text-center py-2 px-3 rounded-lg bg-highlight/10 border border-highlight/20 text-highlight font-medium">{error}</p>}
                     {success && <p className="text-sm text-center py-2 px-3 rounded-lg bg-accent/10 border border-accent/20 text-accent font-medium">{success}</p>}
 
-                    <Button type="submit" className="w-full text-lg py-3 bg-highlight hover:bg-primaryDark" disabled={loading}>
+                    {/* Replaced Button with native button and dynamic classes */}
+                    <button 
+                        type="submit" 
+                        disabled={loading || isFormIncomplete} 
+                        // Dynamic class for color control:
+                        // Disabled: opacity-50 and cursor-not-allowed
+                        // Enabled: bg-highlight, hover:bg-primaryDark
+                        className={`w-full inline-flex justify-center items-center px-4 py-3 text-white text-lg font-semibold rounded-lg shadow-soft transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-primary/50 bg-highlight hover:bg-primaryDark disabled:opacity-50 disabled:cursor-not-allowed`}
+                    >
                         {loading ? (
                             <>
                                 <FaSpinner className="animate-spin mr-2 h-5 w-5" /> Registering...
@@ -140,7 +157,7 @@ const RegisterForm = () => {
                         ) : (
                             'Register'
                         )}
-                    </Button>
+                    </button>
                     <p className="text-center text-sm text-gray-700 pt-2">
                         Already have an account? 
                         <Link to="/login" className="text-highlight hover:underline font-semibold ml-1 transition-colors">

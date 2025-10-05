@@ -28,7 +28,7 @@ const About = () => {
             <p className="mt-2 text-lg text-highlight font-semibold">A Sanctuary for Spiritual Growth</p>
             <div className="w-24 h-1 bg-primary mx-auto my-6 rounded-full"></div>
             <p className="max-w-3xl mx-auto text-lg text-gray-700 leading-relaxed">
-              Located on Ramnagar Road in Kashipur, Uttarakhand, Shri Adarsh Dham Ashram is a serene sanctuary enveloped by nature. Affiliated with Shri Anandpur Trust and founded by visionary spiritual leaders, our ashram is dedicated to the profound journey of spiritual growth and self-realization.
+              Located on Ramnagar Road in Kashipur, Uttarakhand, Shri Adarsh Dham Ashram is a serene sanctuary enveloped by nature. Affiliated with Shri Anandpur Trust and founded by visionary spiritual leaders, the ashram is dedicated to the profound journey of spiritual growth and self-realization.
             </p>
           </div>
         </motion.div>

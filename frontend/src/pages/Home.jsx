@@ -8,7 +8,9 @@ import {
   FaCalendarAlt,
   FaBuilding,
   FaHeart,
+  FaLandmark,
   FaBell,
+  Faom,
   FaSpinner,
 } from "react-icons/fa";
 
@@ -287,18 +289,20 @@ const Home = () => {
             Key Features
           </h2>
           <motion.div
-            className="grid grid-cols-1 md:grid-cols-3 gap-8"
+            className="grid grid-cols-1 md:grid-cols-2 gap-8"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
             variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
           >
-            <motion.div
-              variants={{ hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1 } }}
-              className="bg-card p-8 rounded-2xl shadow-soft hover:shadow-accent transition-all duration-300 transform hover:-translate-y-1 border-t-4 border-primary flex flex-col items-center"
-            >
-              <div className="bg-background p-4 rounded-full mb-4">
-                <FaCalendarAlt className="text-4xl text-primary" />
+            {/* Wrapped first feature in a Link */}
+            <Link to="/calendar" className="w-full block">
+              <motion.div
+                variants={{ hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1 } }}
+                className="bg-card p-8 rounded-2xl shadow-soft hover:shadow-accent transition-all duration-300 transform hover:-translate-y-1 border-t-4 border-primary flex flex-col items-center"
+              >
+                <div className="bg-background p-4 rounded-full mb-4">
+                  <FaCalendarAlt className="text-4xl text-primary" />
               </div>
               <h3 className="text-xl font-semibold font-heading mb-2 text-primaryDark">
                 Event Calendar
@@ -306,14 +310,17 @@ const Home = () => {
               <p className="text-gray-700">
                 Stay updated on all our spiritual and community events.
               </p>
-            </motion.div>
+              </motion.div>
+            </Link>
 
-            <motion.div
-              variants={{ hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1 } }}
-              className="bg-card p-8 rounded-2xl shadow-soft hover:shadow-accent transition-all duration-300 transform hover:-translate-y-1 border-t-4 border-primary flex flex-col items-center"
-            >
-              <div className="bg-background p-4 rounded-full mb-4">
-                <FaBuilding className="text-4xl text-primary" />
+            {/* Wrapped second feature in a Link */}
+            <Link to="/events" className="w-full block">
+              <motion.div
+                variants={{ hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1 } }}
+                className="bg-card p-8 rounded-2xl shadow-soft hover:shadow-accent transition-all duration-300 transform hover:-translate-y-1 border-t-4 border-primary flex flex-col items-center"
+              >
+                <div className="bg-background p-4 rounded-full mb-4">
+                  <FaBuilding className="text-4xl text-primary" />
               </div>
               <h3 className="text-xl font-semibold font-heading mb-2 text-primaryDark">
                 Accommodation Booking
@@ -321,22 +328,31 @@ const Home = () => {
               <p className="text-gray-700">
                 Effortlessly request and manage stay for any event.
               </p>
-            </motion.div>
-
-            <motion.div
-              variants={{ hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1 } }}
-              className="bg-card p-8 rounded-2xl shadow-soft hover:shadow-accent transition-all duration-300 transform hover:-translate-y-1 border-t-4 border-primary flex flex-col items-center"
-            >
-              <div className="bg-background p-4 rounded-full mb-4">
-                <FaHeart className="text-4xl text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold font-heading mb-2 text-primaryDark">
-                Seamless Experience
-              </h3>
-              <p className="text-gray-700">
-                A clean and intuitive interface designed for all users.
-              </p>
-            </motion.div>
+              </motion.div>
+            </Link>
+          </motion.div>
+        </section>
+        {/* Mandir Darshan Timings Section */}
+        <section className="mt-20 text-center">
+          <h2 className="text-3xl font-bold font-heading mb-10 text-primaryDark border-b-2 border-primary inline-block pb-1">
+            Mandir Darshan Timings
+          </h2>
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            whileInView={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+            // Corrected classes for proper centering and spacing
+            className="bg-card p-8 rounded-2xl shadow-soft border-t-4 border-primary flex flex-col items-center mx-auto max-w-sm"
+          >
+            <div className="bg-background p-4 rounded-full mb-4">
+              {/* Corrected icon to a valid one from react-icons/fa */}
+              <FaLandmark className="text-4xl text-primary" /> 
+            </div>
+            <div className="text-lg font-semibold text-primaryDark space-y-2">
+              <p>7:00 AM - 12:00 PM</p>
+              <p>4:00 PM - 6:00 PM</p>
+            </div>
           </motion.div>
         </section>
 
