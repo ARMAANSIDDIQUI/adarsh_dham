@@ -106,6 +106,13 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
                 newFormData.stayTo = value;
             }
         }
+
+        // Restrict phone number fields to only accept numeric input
+        if (name === 'contactNumber' || name === 'baijiContact') {
+            const numericValue = value.replace(/[^0-9]/g, '');
+            newFormData[name] = numericValue;
+        }
+
         setFormData(newFormData);
     };
 
@@ -142,15 +149,21 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
             return;
         }
 
-        // Additional validation for the 10-digit number
+        // Check if both Baiji/Mahatma Ji's name and contact are provided
+        if (!formData.baijiMahatmaJi || !formData.baijiContact) {
+            setValidationError("Baiji / Mahatma Ji's name and contact are mandatory fields.");
+            return;
+        }
+    
+        // Validation for the 10-digit contact number
         if (formData.contactNumber.length !== 10) {
             setValidationError("Please enter a valid 10-digit contact number.");
             return;
         }
-
-        // Additional validation for Baiji/Mahatma Ji fields
-        if (formData.baijiMahatmaJi === '' || formData.baijiContact === '') {
-            setValidationError("Baiji / Mahatma Ji's name and contact are mandatory fields.");
+    
+        // Validation for Baiji / Mahatma Ji's 10-digit contact number
+        if (formData.baijiContact.length !== 10) {
+            setValidationError("Please enter a valid 10-digit contact number for Baiji / Mahatma Ji.");
             return;
         }
 
@@ -178,9 +191,18 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
                         <h3 className="text-xl font-semibold font-heading text-primaryDark mb-4 border-b border-background pb-2">Ashram & Reference Details</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <ThemedInput label="Ashram Name" name="ashramName" value={formData.ashramName} onChange={handleChange} required icon={<FaUniversity />} colSpan="md:col-span-2" />
-                            {/* Made Baiji / Mahatma Ji fields mandatory with required attribute */}
                             <ThemedInput label="Baiji / Mahatma Ji Name" name="baijiMahatmaJi" value={formData.baijiMahatmaJi} onChange={handleChange} required={true} />
-                            <ThemedInput label="Baiji / Mahatma Ji Contact" name="baijiContact" value={formData.baijiContact} onChange={handleChange} required={true} />
+                            <ThemedInput 
+                                label="Baiji / Mahatma Ji Contact" 
+                                name="baijiContact" 
+                                value={formData.baijiContact} 
+                                onChange={handleChange} 
+                                required={true} 
+                                type="tel"
+                                pattern="[0-9]{10}"
+                                title="Please enter a 10-digit mobile number."
+                                maxLength="10" 
+                            />
                         </div>
                     </div>
 
@@ -188,7 +210,6 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
                         <h3 className="text-xl font-semibold font-heading text-primaryDark mb-4 border-b border-background pb-2">Your Details</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <ThemedInput label="Email (Optional)" name="email" type="email" value={formData.email} onChange={handleChange} icon={<FaEnvelope />} />
-                            {/* Changed type to "tel" and added both maxLength and pattern */}
                             <ThemedInput 
                                 label="Contact Number" 
                                 name="contactNumber" 
