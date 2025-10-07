@@ -3,8 +3,9 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import api from '../../api/api.js';
 import Button from '../common/Button.jsx';
-import { FaTrashAlt, FaPlus, FaSpinner, FaBed, FaTimes, FaFilter } from 'react-icons/fa';
+import { FaTrashAlt, FaPlus, FaSpinner, FaBed, FaTimes, FaFilter, FaEdit, FaSave } from 'react-icons/fa';
 
+// Integrated Delete Confirmation Modal
 const DeleteConfirmationModal = ({ item, type, isOpen, onClose, onDelete }) => {
     if (!isOpen) return null;
 
@@ -43,6 +44,157 @@ const DeleteConfirmationModal = ({ item, type, isOpen, onClose, onDelete }) => {
     );
 };
 
+// Integrated Edit Bed Modal
+const EditBedModal = ({ isOpen, onClose, bed, onBedUpdated, rooms, buildings }) => {
+    const [editedBed, setEditedBed] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [selectedBuildingId, setSelectedBuildingId] = useState('');
+
+    useEffect(() => {
+        if (bed) {
+            setEditedBed({ 
+                ...bed, 
+                roomId: bed.roomId, 
+                buildingId: bed.buildingInfo?._id 
+            });
+            setSelectedBuildingId(bed.buildingInfo?._id);
+        }
+    }, [bed]);
+
+    if (!isOpen || !editedBed) return null;
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setEditedBed(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleBuildingChange = (e) => {
+        const buildingId = e.target.value;
+        setSelectedBuildingId(buildingId);
+        setEditedBed(prev => ({ ...prev, roomId: '' }));
+    };
+
+    const getRoomsForBuilding = (buildingId) => {
+        return (rooms || []).filter(room => room.buildingId?._id === buildingId);
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError('');
+        try {
+            await api.put(`/beds/${editedBed._id}`, {
+                name: editedBed.name,
+                type: editedBed.type,
+                roomId: editedBed.roomId
+            });
+            onBedUpdated();
+            onClose();
+        } catch (err) {
+            setError(err.response?.data?.message || 'Failed to update bed.');
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-60 overflow-y-auto flex items-center justify-center p-4 font-body">
+            <div className="relative bg-card w-full max-w-lg mx-auto rounded-2xl shadow-soft p-6">
+                <button 
+                    onClick={onClose} 
+                    className="absolute top-4 right-4 text-primaryDark hover:text-accent transition-colors"
+                >
+                    <FaTimes className="text-xl" />
+                </button>
+                <h3 className="text-2xl font-bold font-heading mb-4 text-highlight border-b border-background pb-2">
+                    Edit Bed Unit
+                </h3>
+                
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Building</label>
+                        <select
+                            name="buildingId"
+                            value={selectedBuildingId}
+                            onChange={handleBuildingChange}
+                            className="mt-1 block w-full p-2 border border-background rounded-lg"
+                        >
+                            <option value="">Select Building</option>
+                            {buildings.map(b => (
+                                <option key={b._id} value={b._id}>{b.name}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Room</label>
+                        <select
+                            name="roomId"
+                            value={editedBed.roomId}
+                            onChange={handleInputChange}
+                            className="mt-1 block w-full p-2 border border-background rounded-lg disabled:bg-neutral"
+                            disabled={!selectedBuildingId}
+                        >
+                            <option value="">Select Room</option>
+                            {getRoomsForBuilding(selectedBuildingId).map(r => (
+                                <option key={r._id} value={r._id}>Room {r.roomNumber}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Bed Name</label>
+                        <input
+                            type="text"
+                            name="name"
+                            value={editedBed.name}
+                            onChange={handleInputChange}
+                            className="mt-1 block w-full p-2 border border-background rounded-lg"
+                            required
+                        />
+                    </div>
+                    
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Bed Type</label>
+                        <select
+                            name="type"
+                            value={editedBed.type}
+                            onChange={handleInputChange}
+                            className="mt-1 block w-full p-2 border border-background rounded-lg"
+                            required
+                        >
+                            <option value="single">Single</option>
+                            <option value="floor bed">Floor Bed</option>
+                        </select>
+                    </div>
+
+                    {error && <div className="text-highlight text-sm">{error}</div>}
+                    
+                    <div className="flex justify-end space-x-3 mt-6">
+                        <Button 
+                            type="button" 
+                            onClick={onClose} 
+                            className="bg-background hover:bg-opacity-80 text-primaryDark font-medium rounded-lg"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="submit"
+                            className="bg-primary hover:bg-primaryDark text-white font-semibold py-2 px-6 rounded-lg shadow-soft"
+                            disabled={loading}
+                        >
+                            {loading ? <FaSpinner className="animate-spin" /> : <FaSave className="inline mr-2" />} Save Changes
+                        </Button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+// Main ManageBeds Component
 const ManageBeds = () => {
     const [beds, setBeds] = useState([]);
     const [rooms, setRooms] = useState([]);
@@ -53,6 +205,8 @@ const ManageBeds = () => {
     const [newBed, setNewBed] = useState({ roomId: '', name: '', type: 'single' });
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [bedToDelete, setBedToDelete] = useState(null);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [bedToEdit, setBedToEdit] = useState(null);
     const [filters, setFilters] = useState({ name: '', buildingId: '', roomId: '', type: '', status: '' });
 
     const fetchAllData = async () => {
@@ -107,6 +261,20 @@ const ManageBeds = () => {
         } finally {
             setBedToDelete(null);
         }
+    };
+
+    const openEditModal = (bed) => {
+        setBedToEdit(bed);
+        setIsEditModalOpen(true);
+    };
+
+    const closeEditModal = () => {
+        setBedToEdit(null);
+        setIsEditModalOpen(false);
+    };
+
+    const handleBedUpdated = () => {
+        fetchAllData();
     };
 
     const getRoomsForBuilding = (buildingId) => {
@@ -219,7 +387,6 @@ const ManageBeds = () => {
                     </thead>
                     <tbody className="divide-y divide-background">
                         {filteredBeds.map(bed => {
-                            // CORRECTED: 'available' is now green, 'occupied' uses the theme's highlight color.
                             const statusColor = bed.status === 'occupied' ? 'text-highlight' : 'text-green-600';
                             return (
                                 <tr key={bed._id} className="hover:bg-background transition-colors">
@@ -232,7 +399,10 @@ const ManageBeds = () => {
                                             <span className="block text-xs text-gray-700 font-normal">({bed.occupant.name})</span>
                                         )}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                                    <td className="px-6 py-4 whitespace-nowrap text-center space-x-2">
+                                        <button onClick={() => openEditModal(bed)} className="text-primary hover:text-primaryDark p-1 transition-colors" title="Edit Bed">
+                                            <FaEdit />
+                                        </button>
                                         <button onClick={() => confirmDeleteBed(bed)} className="text-highlight hover:text-primaryDark p-1 transition-colors" title="Delete Bed">
                                             <FaTrashAlt />
                                         </button>
@@ -253,6 +423,15 @@ const ManageBeds = () => {
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
                 onDelete={handleDeleteBed}
+            />
+
+            <EditBedModal 
+                isOpen={isEditModalOpen}
+                onClose={closeEditModal}
+                bed={bedToEdit}
+                onBedUpdated={handleBedUpdated}
+                rooms={rooms}
+                buildings={buildings}
             />
         </motion.div>
     );
