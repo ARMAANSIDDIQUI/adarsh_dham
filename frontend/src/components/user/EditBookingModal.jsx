@@ -145,6 +145,12 @@ const EditBookingModal = ({ booking, onClose, onUpdate }) => {
         setValidationError(null);
         setError('');
 
+        const totalPeople = formData.numMales + formData.numFemales + formData.numBoys + formData.numGirls;
+        if (totalPeople === 0) {
+            setValidationError("You must have at least one person in the booking.");
+            return;
+        }
+
         const ageValidationError = formData.people.find(p => (p.gender === 'boy' || p.gender === 'girl') && parseInt(p.age, 10) > 16);
         if (ageValidationError) {
             setValidationError(`Age for ${ageValidationError.name} (${ageValidationError.gender}) is over 16. Please classify as Male or Female.`);

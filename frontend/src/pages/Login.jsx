@@ -5,8 +5,6 @@ import { motion } from 'framer-motion';
 import { FaUser, FaLock, FaSignInAlt, FaSpinner, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { login } from '../redux/slices/authSlice';
 import { toast } from 'react-toastify';
-// Removed Button import as it's no longer used
-// import Button from '../components/common/Button'; 
 
 const Login = () => {
     const { isAuthenticated } = useSelector((state) => state.auth);
@@ -16,9 +14,7 @@ const Login = () => {
     const [formData, setFormData] = useState({ phone: '', password: '' });
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-
-    // Determines if the login button should be disabled
-    const isFormIncomplete = formData.phone.trim() === '' || formData.password.trim() === '';
+    const [errors, setErrors] = useState({});
 
     useEffect(() => {
         const from = location.state?.from?.pathname || '/';
@@ -28,15 +24,41 @@ const Login = () => {
     }, [isAuthenticated, navigate, location]);
 
     const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+
+        // --- NEW: Input restriction logic ---
+        if (name === 'phone') {
+            // Remove any character that is not a digit
+            const sanitizedValue = value.replace(/\D/g, '');
+            // Truncate the value to a maximum of 10 digits
+            const truncatedValue = sanitizedValue.slice(0, 10);
+            
+            setFormData({ ...formData, [name]: truncatedValue });
+        } else {
+            // Handle other fields normally
+            setFormData({ ...formData, [name]: value });
+        }
+        // --- END: Input restriction logic ---
+
+        // Clear the specific error when the user starts typing again
+        if (errors[name]) {
+            setErrors({ ...errors, [name]: null });
+        }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Prevent submission if form is incomplete
-        if (isFormIncomplete) {
-            toast.error('Please enter both phone number and password.');
+        const newErrors = {};
+        if (!/^\d{10}$/.test(formData.phone)) {
+            newErrors.phone = 'Phone number must be exactly 10 digits.';
+        }
+        if (!formData.password) {
+            newErrors.password = 'Password is required.';
+        }
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
             return;
         }
 
@@ -54,6 +76,8 @@ const Login = () => {
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
     };
+
+    const isFormIncomplete = formData.phone.trim() === '' || formData.password.trim() === '';
 
     return (
         <div className="min-h-screen w-full bg-neutral flex items-center justify-center p-4 font-body">
@@ -73,14 +97,16 @@ const Login = () => {
                             <input 
                                 id="phone-login" 
                                 name="phone" 
-                                type="tel" 
+                                type="tel" // type="tel" is good for semantics
+                                inputMode="numeric" // This brings up the numeric keypad on mobile
                                 value={formData.phone} 
                                 onChange={handleChange} 
                                 required 
-                                className="w-full pl-10 pr-3 py-2 border border-background rounded-md focus:ring-primary focus:border-primary" 
+                                className={`w-full pl-10 pr-3 py-2 border rounded-md focus:ring-primary focus:border-primary ${errors.phone ? 'border-red-500' : 'border-background'}`} 
                                 placeholder="Phone Number" 
                             />
                         </div>
+                        {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
                     </div>
                     <div>
                         <label htmlFor="password-login" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
@@ -93,7 +119,7 @@ const Login = () => {
                                 value={formData.password}
                                 onChange={handleChange}
                                 required
-                                className="w-full pl-10 pr-10 py-2 border border-background rounded-md focus:ring-primary focus:border-primary"
+                                className={`w-full pl-10 pr-10 py-2 border rounded-md focus:ring-primary focus:border-primary ${errors.password ? 'border-red-500' : 'border-background'}`}
                                 placeholder="Password"
                             />
                             <span
@@ -103,6 +129,7 @@ const Login = () => {
                                 {showPassword ? <FaEyeSlash /> : <FaEye />}
                             </span>
                         </div>
+                        {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
                     </div>
                     <div className="text-sm text-right">
                         <Link to="/forgot-password" className="font-medium text-highlight hover:underline">
@@ -110,13 +137,9 @@ const Login = () => {
                         </Link>
                     </div>
                     <div>
-                        {/* Implemented native button with dynamic class structure for color control */}
                         <button 
                             type="submit" 
                             disabled={loading || isFormIncomplete} 
-                            // Conditional styles:
-                            // Disabled: opacity-50 and cursor-not-allowed
-                            // Enabled: bg-highlight, hover:bg-primaryDark
                             className={`w-full inline-flex justify-center items-center px-4 py-3 text-white font-semibold rounded-lg shadow-soft transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-primary/50 bg-highlight hover:bg-primaryDark disabled:opacity-50 disabled:cursor-not-allowed`}
                         >
                             {loading ? <FaSpinner className="animate-spin mr-2" /> : <FaSignInAlt className="mr-2" />}

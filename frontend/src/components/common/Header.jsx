@@ -44,7 +44,7 @@ const Header = () => {
     const { user, isAuthenticated } = useSelector((state) => state.auth);
     const dispatch = useDispatch();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 1300);
 
     const handleMenuToggle = () => setIsMenuOpen(!isMenuOpen);
     const handleLogout = () => {
@@ -57,7 +57,7 @@ const Header = () => {
     );
 
     useEffect(() => {
-        const handleResize = () => setIsMobile(window.innerWidth < 1024);
+        const handleResize = () => setIsMobile(window.innerWidth < 1300);
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
@@ -76,7 +76,7 @@ const Header = () => {
                     </Link>
 
                     {!isMobile && (
-                        <div className="flex-1 flex items-center justify-center gap-x-3">
+                        <div className="flex-1 flex items-center justify-start gap-x-3">
                             <NavLink to="/" icon={<FaHome />} text="Home" end />
                             <NavLink to="/about" icon={<FaInfoCircle />} text="About" />
                             <NavLink to="/calendar" icon={<FaCalendarAlt />} text="Calendar" />

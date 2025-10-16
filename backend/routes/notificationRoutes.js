@@ -4,8 +4,6 @@ const authMiddleware = require('../middlewares/authMiddleware');
 const roleMiddleware = require('../middlewares/roleMiddleware');
 const notificationController = require('../controllers/notificationController');
 
-// --- Routes for In-Website Notifications ---
-
 // POST /api/notifications/ (For admins to send notifications)
 router.post(
   '/',
@@ -21,8 +19,6 @@ router.get(
   notificationController.getUserNotifications
 );
 
-
-// --- Routes for OS-Level (Web Push) Subscription Management ---
 
 // POST /api/notifications/subscribe (Saves a user's subscription object)
 router.post(

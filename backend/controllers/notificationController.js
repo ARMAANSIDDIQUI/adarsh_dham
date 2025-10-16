@@ -89,7 +89,6 @@ exports.getUserNotifications = async (req, res) => {
     }
 };
 
-// ✨ NEW: Logic to save a push subscription
 exports.subscribe = async (req, res) => {
     const subscription = req.body;
     const userId = req.user.id;
@@ -102,7 +101,6 @@ exports.subscribe = async (req, res) => {
     }
 };
 
-// ✨ NEW: Logic to remove a push subscription
 exports.unsubscribe = async (req, res) => {
     const userId = req.user.id;
     try {

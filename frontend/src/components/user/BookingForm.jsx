@@ -107,7 +107,6 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
             }
         }
 
-        // Restrict phone number fields to only accept numeric input
         if (name === 'contactNumber' || name === 'baijiContact') {
             const numericValue = value.replace(/[^0-9]/g, '');
             newFormData[name] = numericValue;
@@ -143,25 +142,28 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
         e.preventDefault();
         setValidationError(null);
 
+        const totalPeople = formData.numMales + formData.numFemales + formData.numBoys + formData.numGirls;
+        if (totalPeople === 0) {
+            setValidationError("You must add at least one person to the booking request.");
+            return;
+        }
+
         const ageValidationError = formData.people.find(p => (p.gender === 'boy' || p.gender === 'girl') && parseInt(p.age, 10) > 16);
         if (ageValidationError) {
             setValidationError(`Age for ${ageValidationError.name} (${ageValidationError.gender}) is over 16. Please classify as Male or Female.`);
             return;
         }
 
-        // Check if both Baiji/Mahatma Ji's name and contact are provided
         if (!formData.baijiMahatmaJi || !formData.baijiContact) {
             setValidationError("Baiji / Mahatma Ji's name and contact are mandatory fields.");
             return;
         }
     
-        // Validation for the 10-digit contact number
         if (formData.contactNumber.length !== 10) {
             setValidationError("Please enter a valid 10-digit contact number.");
             return;
         }
     
-        // Validation for Baiji / Mahatma Ji's 10-digit contact number
         if (formData.baijiContact.length !== 10) {
             setValidationError("Please enter a valid 10-digit contact number for Baiji / Mahatma Ji.");
             return;

@@ -25,8 +25,6 @@ exports.createRequest = async (req, res) => {
         });
 
         await newRequest.save();
-
-        // In a real app, you would also notify admins via email or another channel here.
         console.log(`[ADMIN NOTIFICATION] New password reset request for user: ${user.name} (${phone})`);
 
         res.status(201).json({ message: 'Your request has been sent to the administrators. They will contact you shortly.' });

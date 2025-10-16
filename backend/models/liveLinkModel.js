@@ -1,5 +1,3 @@
-// models/liveLinkModel.js
-
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
@@ -12,7 +10,6 @@ const liveLinkSchema = new Schema({
         type: String,
         required: true
     },
-    // ADDED: Optional field for YouTube embed URL
     youtubeEmbedUrl: {
         type: String,
         required: false 

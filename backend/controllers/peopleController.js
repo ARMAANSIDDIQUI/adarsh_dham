@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const Person = require('../models/peopleModel');
 
-// GET all people (your original function remains unchanged)
 exports.getPeople = async (req, res) => {
     try {
         const { eventId } = req.query;

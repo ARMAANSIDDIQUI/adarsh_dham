@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { FaUserShield, FaCalendarAlt, FaBuilding, FaDoorOpen, FaBed, FaWifi, FaUsers, FaBell, FaListAlt, FaSitemap, FaComments, FaKey, FaUserCog } from 'react-icons/fa';
+import { FaUserShield, FaCalendarAlt, FaBuilding, FaDoorOpen, FaBed, FaWifi, FaUsers, FaBell, FaListAlt, FaSitemap, FaComments, FaKey} from 'react-icons/fa';
 
 const linkVariants = {
   hidden: { opacity: 0, y: 20 },

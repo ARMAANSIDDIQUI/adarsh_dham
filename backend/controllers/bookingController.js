@@ -7,8 +7,6 @@ const User = require('../models/userModel');
 const pdfGenerator = require('../utils/pdfGenerator');
 const webpush = require('web-push');
 
-// --- Centralized Helper Functions ---
-
 const generateBookingNumber = () => {
     const date = new Date();
     const dateString = date.getFullYear().toString().slice(-2)
@@ -85,7 +83,6 @@ const createAndSaveNotification = async ({ message, userIds = [], notifyAdmins =
     }
 };
 
-// --- CRUD Functions ---
 
 exports.createBooking = async (req, res) => {
     const { eventId, formData } = req.body;
@@ -115,8 +112,6 @@ exports.approveOrDeclineBooking = async (req, res) => {
     
     const { status, allocations: allocationData } = req.body;
     
-    // This is the one-line fix.
-    // It safely handles cases where allocationData is null, preventing the server crash.
     const { notificationOption, scheduledSendTime, notificationTtlMinutes, allocations } = allocationData || {};
 
     try {

@@ -28,14 +28,11 @@ router.get(
     bookingController.getUserBookings
 );
 
-// --- THIS IS THE CORRECTED ROUTE ---
-// Changed from POST /approve-decline/:bookingId to PUT /:bookingId/status
-// This now matches the frontend API call.
 router.put(
-    '/:bookingId/status', // Corrected path and method
+    '/:bookingId/status',
     authMiddleware,
     roleMiddleware(['admin', 'super-admin', 'operator', 'super-operator']),
-    bookingController.approveOrDeclineBooking // The same controller function works perfectly
+    bookingController.approveOrDeclineBooking
 );
 
 // A user can delete their own booking request
@@ -46,7 +43,6 @@ router.delete(
     bookingController.deleteMyBooking
 );
 
-// --- Other Routes ---
 router.get(
     '/:bookingId',
     authMiddleware,
@@ -56,13 +52,13 @@ router.get(
 
 router.put(
     '/update/:bookingId',
-    authMiddleware, // Controller logic should verify user owns the booking
+    authMiddleware,
     bookingController.updateBooking
 );
 
 router.get(
     '/pdf/:id',
-    authMiddleware, // Controller logic verifies ownership or admin status
+    authMiddleware,
     bookingController.getBookingPdf
 );
 

@@ -39,7 +39,7 @@ const createAndSaveNotification = async ({ message, userIds = [], notifyAdmins =
             notifications.push({
                 message,
                 userId: user._id,
-                target: 'user', // Assuming this is for general users now
+                target: 'user',
                 ttl: ttlDate,
                 sendAt: isScheduled ? sendDate : null,
                 status: isScheduled ? 'scheduled' : 'sent',

@@ -1,11 +1,9 @@
-// @ts-nocheck
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../api/api.js';
 import Button from '../common/Button.jsx';
-import { FaCheck, FaTimes, FaSpinner, FaEdit, FaUserShield, FaFilter, FaFilePdf, FaInfoCircle, FaChevronDown } from 'react-icons/fa';
+import { FaCheck, FaTimes, FaSpinner, FaEdit, FaUserShield, FaFilter, FaFilePdf, FaInfoCircle, FaChevronDown, FaSearch } from 'react-icons/fa';
 
-// --- Helper Functions ---
 const datesOverlap = (startA, endA, startB, endB) => {
     if (!startA || !endA || !startB || !endB) return false;
     try {
@@ -47,7 +45,106 @@ const datesRoughlyMatch = (stayFrom, stayTo, filterFrom, filterTo) => {
     }
 };
 
-// --- Modal for Room Occupants ---
+const SearchableSelect = ({ options, value, onChange, placeholder, disabled = false }) => {
+    const [searchTerm, setSearchTerm] = useState('');
+    const [isOpen, setIsOpen] = useState(false);
+    const wrapperRef = useRef(null);
+    const inputRef = useRef(null);
+
+    // Effect to handle clicks outside of the component to close the dropdown
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+        if (isOpen) {
+            document.addEventListener("mousedown", handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [isOpen]);
+
+    // Effect to programmatically focus the search input when the dropdown opens
+    useEffect(() => {
+        if (isOpen) {
+            setTimeout(() => inputRef.current?.focus(), 100);
+        }
+    }, [isOpen]);
+
+    const filteredOptions = useMemo(() => {
+        if (!searchTerm) {
+            return options;
+        }
+        const lowercasedTerm = searchTerm.toLowerCase();
+        return options.filter(option =>
+            option.label.toLowerCase().includes(lowercasedTerm)
+        );
+    }, [options, searchTerm]);
+
+    const selectedOption = options.find(option => option.value === value);
+
+    const handleOptionClick = (optionValue) => {
+        onChange({ target: { value: optionValue } });
+        setIsOpen(false);
+        setSearchTerm('');
+    };
+
+    return (
+        <div className="relative w-full" ref={wrapperRef}>
+            <div
+                className={`flex items-center justify-between p-2 border rounded-lg cursor-pointer transition-colors duration-200 ${disabled ? 'bg-gray-200 text-gray-400' : 'bg-white hover:border-primary'}`}
+                onClick={() => !disabled && setIsOpen(!isOpen)}
+            >
+                <span className={`text-sm truncate ${selectedOption ? 'text-gray-900' : 'text-gray-500'}`}>
+                    {selectedOption ? selectedOption.label : placeholder}
+                </span>
+                <FaChevronDown className={`transition-transform duration-200 text-gray-400 ${isOpen ? 'rotate-180' : ''}`} />
+            </div>
+
+            <AnimatePresence>
+                {isOpen && !disabled && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                        className="absolute top-full mt-1 w-full bg-white border rounded-lg shadow-lg z-50 overflow-hidden searchable-select-dropdown"
+                    >
+                        <div className="relative p-2 border-b">
+                            <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                            <input
+                                ref={inputRef}
+                                type="text"
+                                placeholder="Search..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full pl-8 pr-2 py-1 text-sm border-none focus:ring-0"
+                                onClick={(e) => e.stopPropagation()}
+                            />
+                        </div>
+                        <ul className="max-h-48 overflow-y-auto custom-scrollbar p-1">
+                            {filteredOptions.length > 0 ? (
+                                filteredOptions.map((option) => (
+                                    <li
+                                        key={option.value}
+                                        onClick={() => handleOptionClick(option.value)}
+                                        className="p-2 text-sm cursor-pointer hover:bg-gray-100 rounded-md"
+                                    >
+                                        {option.label}
+                                    </li>
+                                ))
+                            ) : (
+                                <li className="p-2 text-sm text-gray-500 italic">No options found.</li>
+                            )}
+                        </ul>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+};
+
 const RoomOccupantsModal = ({ isOpen, room, occupants, onClose }) => {
     if (!isOpen || !room) return null;
     const safeOccupants = Array.isArray(occupants) ? occupants : [];
@@ -94,7 +191,6 @@ const RoomOccupantsModal = ({ isOpen, room, occupants, onClose }) => {
     );
 };
 
-// --- Accordion for Details ---
 const AccordionItem = ({ title, children }) => {
     const [isOpen, setIsOpen] = useState(false);
     return (
@@ -116,7 +212,6 @@ const AccordionItem = ({ title, children }) => {
     );
 };
 
-// --- BookingCard Sub-component ---
 const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, buildings, rooms, people, onShowRoomDetails, setError }) => {
     const { formData = {}, userId = {}, status, _id: bookingId, bookingNumber, allocations: savedAllocations, eventId = {} } = booking || {};
     const pendingAllocations = allocations?.[bookingId] || [];
@@ -192,6 +287,34 @@ const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, b
         return (buildings || []).filter(b => personAllowed.includes((b.gender || '').toLowerCase()));
     };
 
+    // Helper functions to format options for SearchableSelect
+    const getBuildingOptions = (person) => {
+        const filteredBuildings = getFilteredBuildings(person);
+        return [
+            { value: '', label: 'Select Building' },
+            ...filteredBuildings.map(b => ({ value: b._id, label: b.name }))
+        ];
+    };
+
+    const getRoomOptions = (personAllocated, currentBooking) => {
+        const filteredRooms = personAllocated.buildingId ? (rooms || []).filter(r => String(r.buildingId?._id) === String(personAllocated.buildingId)) : [];
+        return [
+            { value: '', label: 'Select Room' },
+            ...filteredRooms.map(r => {
+                const { vacant, capacity } = getRoomOccupancyForBooking(r._id, currentBooking);
+                return { value: r._id, label: `${r.roomNumber} (${vacant}/${capacity} vacant)` };
+            })
+        ];
+    };
+
+    const getBedOptions = (personAllocated, booking, index) => {
+        const filteredBeds = personAllocated.roomId ? getAvailableBedsForRoom(personAllocated.roomId, booking, index) : [];
+        return [
+            { value: '', label: 'Select Bed' },
+            ...filteredBeds.map(bed => ({ value: bed._id, label: `${bed.name || 'Bed'} (${bed.type || 'Type'})` }))
+        ];
+    };
+
     const handleDownloadPdf = async () => {
         try {
             const response = await api.get(`/bookings/pdf/${bookingId}`, { responseType: 'blob' });
@@ -258,36 +381,48 @@ const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, b
                     <div className="space-y-4">
                         {(formData?.people || []).map((person, index) => {
                             const personAllocated = pendingAllocations[index] || {};
-                            const filteredBuildings = getFilteredBuildings(person);
-                            const filteredRooms = personAllocated.buildingId ? (rooms || []).filter(r => String(r.buildingId?._id) === String(personAllocated.buildingId)) : [];
-                            const filteredBeds = personAllocated.roomId ? getAvailableBedsForRoom(personAllocated.roomId, booking, index) : [];
+                            const buildingOptions = getBuildingOptions(person);
+                            const roomOptions = getRoomOptions(personAllocated, booking);
+                            const bedOptions = getBedOptions(personAllocated, booking, index);
+                            
+                            // The zIndex is calculated to ensure each row stacks correctly
+                            const zIndex = (formData?.people?.length || 0) - index + 10;
 
                             return (
-                                <div key={index} className="p-3 bg-gray-50 rounded-lg border">
+                                <div key={index} className={`p-3 bg-gray-50 rounded-lg border relative z-[${zIndex}]`}>
                                     <p className="font-semibold text-gray-700 mb-2">{person?.name || `Person ${index + 1}`} <span className="text-xs text-pink-500 capitalize">({person?.gender || 'N/A'})</span></p>
                                     <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4">
-                                        <select value={personAllocated.buildingId || ''} onChange={(e) => handleAllocationChange(bookingId, index, 'buildingId', e.target.value)} className="block w-full text-sm p-2 border rounded-lg">
-                                            <option value="">Select Building</option>
-                                            {filteredBuildings.map(b => <option key={b._id} value={b._id}>{b.name}</option>)}
-                                        </select>
+                                        <SearchableSelect
+                                            options={buildingOptions}
+                                            value={personAllocated.buildingId || ''}
+                                            onChange={(e) => handleAllocationChange(bookingId, index, 'buildingId', e.target.value)}
+                                            placeholder="Select Building"
+                                        />
                                         <div className="flex items-center space-x-2">
-                                            <select value={personAllocated.roomId || ''} onChange={(e) => handleAllocationChange(bookingId, index, 'roomId', e.target.value)} disabled={!personAllocated.buildingId} className="block w-full text-sm p-2 border rounded-lg disabled:bg-gray-200">
-                                                <option value="">Select Room</option>
-                                                {filteredRooms.map(r => {
-                                                    const { vacant, capacity } = getRoomOccupancyForBooking(r._id, booking);
-                                                    return <option key={r._id} value={r._id}>{r.roomNumber} ({vacant}/{capacity} vacant)</option>;
-                                                })}
-                                            </select>
+                                            {/* FIX START: This wrapper allows the dropdown to shrink and make space for the icon */}
+                                            <div className="flex-1 min-w-0"> 
+                                                <SearchableSelect
+                                                    options={roomOptions}
+                                                    value={personAllocated.roomId || ''}
+                                                    onChange={(e) => handleAllocationChange(bookingId, index, 'roomId', e.target.value)}
+                                                    placeholder="Select Room"
+                                                    disabled={!personAllocated.buildingId}
+                                                />
+                                            </div>
+                                            {/* FIX END */}
                                             {personAllocated.roomId && (
                                                 <button type="button" onClick={() => onShowRoomDetails(personAllocated.roomId, booking)} className="text-blue-500 hover:text-blue-700 p-1" title="Show room occupants">
                                                     <FaInfoCircle />
                                                 </button>
                                             )}
                                         </div>
-                                        <select value={personAllocated.bedId || ''} onChange={(e) => handleAllocationChange(bookingId, index, 'bedId', e.target.value)} disabled={!personAllocated.roomId} className="block w-full text-sm p-2 border rounded-lg disabled:bg-gray-200">
-                                            <option value="">Select Bed</option>
-                                            {filteredBeds.map(bed => <option key={bed._id} value={bed._id}>{`${bed.name || 'Bed'} (${bed.type || 'Type'})`}</option>)}
-                                        </select>
+                                        <SearchableSelect
+                                            options={bedOptions}
+                                            value={personAllocated.bedId || ''}
+                                            onChange={(e) => handleAllocationChange(bookingId, index, 'bedId', e.target.value)}
+                                            placeholder="Select Bed"
+                                            disabled={!personAllocated.roomId}
+                                        />
                                     </div>
                                 </div>
                             );
@@ -358,7 +493,6 @@ const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, b
     );
 };
 
-// --- BookingSection Wrapper ---
 const BookingSection = ({ title, color = 'pink', bookings, ...props }) => {
     const safeBookings = Array.isArray(bookings) ? bookings : [];
     const colorMap = {
@@ -382,7 +516,6 @@ const BookingSection = ({ title, color = 'pink', bookings, ...props }) => {
     );
 };
 
-// --- Main ManageAllocations Component ---
 const ManageAllocations = () => {
     const [bookings, setBookings] = useState([]);
     const [rooms, setRooms] = useState([]);

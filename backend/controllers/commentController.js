@@ -19,17 +19,14 @@ exports.createComment = async (req, res) => {
     }
 };
 
-// ✨ NEW/UPDATED FUNCTION
 // Get all comments for public display, including user-specific ones
 exports.getPublicCommentsFeed = async (req, res) => {
     try {
-        // 1. Get all approved comments and populate the user's name
         const approvedCommentsQuery = Comment.find({ status: 'approved' })
             .populate('user', 'name')
             .sort({ createdAt: -1 });
 
         let userCommentsQuery = Promise.resolve([]);
-        // 2. If a user is logged in, also get their pending/rejected comments
         if (req.user) {
             userCommentsQuery = Comment.find({
                 user: req.user.id,
@@ -37,13 +34,8 @@ exports.getPublicCommentsFeed = async (req, res) => {
             }).populate('user', 'name').sort({ createdAt: -1 });
         }
 
-        // 3. Run both queries in parallel
         const [approved, personal] = await Promise.all([approvedCommentsQuery, userCommentsQuery]);
-
-        // 4. Combine the lists
         const allComments = [...personal, ...approved];
-        
-        // 5. Remove duplicates (in case a user's own approved comment is fetched twice)
         const uniqueComments = allComments.filter((v, i, a) => a.findIndex(t => (t._id.equals(v._id))) === i);
 
         res.status(200).json(uniqueComments);
@@ -52,7 +44,6 @@ exports.getPublicCommentsFeed = async (req, res) => {
         res.status(500).json({ message: 'Server error. Could not retrieve comments.' });
     }
 };
-
 
 // Get all comments for the currently logged-in user.
 exports.getUserComments = async (req, res) => {
@@ -63,6 +54,17 @@ exports.getUserComments = async (req, res) => {
     } catch (error) {
         console.error("Error fetching user comments:", error);
         res.status(500).json({ message: 'Server error. Could not retrieve your comments.' });
+    }
+};
+
+// (Admin) Get all comments for the management page.
+exports.getAllComments = async (req, res) => {
+    try {
+        const comments = await Comment.find({}).populate('user', 'name phone').sort({ createdAt: -1 });
+        res.status(200).json(comments);
+    } catch (error) {
+        console.error("Error fetching all comments for admin:", error);
+        res.status(500).json({ message: 'Server error. Could not retrieve comments.' });
     }
 };
 
@@ -107,14 +109,43 @@ exports.rejectComment = async (req, res) => {
     }
 };
 
-// (Public) Get all approved comments to display on the website.
-exports.getApprovedComments = async (req, res) => {
+// (Admin) Reset a comment's status back to 'pending'.
+exports.reconsiderComment = async (req, res) => {
     try {
-        const comments = await Comment.find({ status: 'approved' }).populate('user', 'name').sort({ createdAt: -1 });
-        res.status(200).json(comments);
-    } catch (error)
-        {
-        console.error("Error fetching approved comments:", error);
-        res.status(500).json({ message: 'Server error. Could not retrieve comments.' });
+        const { id } = req.params;
+        const comment = await Comment.findByIdAndUpdate(id, { status: 'pending' }, { new: true });
+        if (!comment) {
+            return res.status(404).json({ message: 'Comment not found.' });
+        }
+        res.status(200).json({ message: 'Comment status has been reset to pending.', comment });
+    } catch (error) {
+        console.error("Error reconsidering comment:", error);
+        res.status(500).json({ message: 'Server error. Could not reconsider comment.' });
+    }
+};
+
+// (User) Delete a comment created by the logged-in user.
+exports.deleteComment = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user.id;
+
+        const comment = await Comment.findById(id);
+
+        if (!comment) {
+            return res.status(404).json({ message: 'Comment not found.' });
+        }
+
+        // Security check: ensure the user deleting the comment is its owner
+        if (comment.user.toString() !== userId) {
+            return res.status(403).json({ message: 'You are not authorized to delete this comment.' });
+        }
+
+        await Comment.findByIdAndDelete(id);
+
+        res.status(200).json({ message: 'Comment deleted successfully.' });
+    } catch (error) {
+        console.error("Error deleting comment:", error);
+        res.status(500).json({ message: 'Server error. Could not delete comment.' });
     }
 };

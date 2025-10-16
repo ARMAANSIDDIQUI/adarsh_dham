@@ -3,7 +3,6 @@ const exceljs = require('exceljs');
 const Booking = require('../models/bookingModel');
 const bcrypt = require('bcrypt');
 
-// --- STUBS/HELPERS ---
 const sendUserNotification = async (userId, message) => {
     console.log(`[USER NOTIFICATION] Notifying user ${userId}: ${message}`);
 };
@@ -11,8 +10,6 @@ const sendUserNotification = async (userId, message) => {
 const sendAdminNotification = async (message) => {
     console.log(`[ADMIN NOTIFICATION] Notifying Admins: ${message}`);
 };
-
-// --- NEW FUNCTIONALITY: USER MANAGEMENT ---
 
 exports.getAllUsers = async (req, res) => {
     try {
@@ -71,12 +68,10 @@ exports.requestPasswordChange = async (req, res) => {
     }
 };
 
-// NEW: User-facing function to change their own password
 exports.changeUserPassword = async (req, res) => {
     const userId = req.user.id;
     const { currentPassword, newPassword, confirmPassword } = req.body;
 
-    // --- Input Validation ---
     if (!currentPassword || !newPassword || !confirmPassword) {
         return res.status(400).json({ message: 'All fields are required.' });
     }
@@ -85,7 +80,6 @@ exports.changeUserPassword = async (req, res) => {
         return res.status(400).json({ message: 'New password and confirm password do not match.' });
     }
     
-    // --- Password Policy Validation (Example) ---
     if (newPassword.length < 6) {
         return res.status(400).json({ message: 'Password must be at least 6 characters long.' });
     }
@@ -96,18 +90,15 @@ exports.changeUserPassword = async (req, res) => {
             return res.status(404).json({ message: 'User not found.' });
         }
 
-        // --- Verify Current Password ---
         const isMatch = await bcrypt.compare(currentPassword, user.passwordHash);
         if (!isMatch) {
             return res.status(401).json({ message: 'Incorrect current password.' });
         }
         
-        // --- Hash and Save New Password ---
         const salt = await bcrypt.genSalt(10);
         user.passwordHash = await bcrypt.hash(newPassword, salt);
         await user.save();
 
-        // --- Notify User ---
         const notificationMessage = 'Your password has been successfully updated.';
         await sendUserNotification(userId, notificationMessage);
 
@@ -118,7 +109,6 @@ exports.changeUserPassword = async (req, res) => {
     }
 };
 
-// --- EXISTING FUNCTIONS BELOW (Unchanged) ---
 exports.getAdminDetails = async (req, res) => {
     try {
         const admins = await User.find({ roles: { $in: ['admin', 'super-admin', 'super-operator', 'operator', 'satsang-operator'] } });

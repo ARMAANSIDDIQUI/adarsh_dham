@@ -4,7 +4,6 @@ const authMiddleware = require('../middlewares/authMiddleware');
 const roleMiddleware = require('../middlewares/roleMiddleware');
 const structureController = require('../controllers/structureController');
 
-// Define the endpoint for the new structure view
 router.get(
     '/',
     authMiddleware,

@@ -3,15 +3,14 @@
 const Room = require('../models/roomModel');
 const Bed = require('../models/bedModel');
 const Building = require('../models/buildingModel');
-const Person = require('../models/peopleModel'); // Import the Person model
+const Person = require('../models/peopleModel');
 
-// GET all rooms with dynamically calculated occupancy and capacity
 exports.getRooms = async (req, res) => {
     try {
         // We use an aggregation pipeline to calculate occupancy dynamically.
         const rooms = await Room.aggregate([
             {
-                $lookup: { // Join with the beds collection
+                $lookup: {
                     from: 'beds',
                     localField: 'beds',
                     foreignField: '_id',
@@ -19,7 +18,7 @@ exports.getRooms = async (req, res) => {
                 }
             },
             {
-                $lookup: { // Join with the people collection
+                $lookup: {
                     from: 'people',
                     localField: 'bedDetails._id',
                     foreignField: 'bedId',
@@ -27,7 +26,7 @@ exports.getRooms = async (req, res) => {
                 }
             },
             {
-                $lookup: { // Join with the buildings collection to get the building name
+                $lookup: {
                     from: 'buildings',
                     localField: 'buildingId',
                     foreignField: '_id',
@@ -35,7 +34,7 @@ exports.getRooms = async (req, res) => {
                 }
             },
             {
-                $project: { // Define the final shape of the returned documents
+                $project: {
                     roomNumber: 1,
                     buildingId: { $arrayElemAt: ["$buildingInfo", 0] }, // Get the building object
                     beds: "$bedDetails", // Keep the populated bed details

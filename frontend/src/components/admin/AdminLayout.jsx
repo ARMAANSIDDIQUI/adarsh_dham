@@ -2,20 +2,23 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../redux/slices/authSlice.js';
-import { FaUserShield, FaCalendarAlt, FaBuilding, FaBed, FaWifi,FaUserCog, FaSignOutAlt,FaDoorOpen, FaFileExport, FaUsers, FaBell, FaBars, FaTimes, FaListAlt, FaSitemap, FaComments, FaKey } from 'react-icons/fa';
+import { FaUserShield, FaCalendarAlt, FaBuilding, FaBed, FaWifi, FaUserCog, FaSignOutAlt, FaDoorOpen, FaUsers, FaBell, FaBars, FaTimes, FaListAlt, FaSitemap, FaComments, FaKey } from 'react-icons/fa';
 
 const AdminLayout = ({ children }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { user } = useSelector((state) => state.auth);
+
+    const CUSTOM_BREAKPOINT = 1792;
+    
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < CUSTOM_BREAKPOINT);
 
     useEffect(() => {
-        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        const handleResize = () => setIsMobile(window.innerWidth < CUSTOM_BREAKPOINT);
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
-    }, []);
+    }, [CUSTOM_BREAKPOINT]);
 
     useEffect(() => {
         document.body.style.overflow = isSidebarOpen ? 'hidden' : 'unset';
@@ -27,7 +30,7 @@ const AdminLayout = ({ children }) => {
     if (!user) {
         return null;
     }
-    
+
     const handleMenuToggle = () => {
         setIsSidebarOpen(!isSidebarOpen);
     };
@@ -60,19 +63,35 @@ const AdminLayout = ({ children }) => {
         { name: 'Send Notification', to: '/admin/send-notification', icon: <FaBell />, roles: ['admin', 'super-admin'] },
     ];
 
+
+    const getBreakpointClass = (baseClass) => {
+
+        if (CUSTOM_BREAKPOINT === 640) return `sm:${baseClass}`;
+        if (CUSTOM_BREAKPOINT === 768) return `md:${baseClass}`;
+        if (CUSTOM_BREAKPOINT === 1024) return `lg:${baseClass}`;
+        if (CUSTOM_BREAKPOINT === 1280) return `xl:${baseClass}`;
+        if (CUSTOM_BREAKPOINT === 1536) return `2xl:${baseClass}`;
+        if (CUSTOM_BREAKPOINT === 1792) return `3xl:${baseClass}`;
+        if (CUSTOM_BREAKPOINT === 2048) return `4xl:${baseClass}`;
+        if (CUSTOM_BREAKPOINT === 2304) return `5xl:${baseClass}`;
+        return `md:${baseClass}`; // Default to md if breakpoint is not a standard one
+    };
+
     return (
-        <div className="flex flex-col md:flex-row min-h-screen bg-neutral font-body">
+        <div className={`flex flex-col ${getBreakpointClass('flex-row')} min-h-screen bg-neutral font-body`}>
+            {/* Overlay for mobile view */}
             {isSidebarOpen && (
                 <div 
-                    className="fixed inset-0 z-[590] bg-black opacity-50 md:hidden"
+                    className={`fixed inset-0 z-[590] bg-black opacity-50 ${getBreakpointClass('hidden')}`}
                     onClick={handleMenuToggle}
                 ></div>
             )}
             
-            <aside className={`bg-[#C9788A] text-white w-64 p-4 md:p-6 shadow-soft fixed md:static top-0 bottom-0 left-0 z-[650] flex flex-col transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:flex md:flex-col`}>
+            {/* Sidebar */}
+            <aside className={`bg-[#C9788A] text-white w-64 p-4 ${getBreakpointClass('p-6')} shadow-soft fixed ${getBreakpointClass('static')} top-0 bottom-0 left-0 z-[650] flex flex-col transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} ${getBreakpointClass('translate-x-0')} ${getBreakpointClass('flex')}`}>
                 <div className="flex justify-between items-center mb-6 pt-4">
                     <h2 className="text-xl font-bold font-heading">Admin Panel</h2>
-                    <button onClick={handleMenuToggle} className="md:hidden hover:text-accent p-1">
+                    <button onClick={handleMenuToggle} className={`${getBreakpointClass('hidden')} hover:text-accent p-1`}>
                         <FaTimes className="text-xl" />
                     </button>
                 </div>
@@ -91,7 +110,7 @@ const AdminLayout = ({ children }) => {
                     </ul>
                 </nav>
                 <div className="mt-4 pt-4 border-t border-primary/30">
-                     <button onClick={handleLogout} className="flex items-center justify-center space-x-2 w-full py-2 px-4 rounded-lg bg-highlight hover:bg-opacity-80 text-white transition-colors duration-200 font-medium">
+                    <button onClick={handleLogout} className="flex items-center justify-center space-x-2 w-full py-2 px-4 rounded-lg bg-highlight hover:bg-opacity-80 text-white transition-colors duration-200 font-medium">
                         <FaSignOutAlt />
                         <span>Logout</span>
                     </button>
@@ -99,13 +118,14 @@ const AdminLayout = ({ children }) => {
             </aside>
 
             <div className="flex-1 flex flex-col">
-                <header className="bg-card shadow-soft p-4 flex justify-between items-center md:hidden z-[500] border-b border-background">
+                {/* Mobile header */}
+                <header className={`bg-card shadow-soft p-4 flex justify-between items-center ${getBreakpointClass('hidden')} z-[500] border-b border-background`}>
                     <button onClick={handleMenuToggle} className="text-gray-800 text-2xl hover:text-accent">
                         <FaBars />
                     </button>
                     <h1 className="text-lg font-bold font-heading text-gray-800">Admin</h1>
                 </header>
-                
+
                 <main className="flex-1 p-4 md:p-6">
                     {children}
                 </main>

@@ -27,7 +27,7 @@ const peopleRoutes = require('./routes/peopleRoutes');
 const structureRoutes = require('./routes/structureRoutes');
 const passwordRequestRoutes = require('./routes/passwordRequestRoutes');
 const commentRoutes = require('./routes/commentRoutes');
-const userRoutes = require('./routes/userRoutes'); // ✨ NEW
+const userRoutes = require('./routes/userRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -39,27 +39,50 @@ webpush.setVapidDetails(
   process.env.VAPID_PRIVATE_KEY
 );
 
-app.use(cors());
+
+//SECURE CORS CONFIGURATION
+
+
+const allowedOrigins = [
+  'http://localhost:3000',  
+  'http://localhost:5173',
+  'https://adarshdham.com'
+];
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (allowedOrigins.includes(origin) || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('This domain is not allowed by CORS'));
+    }
+  }
+};
+
+app.use(cors(corsOptions));
+
+// ====================================================================
+
 app.use(express.json());
 app.use(morgan('dev'));
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log('MongoDB connected successfully');
-    createFirstSuperAdmin();
+    // createFirstSuperAdmin();
     setupAllocationResetJob();
     setupScheduledNotificationJob();
   })
   .catch(err => console.error('MongoDB connection error:', err));
 
 const createFirstSuperAdmin = async () => {
-  const superAdminPhone = process.env.SUPER_ADMIN_PHONE || '9999999999';
-  const superAdminPassword = process.env.SUPER_ADMIN_PASSWORD || 'superadminpassword';
+  const superAdminPhone = process.env.SUPER_ADMIN_PHONE || '8938083411';
+  const superAdminPassword = process.env.SUPER_ADMIN_PASSWORD || 'shivani11cr';
 
   try {
     const existingSuperAdmin = await User.findOne({ phone: superAdminPhone });
     if (existingSuperAdmin) {
-      console.log('✅ Super admin already exists. No new account was created.');
+      console.log('Super admin already exists. No new account was created.');
       return;
     }
 
@@ -67,7 +90,7 @@ const createFirstSuperAdmin = async () => {
     const passwordHash = await bcrypt.hash(superAdminPassword, salt);
 
     const newSuperAdmin = new User({
-      name: 'Super Admin',
+      name: 'Shivani',
       phone: superAdminPhone,
       passwordHash,
       roles: ['user', 'super-admin', 'admin', 'super-operator', 'operator', 'satsang-operator']
@@ -150,7 +173,7 @@ const setupScheduledNotificationJob = () => {
 
 // Route Middleware
 app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes); // ✨ NEW
+app.use('/api/users', userRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/admin', adminRoutes);

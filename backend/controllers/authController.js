@@ -43,8 +43,7 @@ exports.login = async (req, res) => {
     const token = jwt.sign(
       { id: user._id, roles: user.roles },
       process.env.JWT_SECRET,
-      // ✨ FIX: Changed token expiration from 1 hour to 7 days
-      { expiresIn: '7d' } 
+      { expiresIn: '30d' } 
     );
 
     res.status(200).json({
@@ -85,7 +84,7 @@ exports.getMe = async (req, res) => {
               phone: user.phone,
               roles: user.roles
           },
-          bookings: user.bookings.filter(b => b.eventId) // Filter out bookings with missing events
+          bookings: user.bookings.filter(b => b.eventId)
       });
 
     } catch (error) {

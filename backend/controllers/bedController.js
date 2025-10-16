@@ -1,14 +1,10 @@
-// backend/controllers/bedController.js
-
 const mongoose = require('mongoose');
 const Bed = require('../models/bedModel');
 const Room = require('../models/roomModel');
 const Person = require('../models/peopleModel');
 
-// GET all beds with dynamic status based on current date
 exports.getAllBeds = async (req, res) => {
     try {
-        // UPDATED: More robust date logic for today's range
         const startOfToday = new Date();
         startOfToday.setHours(0, 0, 0, 0);
         const startOfTomorrow = new Date(startOfToday);
@@ -25,9 +21,6 @@ exports.getAllBeds = async (req, res) => {
                                 $expr: {
                                     $and: [
                                         { $eq: ['$bedId', '$$bed_id'] },
-                                        // UPDATED: Robust date overlap check.
-                                        // A person is occupying today if their stay started BEFORE tomorrow
-                                        // AND their stay ends ON or AFTER today.
                                         { $lt: ['$stayFrom', startOfTomorrow] },
                                         { $gte: ['$stayTo', startOfToday] }
                                     ]
@@ -65,12 +58,10 @@ exports.getAllBeds = async (req, res) => {
     }
 };
 
-// GET a single bed by ID with dynamic status
 exports.getBedById = async (req, res) => {
     try {
         const bedId = new mongoose.Types.ObjectId(req.params.id);
         
-        // UPDATED: More robust date logic for today's range
         const startOfToday = new Date();
         startOfToday.setHours(0, 0, 0, 0);
         const startOfTomorrow = new Date(startOfToday);
@@ -89,7 +80,6 @@ exports.getBedById = async (req, res) => {
                                 $expr: {
                                     $and: [
                                         { $eq: ['$bedId', '$$bed_id'] },
-                                        // UPDATED: Robust date overlap check
                                         { $lt: ['$stayFrom', startOfTomorrow] },
                                         { $gte: ['$stayTo', startOfToday] }
                                     ]
@@ -127,7 +117,6 @@ exports.getBedById = async (req, res) => {
     }
 };
 
-// CREATE a new bed and add it to a room
 exports.createBed = async (req, res) => {
     const { roomId, name, type } = req.body;
     try {
@@ -145,7 +134,6 @@ exports.createBed = async (req, res) => {
     }
 };
 
-// UPDATE a bed
 exports.updateBed = async (req, res) => {
     try {
         const bed = await Bed.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -158,7 +146,6 @@ exports.updateBed = async (req, res) => {
     }
 };
 
-// DELETE a bed
 exports.deleteBed = async (req, res) => {
     const { id } = req.params;
     try {

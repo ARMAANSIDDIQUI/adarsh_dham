@@ -4,8 +4,6 @@ const authMiddleware = require('../middlewares/authMiddleware');
 const roleMiddleware = require('../middlewares/roleMiddleware');
 const adminController = require('../controllers/adminController');
 
-// --- NEW USER MANAGEMENT ROUTES (FOR ADMINS) ---
-
 router.get(
     '/all-users',
     authMiddleware,
@@ -20,8 +18,6 @@ router.put(
     adminController.adminChangePassword
 );
 
-// --- NEW USER ACTION ROUTES ---
-
 // POST to request a password change (for all authenticated users)
 router.post(
     '/request-password-change',
@@ -29,15 +25,12 @@ router.post(
     adminController.requestPasswordChange
 );
 
-// NEW: POST to change a user's own password
 router.post(
     '/change-password',
     authMiddleware,
     adminController.changeUserPassword
 );
 
-// --- EXISTING ADMIN ROUTES ---
-// ... (The rest of your existing routes remain unchanged)
 router.get(
     '/',
     authMiddleware,

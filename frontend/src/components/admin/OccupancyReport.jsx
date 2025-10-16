@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { motion } from 'framer-motion';
+// @ts-nocheck
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../api/api.js';
 import Button from '../common/Button.jsx';
-import { FaUsers, FaFilter, FaSearch } from 'react-icons/fa';
+import { FaUsers, FaFilter, FaSearch, FaChevronDown } from 'react-icons/fa';
 import AllocationsView from './AllocationsView';
 import Pagination from './Pagination';
 
@@ -43,20 +44,78 @@ const getIstDateBoundaries = () => {
     return { firstDayOfMonth, lastDayOfMonth };
 };
 
+// --- Standalone SearchableSelect Component ---
+const SearchableSelect = ({ options, value, onChange, placeholder, disabled = false }) => {
+    const [searchTerm, setSearchTerm] = useState('');
+    const [isOpen, setIsOpen] = useState(false);
+    const wrapperRef = useRef(null);
+    const inputRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+        if (isOpen) { document.addEventListener("mousedown", handleClickOutside); }
+        return () => { document.removeEventListener("mousedown", handleClickOutside); };
+    }, [isOpen]);
+
+    useEffect(() => {
+        if (isOpen) { setTimeout(() => inputRef.current?.focus(), 100); }
+    }, [isOpen]);
+
+    const filteredOptions = useMemo(() => {
+        if (!searchTerm) return options;
+        const lowercasedTerm = searchTerm.toLowerCase();
+        return options.filter(option => option.label.toLowerCase().includes(lowercasedTerm));
+    }, [options, searchTerm]);
+
+    const selectedOption = options.find(option => option.value === value);
+
+    const handleOptionClick = (optionValue) => {
+        onChange({ target: { value: optionValue } });
+        setIsOpen(false);
+        setSearchTerm('');
+    };
+
+    return (
+        <div className="relative w-full" ref={wrapperRef}>
+            <div className={`flex items-center justify-between p-2 border rounded-lg cursor-pointer transition-colors duration-200 bg-white ${disabled ? 'bg-gray-200' : 'hover:border-pink-500'}`} onClick={() => !disabled && setIsOpen(!isOpen)} tabIndex="0">
+                <span className={`text-sm truncate ${selectedOption ? 'text-gray-900' : 'text-gray-500'}`}>{selectedOption ? selectedOption.label : placeholder}</span>
+                <FaChevronDown className={`transition-transform duration-200 text-gray-400 ${isOpen ? 'rotate-180' : ''}`} />
+            </div>
+            <AnimatePresence>
+                {isOpen && !disabled && (
+                    <motion.div initial={{ opacity: 0, scale: 0.95, y: -10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: -10 }} className="absolute top-full mt-1 w-full bg-white border rounded-lg shadow-lg z-50 overflow-hidden">
+                        <div className="relative p-2 border-b">
+                            <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                            <input ref={inputRef} type="text" placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-8 pr-2 py-1 text-sm border-none focus:ring-0" onClick={(e) => e.stopPropagation()} />
+                        </div>
+                        <ul className="max-h-48 overflow-y-auto p-1">
+                            {filteredOptions.length > 0 ? (
+                                filteredOptions.map((option) => (<li key={option.value} onClick={() => handleOptionClick(option.value)} className="p-2 text-sm cursor-pointer hover:bg-gray-100 rounded-md">{option.label}</li>))
+                            ) : (<li className="p-2 text-sm text-gray-500 italic">No options found.</li>)}
+                        </ul>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+};
+
 const OccupancyReport = () => {
     const [events, setEvents] = useState([]);
     const [buildings, setBuildings] = useState([]);
     const [error, setError] = useState(null);
     const [dateFilterType, setDateFilterType] = useState('stayRange');
 
-    // Calculate initial date range locked to IST for UI display
     const { firstDayOfMonth, lastDayOfMonth } = useMemo(getIstDateBoundaries, []);
 
     const [filters, setFilters] = useState({
         eventId: '',
         buildingId: '',
         gender: '',
-        // UI always shows the human-readable first day of the month (X)
         startDate: formatDateForInput(firstDayOfMonth),
         endDate: formatDateForInput(lastDayOfMonth),
     });
@@ -119,22 +178,14 @@ const OccupancyReport = () => {
         }));
     };
 
-    /**
-     * Calculates the API filter object.
-     * The `startDate` sent to the API is always the date selected by the user MINUS 1 day,
-     * to correctly handle the IST midnight time zone boundary issue.
-     */
     const adjustedFilters = useMemo(() => {
-        // 1. Get the date the user selected (e.g., '2025-10-01')
         const userSelectedDate = new Date(filters.startDate); 
-        
-        // 2. Subtract one day (X-1) to ensure the API queries records starting at 00:00:00 on the user's selected date.
         const apiStartDate = new Date(userSelectedDate);
         apiStartDate.setDate(apiStartDate.getDate() - 1);
         
         return {
             ...filters,
-            startDate: formatDateForInput(apiStartDate), // Send X-1 to API (e.g., Sept 30th)
+            startDate: formatDateForInput(apiStartDate),
         };
     }, [filters]);
 
@@ -177,28 +228,29 @@ const OccupancyReport = () => {
                             className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-pink-500 focus:border-pink-500"/>
                     </div>
                     
-                    {/* UI Field: Displays the user's intended date (X) */}
                     <div className="flex items-center space-x-2 border border-background rounded-lg p-1 bg-white shadow-sm">
                         <span className="text-sm font-medium text-gray-600">From:</span>
                         <input type="date" name="startDate" value={filters.startDate} onChange={handleFilterChange} className="p-1 w-full focus:outline-none"/>
                     </div>
                     
-                    {/* UI Field: Displays the user's intended date */}
                     <div className="flex items-center space-x-2 border border-background rounded-lg p-1 bg-white shadow-sm">
                         <span className="text-sm font-medium text-gray-600">To:</span>
                         <input type="date" name="endDate" value={filters.endDate} onChange={handleFilterChange} className="p-1 w-full focus:outline-none"/>
                     </div>
                     
-                    <select name="eventId" value={filters.eventId} onChange={handleFilterChange} className="p-2 border rounded-lg">
-                        <option value="">All Events</option>
-                        {events.map(e => <option key={e._id} value={e._id}>{e.name}</option>)}
-                    </select>
-                    <select name="buildingId" value={filters.buildingId} onChange={handleFilterChange} 
-                        className="p-2 border rounded-lg">
-                        <option value="">All Buildings</option>
-                        {buildings.map(b => <option key={b._id} value={b._id}>{b.name}</option>)}
-                    </select>
-                    <select name="gender" value={filters.gender} onChange={handleFilterChange} className="p-2 border rounded-lg">
+                    <SearchableSelect
+                        options={[{ value: '', label: 'All Events' }, ...events.map(e => ({ value: e._id, label: e.name }))]}
+                        value={filters.eventId}
+                        onChange={(e) => handleFilterChange({ target: { name: 'eventId', value: e.target.value } })}
+                        placeholder="All Events"
+                    />
+                     <SearchableSelect
+                        options={[{ value: '', label: 'All Buildings' }, ...buildings.map(b => ({ value: b._id, label: b.name }))]}
+                        value={filters.buildingId}
+                        onChange={(e) => handleFilterChange({ target: { name: 'buildingId', value: e.target.value } })}
+                        placeholder="All Buildings"
+                    />
+                    <select name="gender" value={filters.gender} onChange={handleFilterChange} className="p-2 border rounded-lg bg-white">
                         <option value="">All Genders</option>
                         <option value="Male">Male</option>
                         <option value="Female">Female</option>
@@ -210,7 +262,7 @@ const OccupancyReport = () => {
             </div>
 
             <AllocationsView 
-                filters={adjustedFilters} // Sends adjusted (X-1) start date to API
+                filters={adjustedFilters}
                 dateFilterType={dateFilterType}
                 debouncedSearchTerm={debouncedSearchTerm} 
                 pagination={pagination} 
