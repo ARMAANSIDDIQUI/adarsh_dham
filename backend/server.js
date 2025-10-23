@@ -45,27 +45,27 @@ webpush.setVapidDetails(
 //SECURE CORS CONFIGURATION
 
 
-const allowedOrigins = [
-  'http://localhost:3000',  
-  'http://localhost:5173',
-  'https://adarshdham.com',
-  'http://localhost:5000',  
-];
+// const allowedOrigins = [
+//   'http://localhost:3000',  
+//   'http://localhost:5173',
+//   'https://adarshdham.com',
+//   'http://localhost:5000',  
+// ];
 
-const corsOptions = {
-  origin: (origin, callback) => {
-    if (allowedOrigins.includes(origin) || !origin) {
-      callback(null, true);
-    } else {
-      callback(new Error('This domain is not allowed by CORS'));
-    }
-  }
-};
+// const corsOptions = {
+//   origin: (origin, callback) => {
+//     if (allowedOrigins.includes(origin) || !origin) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error('This domain is not allowed by CORS'));
+//     }
+//   }
+// };
 
 // app.use(express.static(path.join(__dirname, "public")));
 app.use(express.static(path.join(__dirname, "build")));
 
-app.use(cors(corsOptions));
+// app.use(cors(corsOptions));
 
 
 app.use(express.json());
