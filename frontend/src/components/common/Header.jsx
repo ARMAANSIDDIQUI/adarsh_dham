@@ -70,13 +70,13 @@ const Header = () => {
     return (
         <>
             <header className="bg-background shadow-soft sticky top-0 z-[999] font-body border-b border-card">
-                <nav className="container mx-auto flex items-center justify-between px-4 py-3 max-w-7xl">
+                <nav className="flex items-center justify-between px-4 py-3">
                     <Link to="/" className="text-2xl font-bold mr-5 text-primaryDark hover:text-opacity-80 transition-colors duration-200 flex items-center gap-x-1 font-heading">
                         <span className="whitespace-nowrap">Adarsh Dham</span>
                     </Link>
 
                     {!isMobile && (
-                        <div className="flex-1 flex items-center justify-start gap-x-3">
+                        <div className="flex-1 flex items-center justify-end gap-x-3">
                             <NavLink to="/" icon={<FaHome />} text="Home" end />
                             <NavLink to="/about" icon={<FaInfoCircle />} text="About" />
                             <NavLink to="/calendar" icon={<FaCalendarAlt />} text="Calendar" />
