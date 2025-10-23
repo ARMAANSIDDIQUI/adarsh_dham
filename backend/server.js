@@ -4,6 +4,8 @@ const cors = require('cors');
 const morgan = require('morgan');
 const schedule = require('node-schedule');
 const webpush = require('web-push');
+const path = require("path");
+
 require('dotenv').config();
 
 // Mongoose Models
@@ -46,7 +48,8 @@ webpush.setVapidDetails(
 const allowedOrigins = [
   'http://localhost:3000',  
   'http://localhost:5173',
-  'https://adarshdham.com'
+  'https://adarshdham.com',
+  'http://localhost:5000',  
 ];
 
 const corsOptions = {
@@ -59,9 +62,11 @@ const corsOptions = {
   }
 };
 
+// app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "build")));
+
 app.use(cors(corsOptions));
 
-// ====================================================================
 
 app.use(express.json());
 app.use(morgan('dev'));
@@ -75,33 +80,33 @@ mongoose.connect(process.env.MONGO_URI)
   })
   .catch(err => console.error('MongoDB connection error:', err));
 
-const createFirstSuperAdmin = async () => {
-  const superAdminPhone = process.env.SUPER_ADMIN_PHONE || '8938083411';
-  const superAdminPassword = process.env.SUPER_ADMIN_PASSWORD || 'shivani11cr';
+// const createFirstSuperAdmin = async () => {
+//   const superAdminPhone = process.env.SUPER_ADMIN_PHONE || '8938083411';
+//   const superAdminPassword = process.env.SUPER_ADMIN_PASSWORD || 'shivani11cr';
 
-  try {
-    const existingSuperAdmin = await User.findOne({ phone: superAdminPhone });
-    if (existingSuperAdmin) {
-      console.log('Super admin already exists. No new account was created.');
-      return;
-    }
+//   try {
+//     const existingSuperAdmin = await User.findOne({ phone: superAdminPhone });
+//     if (existingSuperAdmin) {
+//       console.log('Super admin already exists. No new account was created.');
+//       return;
+//     }
 
-    const salt = await bcrypt.genSalt(10);
-    const passwordHash = await bcrypt.hash(superAdminPassword, salt);
+//     const salt = await bcrypt.genSalt(10);
+//     const passwordHash = await bcrypt.hash(superAdminPassword, salt);
 
-    const newSuperAdmin = new User({
-      name: 'Shivani',
-      phone: superAdminPhone,
-      passwordHash,
-      roles: ['user', 'super-admin', 'admin', 'super-operator', 'operator', 'satsang-operator']
-    });
+//     const newSuperAdmin = new User({
+//       name: 'Shivani',
+//       phone: superAdminPhone,
+//       passwordHash,
+//       roles: ['user', 'super-admin', 'admin', 'super-operator', 'operator', 'satsang-operator']
+//     });
 
-    await newSuperAdmin.save();
-    console.log('✨ Initial Super Admin account created successfully.');
-  } catch (error) {
-    console.error('❌ Error creating initial Super Admin:', error);
-  }
-};
+//     await newSuperAdmin.save();
+//     console.log('Initial Super Admin account created successfully.');
+//   } catch (error) {
+//     console.error('Error creating initial Super Admin:', error);
+//   }
+// };
 
 const setupAllocationResetJob = () => {
   schedule.scheduleJob('0 0 * * *', async () => {
