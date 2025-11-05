@@ -283,25 +283,29 @@ const User = require('../models/userModel');
 const webpush = require('web-push');
 
 /**
- * --- THIS IS THE UNIFIED QUERY HELPER ---
+ * --- THIS IS THE NEW, UNIFIED QUERY HELPER ---
  * It finds all notifications this user is allowed to see.
  */
 const getUnifiedNotificationQuery = (userId, userRoles) => {
+  // --- THIS IS THE FIX ---
+  // We only want to search for *group* targets (admin, operator, etc.)
+  // We must filter out the 'user' role from the target search.
+  const groupRoles = userRoles.filter(role => role !== 'user');
+  // --- END FIX ---
+
   return {
     $or: [
       { userId: userId },             // 1. Sent directly to me
-      { target: { $in: userRoles } }, // 2. Sent to one of my roles (e.g., target: 'admin')
+      { target: { $in: groupRoles } }, // 2. Sent to one of my *group* roles
       { target: 'all' }             // 3. Sent to all
     ]
   };
 };
 
 /**
- * --- THIS FUNCTION IS CORRECTED ---
  * Send or schedule a notification (Admin action)
  */
 exports.sendNotification = async (req, res) => {
-  // --- FIX: Look for 'phones' (singular) not 'phoneNumbers' (plural) ---
   const { message, userId, phones, targetGroup, ttlMinutes = 1440, sendAt } = req.body;
 
   try {
@@ -324,8 +328,7 @@ exports.sendNotification = async (req, res) => {
       const user = await User.findById(userId);
       if (user) targetUsers.push(user);
       effectiveTargetGroup = 'user'; 
-    } else if (phones && phones.length > 0) { // <-- FIX: Check for 'phones' (singular)
-      // Handle one or multiple phone numbers, and trim whitespace
+    } else if (phones && phones.length > 0) {
       const phoneList = Array.isArray(phones) ? phones : [phones];
       const trimmedPhoneList = phoneList.map(p => typeof p === 'string' ? p.trim() : p).filter(p => p); 
       
@@ -333,7 +336,7 @@ exports.sendNotification = async (req, res) => {
         targetUsers = await User.find({ phone: { $in: trimmedPhoneList } });
       }
       effectiveTargetGroup = 'user'; 
-    } else if (targetGroup && targetGroup !== 'all' && targetGroup !== 'roles') { // <-- FIX: also ignore 'roles'
+    } else if (targetGroup && targetGroup !== 'all' && targetGroup !== 'roles') { 
       targetUsers = await User.find({ roles: targetGroup });
     } else if (targetGroup === 'all') {
       targetUsers = await User.find({});
@@ -345,7 +348,6 @@ exports.sendNotification = async (req, res) => {
     }
 
     if (targetUsers.length === 0) {
-      // This is the 404 error you are seeing.
       console.warn(`[sendNotification] No target users were found. Data:`, { userId, phones, targetGroup });
       return res.status(404).json({ message: 'No target users were found for the specified criteria.' });
     }
@@ -355,7 +357,7 @@ exports.sendNotification = async (req, res) => {
       message,
       userId: user._id,
       read: false,
-      target: effectiveTargetGroup, // ONLY use 'target' field
+      target: effectiveTargetGroup, 
       ttl: new Date(sendDate.getTime() + ttlMinutes * 60 * 1000),
       sendAt: isScheduled ? sendDate : null,
       status: isScheduled ? 'scheduled' : 'sent',
@@ -403,7 +405,8 @@ exports.getUserNotifications = async (req, res) => {
   const userRoles = req.user.roles || []; 
 
   try {
-    const query = getUnifiedNotificationQuery(userId, userRoles);
+    // The helper function now correctly filters roles
+    const query = getUnifiedNotificationQuery(userId, userRoles); 
     query.ttl = { $gt: new Date() };
     query.status = 'sent';
     

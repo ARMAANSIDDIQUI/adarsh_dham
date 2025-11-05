@@ -18,7 +18,7 @@ exports.createAndSaveNotification = async ({ message, userIds = [], targetGroup,
             
             // --- THIS IS THE FIX ---
             // If we are sending to a specific list of IDs,
-            // the target for each notification is 'user'.
+            // the target for each notification is 'user', not the group name.
             effectiveTarget = 'user';
             // --- END FIX ---
 
