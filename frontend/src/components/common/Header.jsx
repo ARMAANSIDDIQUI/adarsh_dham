@@ -8,7 +8,7 @@ import {
     FaHome,
     FaInfoCircle,
     FaPhone,
-    FaCalendarAlt,
+    // FaCalendarAlt,
     FaBars,
     FaBookOpen,
     FaTimes,
@@ -79,7 +79,7 @@ const Header = () => {
                         <div className="flex-1 flex items-center justify-end gap-x-3">
                             <NavLink to="/" icon={<FaHome />} text="Home" end />
                             <NavLink to="/about" icon={<FaInfoCircle />} text="About" />
-                            <NavLink to="/calendar" icon={<FaCalendarAlt />} text="Calendar" />
+                            {/* <NavLink to="/calendar" icon={<FaCalendarAlt />} text="Calendar" /> */}
                             <NavLink to="/events" icon={<FaClipboardList />} text="Event List" />
                             <NavLink to="/events" icon={<FaBookOpen />} text="Request Booking" />
                             <NavLink to="/comments" icon={<FaComments />} text="Comments" />
@@ -133,7 +133,7 @@ const Header = () => {
                                 <div className="flex flex-col items-start gap-y-6 text-xl">
                                     <NavLink to="/" icon={<FaHome />} text="Home" onClick={handleMenuToggle} end />
                                     <NavLink to="/about" icon={<FaInfoCircle />} text="About" onClick={handleMenuToggle} />
-                                    <NavLink to="/calendar" icon={<FaCalendarAlt />} text="Calendar" onClick={handleMenuToggle} />
+                                    {/* <NavLink to="/calendar" icon={<FaCalendarAlt />} text="Calendar" onClick={handleMenuToggle} /> */}
                                     <NavLink to="/events" icon={<FaClipboardList />} text="Event List" onClick={handleMenuToggle} />
                                     <NavLink to="/events" icon={<FaBookOpen />} text="Request Booking" />
                                     <NavLink to="/comments" icon={<FaComments />} text="Comments" onClick={handleMenuToggle} />

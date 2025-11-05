@@ -15,7 +15,7 @@ const Event = require('./models/eventModel');
 const Person = require('./models/peopleModel');
 const bcrypt = require('bcrypt');
 
-// Routes
+//Routes
 const authRoutes = require('./routes/authRoutes');
 const eventRoutes = require('./routes/eventRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
