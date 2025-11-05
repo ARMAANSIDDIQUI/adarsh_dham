@@ -1,25 +1,35 @@
 import axios from 'axios';
-
-const API_URL = process.env.REACT_APP_BACKEND_URL || ''; 
+// We MUST import store from here to break the cycle.
+import { store } from '../redux/store'; 
 
 const api = axios.create({
-    baseURL: `${API_URL}/api`, 
-    headers: {
-        'Content-Type': 'application/json',
-    },
+  // Your backend URL from .env or default
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api',
+  headers: {
+    'Content-Type': 'application/json',
+  },
 });
 
+/**
+ * THE FIX IS HERE
+ * We use an interceptor to add the auth token to every request.
+ *
+ * By getting the store from the interceptor's scope, we wait
+ * until the store has been safely created.
+ */
 api.interceptors.request.use(
-    (config) => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            config.headers['x-auth-token'] = token;
-        }
-        return config;
-    },
-    (error) => {
-        return Promise.reject(error);
+  (config) => {
+    // Get the token from the already-loaded store
+    const token = store.getState().auth.token;
+
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
     }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
 );
 
 export default api;
