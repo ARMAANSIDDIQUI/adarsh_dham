@@ -4,7 +4,7 @@ import { store } from '../redux/store';
 
 const api = axios.create({
   // Your backend URL from .env or default
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api',
+  baseURL: process.env.REACT_APP_API_URL || '',
   headers: {
     'Content-Type': 'application/json',
   },
