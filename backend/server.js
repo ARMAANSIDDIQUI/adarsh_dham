@@ -269,6 +269,7 @@ webpush.setVapidDetails(
 const allowedOrigins = [
  	'http://localhost:5000',
   'http://localhost:5173',
+  'https://adarsh-dham-backend.onrender.com',
  	'https://adarsh-dham-9vio.vercel.app',
   'https://adarsh-dham-frontend.vercel.app',
   'https://adarshdham.com'
