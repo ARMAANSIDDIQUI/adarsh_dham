@@ -233,7 +233,7 @@ const Notification = require('./models/notificationModel');
 const User = require('./models/userModel');
 const Event = require('./models/eventModel');
 const Person = require('./models/peopleModel');
-const Booking = require('./models/bookingModel'); // <-- ADD THIS
+const Booking = require('./models/bookingModel');
 const bcrypt = require('bcrypt');
 
 //Routes
@@ -253,7 +253,6 @@ const commentRoutes = require('./routes/commentRoutes');
 const userRoutes = require('./routes/userRoutes');
 
 // --- NEW HELPER IMPORT ---
-// We move the notification creator to a separate file to share it.
 const { createAndSaveNotification } = require('./utils/notificationHelper');
 
 const app = express();
@@ -266,62 +265,26 @@ webpush.setVapidDetails(
   process.env.VAPID_PRIVATE_KEY
 );
 
-
 //SECURE CORS CONFIGURATION
-
-
 const allowedOrigins = [
-
-
  	'http://localhost:5000',
   'http://localhost:5173',
-
-
  	'https://adarsh-dham-9vio.vercel.app',
-
   'https://adarsh-dham-frontend.vercel.app',
   'https://adarshdham.com'
-
-
 ];
 
-
-
-
-
 const corsOptions = {
-
-
  	origin: (origin, callback) => {
-
-
  		if (allowedOrigins.includes(origin) || !origin) {
-
-
  			callback(null, true);
-
-
  		} else {
-
-
  			callback(new Error('This domain is not allowed by CORS'));
-
-
  		}
-
-
  	}
-
-
 };
 
-
-
-
-
 app.use(cors(corsOptions));
-
-
 app.use(express.json());
 app.use(morgan('dev'));
 
@@ -331,7 +294,7 @@ mongoose.connect(process.env.MONGO_URI)
     // createFirstSuperAdmin();
     setupAllocationResetJob();
     setupScheduledNotificationJob();
-    setupPendingBookingCheckJob(); // <-- ADD THIS
+    setupPendingBookingCheckJob();
   })
   .catch(err => console.error('MongoDB connection error:', err));
 
@@ -449,11 +412,9 @@ const setupPendingBookingCheckJob = () => {
 
         if (userIds.length > 0) {
           // Send one notification to each admin/operator
-          // The helper function will de-duplicate the userIds
           await createAndSaveNotification({
             message: `There ${pendingCount === 1 ? 'is' : 'are'} ${pendingCount} pending booking(s) awaiting review.`,
             userIds: userIds,
-            // We set notifyAdmins to false because we are providing the exact user IDs.
             notifyAdmins: false 
           });
         }
@@ -465,8 +426,6 @@ const setupPendingBookingCheckJob = () => {
     }
   });
 };
-// --- END NEW FUNCTION ---
-
 
 // Route Middleware
 app.use('/api/auth', authRoutes);
@@ -484,19 +443,19 @@ app.use('/api/structure', structureRoutes);
 app.use('/api/password-requests', passwordRequestRoutes);
 app.use('/api/comments', commentRoutes);
 
-app.get('/', (req, res) => {
-  res.send('Adarsh Dham Backend is running...');
-});
+// Original root route - Commented out so it doesn't block frontend serving
+// app.get('/', (req, res) => {
+//   res.send('Adarsh Dham Backend is running...');
+// });
 
-// --- ADDED THIS BLOCK TO FIX 404 ERRORS ---
-// This is a "catch-all" handler that must come AFTER your API routes.
-// It serves your React app's index.html file for any request
-// that doesn't match an API route (like '/calendar' or '/profile').
-// React Router will then handle the client-side routing.
+// --- SERVE FRONTEND ---
+// 1. Serve static files from the 'build' folder
+app.use(express.static(path.join(__dirname, 'build')));
+
+// 2. Handle React routing, return all non-API requests to index.html
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
-// --- END OF ADDED BLOCK ---
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

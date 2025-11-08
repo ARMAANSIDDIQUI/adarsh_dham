@@ -380,7 +380,7 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
   useEffect(() => {
     const fetchEvent = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/events/${eventId}`);
+        const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/events/${eventId}`);
         if (!res.ok) throw new Error("Event not found");
         const data = await res.json();
         setEvent(data);
