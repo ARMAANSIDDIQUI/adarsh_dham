@@ -270,28 +270,56 @@ webpush.setVapidDetails(
 //SECURE CORS CONFIGURATION
 
 
-// const allowedOrigins = [
-//  'http://localhost:3000',     
-//  'http://localhost:5173',
-//  'https://adarshdham.com',
-//  'http://localhost:5000',     
-// ];
+const allowedOrigins = [
 
-// const corsOptions = {
-//  origin: (origin, callback) => {
-//       if (allowedOrigins.includes(origin) || !origin) {
-//          callback(null, true);
-//       } else {
-//          callback(new Error('This domain is not allowed by CORS'));
-//       }
-//  }
-// };
 
-// app.use(express.static(path.join(__dirname, "public")));
-app.use(express.static(path.join(__dirname, "build"))); // This serves static files (like images)
+ 	'http://localhost:5000',
+  'http://localhost:5173',
 
-// app.use(cors(corsOptions));
-app.use(cors());
+
+ 	'https://adarsh-dham-9vio.vercel.app',
+
+  'https://adarsh-dham-frontend.vercel.app',
+  'https://adarshdham.com'
+
+
+];
+
+
+
+
+
+const corsOptions = {
+
+
+ 	origin: (origin, callback) => {
+
+
+ 		if (allowedOrigins.includes(origin) || !origin) {
+
+
+ 			callback(null, true);
+
+
+ 		} else {
+
+
+ 			callback(new Error('This domain is not allowed by CORS'));
+
+
+ 		}
+
+
+ 	}
+
+
+};
+
+
+
+
+
+app.use(cors(corsOptions));
 
 
 app.use(express.json());
