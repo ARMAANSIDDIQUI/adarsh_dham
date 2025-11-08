@@ -526,6 +526,7 @@ const ManageAllocations = () => {
     const [allocations, setAllocations] = useState({});
     const [roomDetailsModal, setRoomDetailsModal] = useState({ isOpen: false, room: null, occupants: [] });
     const [filters, setFilters] = useState({ userName: '', email: '', phone: '', memberName: '', event: '', bookingDate: '', stayFrom: '', stayTo: '' });
+    const [showOldAllocations, setShowOldAllocations] = useState(false);
 
     const fetchAllData = async () => {
         try {
@@ -623,22 +624,37 @@ const ManageAllocations = () => {
         setRoomDetailsModal({ isOpen: true, room, occupants });
     };
 
-    const filteredBookings = useMemo(() => (bookings || []).filter(b => {
-        const { userName, email, phone, memberName, event, bookingDate, stayFrom, stayTo } = filters;
-        if (userName && !String(b.userId?.name || '').toLowerCase().includes(userName.toLowerCase())) return false;
-        if (email && !String(b.formData?.email || '').toLowerCase().includes(email.toLowerCase())) return false;
-        if (phone && !String(b.formData?.contactNumber || '').includes(phone)) return false;
-        if (event && !String(b.eventId?.name || '').toLowerCase().includes(event.toLowerCase())) return false;
-        if (memberName) {
-            if (!((b.formData?.people || []).some(p => String(p?.name || '').toLowerCase().includes(memberName.toLowerCase())))) return false;
-        }
-        if (bookingDate) {
-            const bookingCreated = b.createdAt ? new Date(b.createdAt).toISOString().slice(0, 10) : null;
-            if (bookingCreated !== bookingDate) return false;
-        }
-        if (!datesRoughlyMatch(b.formData?.stayFrom, b.formData?.stayTo, stayFrom, stayTo)) return false;
-        return true;
-    }), [bookings, filters]);
+    const filteredBookings = useMemo(() => {
+        const today = new Date();
+        today.setHours(23, 59, 59, 999); // End of today
+
+        return (bookings || []).filter(b => {
+            const stayToDate = b.formData?.stayTo ? new Date(b.formData.stayTo) : null;
+
+            if (showOldAllocations) {
+                // Show old allocations: stayToDate must be in the past.
+                if (!stayToDate || stayToDate >= today) return false;
+            } else {
+                // Show current allocations: stayToDate should be today or in the future.
+                if (stayToDate && stayToDate < today) return false;
+            }
+
+            const { userName, email, phone, memberName, event, bookingDate, stayFrom, stayTo } = filters;
+            if (userName && !String(b.userId?.name || '').toLowerCase().includes(userName.toLowerCase())) return false;
+            if (email && !String(b.formData?.email || '').toLowerCase().includes(email.toLowerCase())) return false;
+            if (phone && !String(b.formData?.contactNumber || '').includes(phone)) return false;
+            if (event && !String(b.eventId?.name || '').toLowerCase().includes(event.toLowerCase())) return false;
+            if (memberName) {
+                if (!((b.formData?.people || []).some(p => String(p?.name || '').toLowerCase().includes(memberName.toLowerCase())))) return false;
+            }
+            if (bookingDate) {
+                const bookingCreated = b.createdAt ? new Date(b.createdAt).toISOString().slice(0, 10) : null;
+                if (bookingCreated !== bookingDate) return false;
+            }
+            if (!datesRoughlyMatch(b.formData?.stayFrom, b.formData?.stayTo, stayFrom, stayTo)) return false;
+            return true;
+        });
+    }, [bookings, filters, showOldAllocations]);
 
     if (loading) return <div className="flex justify-center items-center h-screen"><FaSpinner className="animate-spin text-primary text-4xl" /></div>;
 
@@ -673,8 +689,12 @@ const ManageAllocations = () => {
                         <input type="date" value={filters.stayTo} onChange={(e) => setFilters({ ...filters, stayTo: e.target.value })} className="p-2 border rounded-lg w-full" />
                     </div>
                 </div>
-                <div className="mt-4 flex space-x-3">
+                <div className="mt-4 flex flex-wrap items-center gap-4">
                     <Button onClick={() => setFilters({ userName: '', email: '', phone: '', memberName: '', event: '', bookingDate: '', stayFrom: '', stayTo: '' })} className="bg-gray-500 text-white">Clear Filters</Button>
+                    <div className="flex items-center rounded-lg p-1">
+                        <Button onClick={() => setShowOldAllocations(false)} className={`px-4 mr-4 py-1 text-sm rounded-md transition-colors ${!showOldAllocations ? 'bg-primary text-white shadow' : 'text-gray-600 hover:bg-gray-300'}`}>Current</Button>
+                        <Button onClick={() => setShowOldAllocations(true)} className={`px-4 py-1 text-sm rounded-md transition-colors ${showOldAllocations ? 'bg-primary text-white shadow' : 'text-gray-600 hover:bg-gray-300'}`}>Old</Button>
+                    </div>
                 </div>
             </div>
 

@@ -67,11 +67,11 @@ const EventCard = ({ event }) => {
         </p>
         <p className="flex items-center space-x-2">
           <FaCalendarAlt className="text-primary flex-shrink-0" />
-          <span><strong>Dates:</strong> {new Date(event.startDate).toLocaleDateString()} - {new Date(event.endDate).toLocaleDateString()}</span>
+          <span><strong>Dates:</strong> {new Date(event.startDate).toLocaleDateString('en-GB')} - {new Date(event.endDate).toLocaleDateString('en-GB')}</span>
         </p>
         <p className="flex items-center space-x-2">
           <FaTicketAlt className="text-primary flex-shrink-0" />
-          <span><strong>Booking Window:</strong> {new Date(event.bookingStartDate).toLocaleDateString()} - {new Date(event.bookingEndDate).toLocaleDateString()}</span>
+          <span><strong>Booking Window:</strong> {new Date(event.bookingStartDate).toLocaleDateString('en-GB')} - {new Date(event.bookingEndDate).toLocaleDateString('en-GB')}</span>
         </p>
       </div>
 

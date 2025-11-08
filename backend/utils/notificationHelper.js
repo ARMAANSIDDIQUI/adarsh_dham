@@ -5,7 +5,7 @@ const webpush = require('web-push');
 /**
  * Creates an in-app notification and sends an OS-level push notification if it is immediate.
  */
-exports.createAndSaveNotification = async ({ message, userIds = [], targetGroup, sendAt, ttlMinutes = 10080 }) => {
+exports.createAndSaveNotification = async ({ message, userIds = [], targetGroup, sendAt, ttlMinutes = 1440 }) => {
     try {
         let targetUsers = [];
         let effectiveTarget = targetGroup || 'user'; // Default

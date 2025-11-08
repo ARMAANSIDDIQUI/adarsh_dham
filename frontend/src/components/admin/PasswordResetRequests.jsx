@@ -65,7 +65,7 @@ const PasswordResetRequests = () => {
                                     <div className="flex-1 mb-4 sm:mb-0">
                                         <p className="font-bold font-heading text-lg text-primaryDark">{req.user?.name || 'User Not Found'}</p>
                                         <p className="text-sm text-gray-700">Phone: {req.phone}</p>
-                                        <p className="text-xs text-gray-500">Requested on: {new Date(req.createdAt).toLocaleString()}</p>
+                                        <p className="text-xs text-gray-500">Requested on: {new Date(req.createdAt).toLocaleDateString('en-GB')}</p>
                                         <div className="mt-3 p-3 bg-background rounded-xl border border-card h-full">
                                             <p className="text-sm font-semibold text-gray-700">User's Reason:</p>
                                             <p className="text-sm text-gray-600 italic">"{req.reason}"</p>

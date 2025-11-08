@@ -300,7 +300,7 @@ const EventTable = ({ events, handleEdit, handleDelete }) => (
                         <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">{event.name}</td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{event.location}</td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                            {new Date(event.startDate).toLocaleDateString()} - {new Date(event.endDate).toLocaleDateString()}
+                            {new Date(event.startDate).toLocaleDateString('en-GB')} - {new Date(event.endDate).toLocaleDateString('en-GB')}
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm flex space-x-3">
                             <button onClick={() => handleEdit(event)} className="text-pink-500 hover:text-pink-700"><FaEdit /></button>

@@ -199,7 +199,7 @@ const ManageComments = () => {
                                             <FaUser className="mr-2" />
                                             <span>By: <strong>{comment.user?.name || 'Unknown User'}</strong> ({comment.user?.phone})</span>
                                             <span className="mx-2">|</span>
-                                            <span>Submitted: {new Date(comment.createdAt).toLocaleDateString()}</span>
+                                            <span>Submitted: {new Date(comment.createdAt).toLocaleDateString('en-GB')}</span>
                                         </div>
                                     </div>
                                     <div className="flex space-x-2 self-end sm:self-center sm:ml-4">

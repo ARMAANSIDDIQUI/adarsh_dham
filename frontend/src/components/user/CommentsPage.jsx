@@ -200,7 +200,7 @@ const CommentsPage = () => {
                                                 </div>
                                             </div>
                                             <p className="text-xs text-gray-500 mb-2">
-                                                {new Date(comment.createdAt).toLocaleString()}
+                                                {new Date(comment.createdAt).toLocaleDateString('en-GB')}
                                             </p>
                                             <p className="text-gray-700 whitespace-pre-wrap">{comment.content}</p>
                                         </div>

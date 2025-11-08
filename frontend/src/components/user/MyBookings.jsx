@@ -39,7 +39,7 @@ const BookingCard = ({ booking, onEdit, onDelete, onDownloadPdf, navigateToEvent
                     </div>
                 </div>
                 <span className="text-xs px-3 py-1 rounded-full bg-background/50 text-gray-700 shadow-inner">
-                    Requested: {new Date(booking.createdAt).toLocaleDateString()}
+                    Requested: {new Date(booking.createdAt).toLocaleDateString('en-GB')}
                 </span>
             </div>
 

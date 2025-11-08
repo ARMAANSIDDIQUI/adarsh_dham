@@ -96,7 +96,7 @@ const AllocationsView = ({ filters, dateFilterType, debouncedSearchTerm, paginat
                                     {person.eventId?.name || 'N/A'}
                                 </td>
                                 <td className="px-4 py-4 whitespace-nowrap text-sm align-top text-gray-700">
-                                    {new Date(person.stayFrom).toLocaleDateString()} - {new Date(person.stayTo).toLocaleDateString()}
+                                    {new Date(person.stayFrom).toLocaleDateString('en-GB')} - {new Date(person.stayTo).toLocaleDateString('en-GB')}
                                 </td>
                                 <td className="px-4 py-4 whitespace-nowrap text-sm align-top text-gray-700">
                                     <p className="font-semibold text-gray-800">{person.bedId?.roomId?.buildingId?.name}</p>

@@ -345,7 +345,7 @@ const SendNotification = () => {
                                             </div>
                                         </div>
                                         <div className="mt-2 text-xs text-blue-600 text-center">
-                                            Will be sent on: {calculatedSendTime.toLocaleString(DateTime.DATETIME_SHORT)}
+                                            Will be sent on: {calculatedSendTime.toFormat('dd/MM/yyyy, HH:mm')}
                                         </div>
                                     </motion.div>
                                 )}

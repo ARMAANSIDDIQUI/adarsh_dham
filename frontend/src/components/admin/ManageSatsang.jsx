@@ -253,10 +253,10 @@ const ManageSatsang = () => {
                                     </a>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                    {link.liveFrom ? DateTime.fromISO(link.liveFrom, { zone: 'utc' }).setZone('Asia/Kolkata').toLocaleString(DateTime.DATETIME_SHORT) : 'N/A'}
+                                    {link.liveFrom ? DateTime.fromISO(link.liveFrom, { zone: 'utc' }).setZone('Asia/Kolkata').toFormat('dd/MM/yyyy, HH:mm') : 'N/A'}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                    {link.liveTo ? DateTime.fromISO(link.liveTo, { zone: 'utc' }).setZone('Asia/Kolkata').toLocaleString(DateTime.DATETIME_SHORT) : 'N/A'}
+                                    {link.liveTo ? DateTime.fromISO(link.liveTo, { zone: 'utc' }).setZone('Asia/Kolkata').toFormat('dd/MM/yyyy, HH:mm') : 'N/A'}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                                     <div className="flex space-x-3">
