@@ -221,9 +221,7 @@ const Home = () => {
   useEffect(() => {
     const fetchLiveLinks = async () => {
       try {
-        const apiUrl =
-          process.env.REACT_APP_BACKEND_URL ||
-          import.meta.env.REACT_BACKEND_URL;
+        const apiUrl = import.meta.env.VITE_BACKEND_URL;
         const response = await axios.get(
           `${apiUrl}/api/satsang/live-links/active`
         );
