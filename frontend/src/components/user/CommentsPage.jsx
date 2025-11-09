@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
-import { FaPaperPlane, FaSpinner, FaTimesCircle, FaHourglassHalf, FaUserCircle, FaTrashAlt } from 'react-icons/fa';
+import { FaPaperPlane, FaSpinner, FaUserCircle, FaTrashAlt } from 'react-icons/fa';
 import api from '../../api/api';
 import { toast } from 'react-toastify';
 
@@ -105,19 +105,7 @@ const CommentsPage = () => {
         }
     };
 
-    const getStatusIconAndText = (comment) => {
-        if (isAuthenticated && user.id === comment.user._id) {
-            switch (comment.status) {
-                case 'rejected':
-                    return <span className="flex items-center text-xs text-highlight"><FaTimesCircle className="mr-1" /> Rejected</span>;
-                case 'pending':
-                    return <span className="flex items-center text-xs text-accent"><FaHourglassHalf className="mr-1" /> Pending Review</span>;
-                default:
-                    return null;
-            }
-        }
-        return null;
-    };
+
 
     return (
         <motion.div
@@ -171,7 +159,6 @@ const CommentsPage = () => {
                         <p className="text-highlight text-center">{error}</p>
                     ) : comments.length > 0 ? (
                         comments.map((comment) => {
-                            const status = getStatusIconAndText(comment);
                             const isOwner = isAuthenticated && user.id === comment.user._id;
                             return (
                                 <motion.div
@@ -187,7 +174,6 @@ const CommentsPage = () => {
                                             <div className="flex justify-between items-center">
                                                 <p className="font-bold font-heading text-primaryDark">{comment.user?.name || 'Anonymous'}</p>
                                                 <div className="flex items-center space-x-4">
-                                                    {status && <div className="flex-shrink-0">{status}</div>}
                                                     {isOwner && (
                                                         <button
                                                             onClick={() => setCommentToDelete(comment._id)}

@@ -547,28 +547,34 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
               Period of Stay
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <ThemedInput
-                label="From"
-                name="stayFrom"
-                value={formData.stayFrom}
-                onChange={handleChange}
-                required
-                type="date"
-                icon={<FaCalendarAlt />}
-                min={minStayDate.toISOString().split("T")[0]}
-                max={maxStayDate.toISOString().split("T")[0]}
-              />
-              <ThemedInput
-                label="To"
-                name="stayTo"
-                value={formData.stayTo}
-                onChange={handleChange}
-                required
-                type="date"
-                icon={<FaCalendarAlt />}
-                min={formData.stayFrom || minStayDate.toISOString().split("T")[0]}
-                max={maxStayDate.toISOString().split("T")[0]}
-              />
+              <div>
+                <ThemedInput
+                  label="From"
+                  name="stayFrom"
+                  value={formData.stayFrom}
+                  onChange={handleChange}
+                  required
+                  type="date"
+                  icon={<FaCalendarAlt />}
+                  min={minStayDate.toISOString().split("T")[0]}
+                  max={maxStayDate.toISOString().split("T")[0]}
+                />
+                <p className="text-sm text-gray-500 mt-1">Please note:  You may opt for stay from 5 days before the event begins.</p>
+              </div>
+              <div>
+                <ThemedInput
+                  label="To"
+                  name="stayTo"
+                  value={formData.stayTo}
+                  onChange={handleChange}
+                  required
+                  type="date"
+                  icon={<FaCalendarAlt />}
+                  min={formData.stayFrom || minStayDate.toISOString().split("T")[0]}
+                  max={maxStayDate.toISOString().split("T")[0]}
+                />
+                <p className="text-sm text-gray-500 mt-1">Please note: You may opt for stay up to 5 days after the event concludes.</p>
+              </div>
             </div>
           </div>
 
