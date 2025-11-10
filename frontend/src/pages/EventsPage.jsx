@@ -470,43 +470,120 @@ const theme = {
 
 const calendarStyles = `
 .react-calendar {
-  width: 100%;
-  background: transparent;
-  border: none;
-  font-family: ${theme.bodyFont};
+    width: 100%;
+    max-width: 100%;
+    background: transparent;
+    border: none;
+    font-family: ${theme.bodyFont};
+    line-height: 1.2em;
 }
 .react-calendar__navigation button {
-  color: ${theme.primaryDark};
-  background: none;
-  font-weight: 600;
-  border-radius: 8px;
+    color: ${theme.primaryDark};
+    min-width: 44px;
+    background: none;
+    font-size: 1em;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+}
+.react-calendar__month-view__weekdays {
+    color: ${theme.primaryDark};
+    text-align: center;
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 0.8em;
+    padding-bottom: 0.5em;
 }
 .react-calendar__tile {
-  border-radius: 8px;
-  transition: all 0.18s;
-  position: relative;
-  min-height: 58px;
-  overflow: visible;
+    position: relative;
+    padding: 10px 5px;
+    text-align: center;
+    line-height: 1.5em;
+    border-radius: 8px;
+    transition: background-color 0.18s, color 0.18s, box-shadow 0.15s;
+    cursor: pointer;
 }
-.booking-start { background-color: ${theme.booking} !important; color: ${theme.primaryDark} !important; font-weight:700; }
-.event-start { background-color: ${theme.primaryDark} !important; color: white !important; font-weight:700; }
-.booking-available { background-color: ${theme.primary}33 !important; color: ${theme.primaryDark} !important; font-weight:600; }
-.booking-end { background-color: ${theme.booking}55 !important; color: ${theme.primaryDark} !important; font-weight:700; }
-.event-end { background-color: ${theme.primary} !important; color: white !important; font-weight:700; }
-.react-calendar__tile--now { background: ${theme.background} !important; color: ${theme.primaryDark}; }
-.event-dot { position: absolute; inset: 0; z-index: 20; background: transparent; pointer-events: auto; cursor: pointer; border-radius: 8px; }
-.event-dot:hover { background: ${theme.primaryDark}22; }
+.react-calendar__tile--now {
+    background: ${theme.background} !important;
+    color: ${theme.primaryDark};
+}
+.highlight-start {
+    background-color: ${theme.primaryDark} !important;
+    color: white !important;
+    font-weight: 700;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px ${theme.primaryDark}66;
+}
+.highlight-end {
+    background-color: ${theme.primary} !important;
+    color: white !important;
+    font-weight: 700;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px ${theme.primary}66;
+}
+.event-range {
+    background-color: ${theme.primary}33 !important;
+    color: ${theme.primaryDark} !important;
+    font-weight: 600;
+    border-radius: 8px;
+    box-shadow: 0 3px 8px ${theme.primary}44;
+}
+.booking-highlight {
+    background-color: ${theme.booking} !important;
+    color: ${theme.primaryDark} !important;
+    font-weight: 700;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px ${theme.booking}66;
+}
+.react-calendar__tile--active {
+    background-color: ${theme.accent} !important;
+    color: white !important;
+    border-radius: 8px;
+    font-weight: bold;
+    box-shadow: 0 0 6px ${theme.accent}66;
+}
+.react-calendar__tile--active:enabled:hover,
+.react-calendar__tile--active:enabled:focus {
+    background-color: ${theme.primaryDark} !important; 
+    color: white !important;
+}
+.react-calendar__tile:focus {
+    background-color: ${theme.primary}33;
+    color: ${theme.primaryDark};
+}
+input[type="date"]:focus {
+    outline: none;
+    border-color: ${theme.primaryDark};
+    box-shadow: 0 0 4px ${theme.primaryDark};
+}
 .event-tooltip {
-  background: #333 !important;
-  color: #fff !important;
-  border: 1px solid ${theme.background};
-  border-radius: 6px !important;
-  padding: 6px 10px !important;
-  font-size: 0.85em !important;
-  z-index: 100;
-  max-width: 300px;
-  white-space: normal;
-  word-wrap: break-word;
+    background: ${theme.card} !important;
+    color: ${theme.primaryDark} !important;
+    border: 1px solid ${theme.background};
+    z-index: 9999 !important;
+    border-radius: 6px !important;
+    padding: 6px 10px !important;
+    font-size: 0.85em !important;
+    font-weight: 600 !important;
+    max-width: 300px;
+    white-space: normal;
+    word-wrap: break-word;
+}
+.event-dot {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    background: transparent;
+}
+.event-dot:hover {
+    background: ${theme.primaryDark}22;
+    border-radius: 8px;
+}
+.hovered-tile {
+  transform: scale(1.03);
+  box-shadow: 0 0 8px ${theme.primaryDark}22;
+  z-index: 50;
+  position: relative;
 }
 .events-legend {
   display: flex;
@@ -528,12 +605,6 @@ const calendarStyles = `
   height: 14px;
   border-radius: 4px;
   border: 1px solid rgba(0,0,0,0.06);
-}
-.hovered-tile {
-  transform: scale(1.03);
-  box-shadow: 0 0 8px ${theme.primaryDark}22;
-  z-index: 50;
-  position: relative;
 }
 `;
 
@@ -726,13 +797,19 @@ const EventsPage = () => {
     if (view === "month") {
       const key = date.toDateString();
       const classes = [];
-      if (bookingStartMap.has(key)) classes.push("booking-start");
-      else if (startMap.has(key)) classes.push("event-start");
-      else if (bookingAvailableMap.has(key)) classes.push("booking-available");
-      else if (bookingEndMap.has(key)) classes.push("booking-end");
-      else if (endMap.has(key)) classes.push("event-end");
-      else if (eventRangeMap.has(key)) classes.push("event-range");
-      if (hoveredDate && key === hoveredDate.toDateString()) classes.push("hovered-tile");
+      if (startMap.has(key)) {
+        classes.push("highlight-start");
+      } else if (endMap.has(key)) {
+        classes.push("highlight-end");
+      } else if (bookingStartMap.has(key) || bookingEndMap.has(key) || bookingAvailableMap.has(key)) {
+        classes.push("booking-highlight");
+      } else if (eventRangeMap.has(key)) {
+        classes.push("event-range");
+      }
+      
+      if (hoveredDate && key === hoveredDate.toDateString()) {
+        classes.push("hovered-tile");
+      }
       return classes.join(" ");
     }
     return null;
@@ -828,24 +905,20 @@ const EventsPage = () => {
         {viewMode === "calendar" && (
           <div className="events-legend">
             <div className="legend-item">
-              <span className="legend-swatch" style={{ background: theme.booking }} />
-              <span>Booking Start</span>
-            </div>
-            <div className="legend-item">
               <span className="legend-swatch" style={{ background: theme.primaryDark }} />
               <span>Event Start</span>
             </div>
             <div className="legend-item">
-              <span className="legend-swatch" style={{ background: `${theme.primary}33` }} />
-              <span>Booking Available</span>
-            </div>
-            <div className="legend-item">
-              <span className="legend-swatch" style={{ background: `${theme.booking}55` }} />
-              <span>Booking End</span>
-            </div>
-            <div className="legend-item">
               <span className="legend-swatch" style={{ background: theme.primary }} />
               <span>Event End</span>
+            </div>
+            <div className="legend-item">
+              <span className="legend-swatch" style={{ background: theme.booking }} />
+              <span>Booking Dates</span>
+            </div>
+            <div className="legend-item">
+              <span className="legend-swatch" style={{ background: `${theme.primary}33` }} />
+              <span>Event In Progress</span>
             </div>
           </div>
         )}
