@@ -364,6 +364,9 @@ input[type="date"]:focus {
     padding: 6px 10px !important;
     font-size: 0.85em !important;
     font-weight: 600 !important;
+    max-width: 300px;
+    white-space: normal;
+    word-wrap: break-word;
 }
 .event-dot {
     position: absolute;

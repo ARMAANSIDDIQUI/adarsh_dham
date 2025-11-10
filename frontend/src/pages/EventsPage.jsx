@@ -504,6 +504,9 @@ const calendarStyles = `
   padding: 6px 10px !important;
   font-size: 0.85em !important;
   z-index: 100;
+  max-width: 300px;
+  white-space: normal;
+  word-wrap: break-word;
 }
 .events-legend {
   display: flex;
