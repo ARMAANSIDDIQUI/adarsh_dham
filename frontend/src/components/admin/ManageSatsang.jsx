@@ -236,7 +236,7 @@ const ManageSatsang = () => {
                     <thead className="bg-background/50">
                         <tr>
                             <th className="px-6 py-3 text-left text-xs font-medium font-heading text-primaryDark uppercase tracking-wider">Name</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium font-heading text-primaryDark uppercase tracking-wider">Marquee URL</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium font-heading text-primaryDark uppercase tracking-wider">Video Link/URL</th>
                             <th className="px-6 py-3 text-left text-xs font-medium font-heading text-primaryDark uppercase tracking-wider">Live From (IST)</th>
                             <th className="px-6 py-3 text-left text-xs font-medium font-heading text-primaryDark uppercase tracking-wider">Live To (IST)</th>
                             <th className="px-6 py-3 text-left text-xs font-medium font-heading text-primaryDark uppercase tracking-wider">Actions</th>
