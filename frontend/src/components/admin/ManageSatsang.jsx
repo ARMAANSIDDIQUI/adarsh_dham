@@ -202,7 +202,7 @@ const ManageSatsang = () => {
                     </div>
                     
                     <div className="md:col-span-1">
-                        <label className="block text-sm font-medium text-gray-700">Marquee URL</label>
+                        <label className="block text-sm font-medium text-gray-700">Video Link/URL</label>
                         <input type="url" value={newLink.url} onChange={(e) => setNewLink({ ...newLink, url: e.target.value })} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-500" required />
                     </div>
                     
@@ -298,7 +298,7 @@ const ManageSatsang = () => {
                             </div>
                             
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Marquee URL</label>
+                                <label className="block text-sm font-medium text-gray-700">Video Link/URL</label>
                                 <input type="url" name="url" value={editingLink.url} onChange={(e) => setEditingLink({ ...editingLink, url: e.target.value })} className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-500" required />
                             </div>
 
