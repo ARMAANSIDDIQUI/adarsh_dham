@@ -25,4 +25,11 @@ router.delete(
   eventController.deleteEvent
 );
 
+router.get(
+  '/:id/bookings/exists',
+  authMiddleware,
+  roleMiddleware(['admin']),
+  eventController.checkEventBookings
+);
+
 module.exports = router;

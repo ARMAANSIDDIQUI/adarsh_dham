@@ -96,7 +96,7 @@ To run this project locally, you will need Node.js and a MongoDB instance.
 2. Install dependencies: `npm install`
 3. Create a `.env.development` file in the `frontend` root and add the following:
    ```
-   REACT_APP_BACKEND_URL=http://localhost:5000
+   REACT_APP_API_BASE_URL=http://localhost:5000
    ```
 4. Start the frontend development server: `npm start` or `npm run dev`
 

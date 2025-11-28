@@ -56,7 +56,7 @@ const BookingStatus = ({ bookings, onDelete }) => {
     };
 
     const handleDownloadPdf = (bookingId) => {
-        const backendUrl = process.env.REACT_APP_BACKEND_URL ;
+        const backendUrl = process.env.REACT_APP_API_BASE_URL || '' ;
         window.open(`${backendUrl}/api/bookings/pdf/${bookingId}`, '_blank');
     };
 

@@ -13,7 +13,7 @@ const ExportData = () => {
     setStatus('Exporting data...');
 
     const worker = new ExportWorker();
-    worker.postMessage({ type: 'export_bookings', url: process.env.REACT_APP_BACKEND_URL });
+    worker.postMessage({ type: 'export_bookings', url: process.env.REACT_APP_API_BASE_URL || '' });
 
     worker.onmessage = (event) => {
       const { type, data } = event.data;
