@@ -111,12 +111,14 @@ const MyBookings = () => {
     }, [isEditModalOpen]);
 
     const handleDeleteBooking = async (bookingId) => {
-        try {
-            await api.delete(`/bookings/delete/${bookingId}`);
-            fetchMyBookings();
-            setMessage({ type: 'success', text: 'Booking withdrawn successfully.' });
-        } catch (err) {
-            setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to withdraw booking.' });
+        if (window.confirm('Are you sure you want to withdraw this booking? This action cannot be undone.')) {
+            try {
+                await api.delete(`/bookings/delete/${bookingId}`);
+                fetchMyBookings();
+                setMessage({ type: 'success', text: 'Booking withdrawn successfully.' });
+            } catch (err) {
+                setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to withdraw booking.' });
+            }
         }
     };
 

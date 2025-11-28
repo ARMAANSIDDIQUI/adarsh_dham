@@ -1,6 +1,7 @@
 const Event = require('../models/eventModel');
 const Booking = require('../models/bookingModel');
 const Notification = require('../models/notificationModel');
+const Person = require('../models/peopleModel');
 
 exports.createEvent = async (req, res) => {
   try {
@@ -58,6 +59,9 @@ exports.deleteEvent = async (req, res) => {
     const bookings = await Booking.find({ eventId: id });
 
     if (bookings.length > 0) {
+      const bookingIds = bookings.map(b => b._id);
+      await Person.deleteMany({ bookingId: { $in: bookingIds } });
+
       const userIds = bookings.map(b => b.userId);
       
       const notifications = userIds.map(userId => ({
@@ -76,7 +80,7 @@ exports.deleteEvent = async (req, res) => {
 
     await Event.findByIdAndDelete(id);
     
-    res.status(200).json({ message: 'Event and associated bookings deleted successfully' });
+    res.status(200).json({ message: 'Event and associated bookings and people deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error });
   }

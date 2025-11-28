@@ -35,12 +35,28 @@ router.put(
     bookingController.approveOrDeclineBooking
 );
 
+
+
 // A user can delete their own booking request
 router.delete(
     '/delete/:bookingId',
     authMiddleware,
     roleMiddleware(['user', 'admin', 'super-admin']),
     bookingController.deleteMyBooking
+);
+
+router.delete(
+    '/withdraw/:bookingId',
+    authMiddleware,
+    roleMiddleware(['admin', 'super-admin']),
+    bookingController.withdrawBooking
+);
+
+router.delete(
+    '/admin/delete/:bookingId',
+    authMiddleware,
+    roleMiddleware(['admin', 'super-admin']),
+    bookingController.deleteBooking
 );
 
 router.get(
@@ -60,6 +76,14 @@ router.get(
     '/pdf/:id',
     authMiddleware,
     bookingController.getBookingPdf
+);
+
+
+router.delete(
+    '/withdraw/:bookingId',
+    authMiddleware,
+    roleMiddleware(['admin', 'super-admin']),
+    bookingController.withdrawBooking
 );
 
 router.get(

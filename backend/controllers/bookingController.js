@@ -467,9 +467,12 @@ exports.approveOrDeclineBooking = async (req, res) => {
         const previousStatus = booking.status;
         let message = '';
         
-        await Person.deleteMany({ bookingId: booking._id });
+        if (status !== 'approved') {
+            await Person.deleteMany({ bookingId: booking._id });
+        }
 
         if (status === 'approved') {
+            await Person.deleteMany({ bookingId: booking._id });
             if (!allocations || !Array.isArray(allocations) || allocations.length !== booking.formData.people.length) {
                 return res.status(400).json({ message: 'Allocation details must be provided as an array for every person.' });
             }
@@ -611,6 +614,9 @@ exports.updateBooking = async (req, res) => {
     }
 };
 
+
+
+
 exports.deleteMyBooking = async (req, res) => {
     const { bookingId } = req.params;
     try {
@@ -629,6 +635,51 @@ exports.deleteMyBooking = async (req, res) => {
             targetGroup: 'admin'
         });
         // --- END UPDATE ---
+
+        res.status(200).json({ message: 'Booking deleted successfully' });
+    } catch (error) {
+        console.error("Error deleting booking:", error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+exports.withdrawBooking = async (req, res) => {
+    const { bookingId } = req.params;
+    try {
+        const booking = await Booking.findById(bookingId).populate('userId');
+        if (!booking) {
+            return res.status(404).json({ message: 'Booking not found' });
+        }
+
+        await Person.deleteMany({ bookingId: booking._id });
+        await Booking.findByIdAndDelete(bookingId);
+
+        if (booking.userId) {
+            const notificationMessage = `Your booking #${booking.bookingNumber} was withdrawn by an admin.`;
+            await createAndSaveNotification({
+                message: notificationMessage,
+                userIds: [booking.userId._id.toString()],
+                targetGroup: 'user'
+            });
+        }
+
+        res.status(200).json({ message: 'Booking withdrawn successfully' });
+    } catch (error) {
+        console.error("Error withdrawing booking:", error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+exports.deleteBooking = async (req, res) => {
+    const { bookingId } = req.params;
+    try {
+        const booking = await Booking.findById(bookingId);
+        if (!booking) {
+            return res.status(404).json({ message: 'Booking not found' });
+        }
+
+        await Person.deleteMany({ bookingId: booking._id });
+        await Booking.findByIdAndDelete(bookingId);
 
         res.status(200).json({ message: 'Booking deleted successfully' });
     } catch (error) {
@@ -662,6 +713,7 @@ exports.getBookingPdf = async (req, res) => {
     }
 };
 
+
 exports.getBookingById = async (req, res) => {
     const { bookingId } = req.params;
     try {
@@ -686,6 +738,34 @@ exports.getBookingById = async (req, res) => {
     }
 };
 
+
+
+exports.withdrawBooking = async (req, res) => {
+    const { bookingId } = req.params;
+    try {
+        const booking = await Booking.findById(bookingId).populate('userId');
+        if (!booking) {
+            return res.status(404).json({ message: 'Booking not found' });
+        }
+
+        await Person.deleteMany({ bookingId: booking._id });
+        await Booking.findByIdAndDelete(bookingId);
+
+        if (booking.userId) {
+            const notificationMessage = `Your booking #${booking.bookingNumber} was withdrawn by an admin.`;
+            await createAndSaveNotification({
+                message: notificationMessage,
+                userIds: [booking.userId._id.toString()],
+                targetGroup: 'user'
+            });
+        }
+
+        res.status(200).json({ message: 'Booking withdrawn successfully' });
+    } catch (error) {
+        console.error("Error withdrawing booking:", error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
 
 exports.getBookingsPaginated = async (req, res) => {
     try {
