@@ -411,37 +411,6 @@ const CalendarPage = () => {
         setDateInput(`${year}-${month}-${day}`);
     }, [selectedDate]);
 
-    const eventStartMap = useMemo(() => {
-        const map = new Map();
-        (events || []).forEach(event => {
-            const date = new Date(event.startDate).toDateString();
-            map.set(date, event);
-        });
-        return map;
-    }, [events]);
-
-    const eventEndMap = useMemo(() => {
-        const map = new Map();
-        (events || []).forEach(event => {
-            const date = new Date(event.endDate).toDateString();
-            map.set(date, event);
-        });
-        return map;
-    }, [events]);
-
-    const eventRangeMap = useMemo(() => {
-        const map = new Map();
-        (events || []).forEach(event => {
-            const start = new Date(event.startDate);
-            const end = new Date(event.endDate);
-            for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-                const key = new Date(d).toDateString();
-                if (!map.has(key)) map.set(key, event);
-            }
-        });
-        return map;
-    }, [events]);
-
     const bookingDates = useMemo(() => {
         const set = new Set();
         (events || []).forEach(event => {
@@ -474,29 +443,28 @@ const CalendarPage = () => {
     const handleDateClick = (clickedDate) => {
         setSelectedDate(clickedDate);
         const key = clickedDate.toDateString();
+    
         if (bookingEventMap.has(key)) {
             const event = bookingEventMap.get(key);
-            const id = event._id || event.id || event.slug || '';
-            if (id) navigate(`/booking/${id}`);
-            return;
+            const now = new Date();
+            const bookingStart = new Date(event.bookingStartDate);
+            bookingStart.setHours(0, 0, 0, 0); 
+            const bookingEnd = new Date(event.bookingEndDate);
+            bookingEnd.setHours(23, 59, 59, 999);
+    
+            if (now >= bookingStart && now <= bookingEnd) {
+                const id = event._id || event.id || event.slug || '';
+                if (id) navigate(`/booking/${id}`);
+                return;
+            }
+            else {
+                const year = clickedDate.getFullYear();
+                const month = String(clickedDate.getMonth() + 1).padStart(2, '0');
+                const day = String(clickedDate.getDate()).padStart(2, '0');
+                const dateString = `${year}-${month}-${day}`;
+                navigate(`/events/${dateString}`);
+            }
         }
-        if (eventRangeMap.has(key)) {
-            const event = eventRangeMap.get(key);
-            const id = event._id || event.id || event.slug || '';
-            if (id) navigate(`/booking/${id}`);
-            return;
-        }
-        if (eventStartMap.has(key) || eventEndMap.has(key)) {
-            const event = eventStartMap.get(key) || eventEndMap.get(key);
-            const id = event._1d || event._id || event.id || event.slug || '';
-            if (id) navigate(`/booking/${id}`);
-            return;
-        }
-        const year = clickedDate.getFullYear();
-        const month = String(clickedDate.getMonth() + 1).padStart(2, '0');
-        const day = String(clickedDate.getDate()).padStart(2, '0');
-        const dateString = `${year}-${month}-${day}`;
-        navigate(`/events/${dateString}`);
     };
 
     if (loading) {
@@ -521,10 +489,7 @@ const CalendarPage = () => {
     const tileClassName = ({ date, view }) => {
         if (view === 'month') {
             const key = date.toDateString();
-            if (eventStartMap.has(key)) return 'highlight-start';
-            if (eventEndMap.has(key)) return 'highlight-end';
             if (bookingDates.has(key)) return 'booking-highlight';
-            if (eventRangeMap.has(key)) return 'event-range';
         }
         return null;
     };
@@ -532,26 +497,6 @@ const CalendarPage = () => {
     const tileContent = ({ date, view }) => {
         if (view === 'month') {
             const key = date.toDateString();
-            if (eventStartMap.has(key)) {
-                const event = eventStartMap.get(key);
-                return (
-                    <div
-                        data-tooltip-id="event-tooltip"
-                        data-tooltip-content={`Event starts: ${event.name}`}
-                        className="event-dot"
-                    ></div>
-                );
-            }
-            if (eventEndMap.has(key)) {
-                const event = eventEndMap.get(key);
-                return (
-                    <div
-                        data-tooltip-id="event-tooltip"
-                        data-tooltip-content={`Event ends: ${event.name}`}
-                        className="event-dot"
-                    ></div>
-                );
-            }
             if (bookingEventMap.has(key)) {
                 const event = bookingEventMap.get(key);
                 const bs = event.bookingStartDate ? new Date(event.bookingStartDate).toLocaleDateString() : '';
@@ -560,16 +505,6 @@ const CalendarPage = () => {
                     <div
                         data-tooltip-id="event-tooltip"
                         data-tooltip-content={`Booking open for ${event.name} (${bs} — ${be})`}
-                        className="event-dot"
-                    ></div>
-                );
-            }
-            if (eventRangeMap.has(key)) {
-                const event = eventRangeMap.get(key);
-                return (
-                    <div
-                        data-tooltip-id="event-tooltip"
-                        data-tooltip-content={`${event.name} (in progress)`}
                         className="event-dot"
                     ></div>
                 );
@@ -611,12 +546,6 @@ const CalendarPage = () => {
                     className="w-full"
                 />
                 <div className="flex justify-center space-x-6 mt-6 text-sm font-medium text-gray-700">
-                    <div className="flex items-center space-x-2">
-                        <FaCircle style={{ color: theme.primaryDark }} /> <span>Event Start</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                        <FaCircle style={{ color: theme.primary }} /> <span>Event End</span>
-                    </div>
                     <div className="flex items-center space-x-2">
                         <FaCircle style={{ color: theme.booking }} /> <span>Booking Available</span>
                     </div>

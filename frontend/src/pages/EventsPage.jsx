@@ -670,40 +670,19 @@ const EventsPage = () => {
   };
 
   const {
-    bookingStartMap,
-    startMap,
     bookingAvailableMap,
-    bookingEndMap,
-    endMap,
     eventRangeMap,
   } = useMemo(() => {
-    const bookingStartMap = new Map();
-    const startMap = new Map();
     const bookingAvailableMap = new Map();
-    const bookingEndMap = new Map();
-    const endMap = new Map();
     const eventRangeMap = new Map();
 
     events.forEach((e) => {
-      if (e.bookingStartDate) {
-        const bs = new Date(e.bookingStartDate);
-        bookingStartMap.set(bs.toDateString(), e);
-      }
-      if (e.startDate) {
-        const s = new Date(e.startDate);
-        startMap.set(s.toDateString(), e);
-      }
       if (e.bookingStartDate && e.bookingEndDate) {
         const bStart = new Date(e.bookingStartDate);
         const bEnd = new Date(e.bookingEndDate);
         for (let d = new Date(bStart); d <= bEnd; d.setDate(d.getDate() + 1)) {
           bookingAvailableMap.set(new Date(d).toDateString(), e);
         }
-        bookingEndMap.set(new Date(bEnd).toDateString(), e);
-      }
-      if (e.endDate) {
-        const en = new Date(e.endDate);
-        endMap.set(en.toDateString(), e);
       }
       if (e.startDate && e.endDate) {
         const s = new Date(e.startDate);
@@ -715,11 +694,7 @@ const EventsPage = () => {
     });
 
     return {
-      bookingStartMap,
-      startMap,
       bookingAvailableMap,
-      bookingEndMap,
-      endMap,
       eventRangeMap,
     };
   }, [events]);
@@ -731,35 +706,38 @@ const EventsPage = () => {
 
   const handleDateClick = (clickedDate) => {
     const key = clickedDate.toDateString();
-    const eventForBookingStart = bookingStartMap.get(key);
-    const eventForStart = startMap.get(key);
     const eventForBookingAvailable = bookingAvailableMap.get(key);
-    const eventForBookingEnd = bookingEndMap.get(key);
-    const eventForEnd = endMap.get(key);
-    let targetEvent =
-      eventForBookingStart ||
-      eventForStart ||
-      eventForBookingAvailable ||
-      eventForBookingEnd ||
-      eventForEnd ||
-      eventRangeMap.get(key);
 
-    const year = clickedDate.getFullYear();
-    const month = String(clickedDate.getMonth() + 1).padStart(2, "0");
-    const day = String(clickedDate.getDate()).padStart(2, "0");
-    const dateString = `${year}-${month}-${day}`;
+    if (eventForBookingAvailable) {
+        const now = new Date();
+        const bookingStart = new Date(eventForBookingAvailable.bookingStartDate);
+        bookingStart.setHours(0, 0, 0, 0);
+        const bookingEnd = new Date(eventForBookingAvailable.bookingEndDate);
+        bookingEnd.setHours(23, 59, 59, 999);
 
-    if (targetEvent) {
-      const id = targetEvent._id || targetEvent.id || targetEvent.slug || "";
-      if (id) {
-        navigate(`/booking/${id}`);
+        if (now >= bookingStart && now <= bookingEnd) {
+            const id = eventForBookingAvailable._id || eventForBookingAvailable.id || eventForBookingAvailable.slug || "";
+            if (id) {
+                navigate(`/booking/${id}`);
+                return;
+            }
+        } else {
+            const year = clickedDate.getFullYear();
+            const month = String(clickedDate.getMonth() + 1).padStart(2, "0");
+            const day = String(clickedDate.getDate()).padStart(2, "0");
+            const dateString = `${year}-${month}-${day}`;
+            navigate(`/events/${dateString}`);
+            setViewMode("list");
+        }
+    } else if (eventRangeMap.has(key)) {
+        const year = clickedDate.getFullYear();
+        const month = String(clickedDate.getMonth() + 1).padStart(2, "0");
+        const day = String(clickedDate.getDate()).padStart(2, "0");
+        const dateString = `${year}-${month}-${day}`;
+        navigate(`/events/${dateString}`);
         setViewMode("list");
-        return;
-      }
     }
-
-    navigate(`/events/${dateString}`);
-  };
+};
 
   const dailyEvents = date
     ? events.filter((e) => {
@@ -797,11 +775,7 @@ const EventsPage = () => {
     if (view === "month") {
       const key = date.toDateString();
       const classes = [];
-      if (startMap.has(key)) {
-        classes.push("highlight-start");
-      } else if (endMap.has(key)) {
-        classes.push("highlight-end");
-      } else if (bookingStartMap.has(key) || bookingEndMap.has(key) || bookingAvailableMap.has(key)) {
+      if (bookingAvailableMap.has(key)) {
         classes.push("booking-highlight");
       } else if (eventRangeMap.has(key)) {
         classes.push("event-range");
@@ -819,28 +793,16 @@ const EventsPage = () => {
     if (view === "month") {
       const key = date.toDateString();
       let event =
-        bookingStartMap.get(key) ||
-        startMap.get(key) ||
         bookingAvailableMap.get(key) ||
-        bookingEndMap.get(key) ||
-        endMap.get(key) ||
         eventRangeMap.get(key);
 
       if (!event) return null;
 
       let content = "";
-      if (bookingStartMap.has(key)) {
-        content = `Booking starts for ${event.name}`;
-      } else if (startMap.has(key)) {
-        content = `Event starts: ${event.name}`;
-      } else if (bookingAvailableMap.has(key)) {
+      if (bookingAvailableMap.has(key)) {
         const bs = event.bookingStartDate ? new Date(event.bookingStartDate).toLocaleDateString() : "";
         const be = event.bookingEndDate ? new Date(event.bookingEndDate).toLocaleDateString() : "";
         content = `Booking open for ${event.name} (${bs} — ${be})`;
-      } else if (bookingEndMap.has(key)) {
-        content = `Booking ends for ${event.name}`;
-      } else if (endMap.has(key)) {
-        content = `Event ends: ${event.name}`;
       } else if (eventRangeMap.has(key)) {
         content = `${event.name} (in progress)`;
       }
@@ -904,14 +866,6 @@ const EventsPage = () => {
 
         {viewMode === "calendar" && (
           <div className="events-legend">
-            <div className="legend-item">
-              <span className="legend-swatch" style={{ background: theme.primaryDark }} />
-              <span>Event Start</span>
-            </div>
-            <div className="legend-item">
-              <span className="legend-swatch" style={{ background: theme.primary }} />
-              <span>Event End</span>
-            </div>
             <div className="legend-item">
               <span className="legend-swatch" style={{ background: theme.booking }} />
               <span>Booking Dates</span>

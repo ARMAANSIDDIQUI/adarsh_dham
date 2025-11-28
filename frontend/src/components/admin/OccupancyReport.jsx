@@ -146,22 +146,20 @@ const OccupancyReport = () => {
         fetchDropdownData();
     }, []);
 
-    const handleFilterChange = (e) => {
+    const handleFilterChange = (e) => { // Renamed from handleDateChange
         const { name, value } = e.target;
-        
-        let filterValue = value;
-        if (name === 'gender') {
-            if (value === 'Boy') {
-                filterValue = 'male';
-            } else if (value === 'Girl') {
-                filterValue = 'female';
-            } else if (value) {
-                filterValue = value.toLowerCase();
-            }
+        const inputDate = new Date(value);
+
+        // Validate the date: Check if it's a valid date object
+        // and if the date value itself matches the input to catch roll-overs (e.g. Feb 30 -> Mar 2)
+        if (e.target.type === 'date' && (isNaN(inputDate.getTime()) || inputDate.toISOString().split('T')[0] !== value)) {
+            console.error(`Invalid date selected for ${name}: ${value}`);
+            // Optionally set an error state here to inform the user
+            // For now, we will just prevent updating the state with an invalid date.
+            return;
         }
-        
-        setFilters(prev => ({ ...prev, [name]: filterValue }));
-        setPagination(prev => ({ ...prev, currentPage: 1 }));
+
+        setFilters(prev => ({ ...prev, [name]: value })); // Changed setFilterDates to setFilters
     };
 
     const handlePageChange = (newPage) => {
@@ -178,17 +176,14 @@ const OccupancyReport = () => {
         }));
     };
 
-    const adjustedFilters = useMemo(() => {
-        const userSelectedDate = new Date(filters.startDate); 
-        const apiStartDate = new Date(userSelectedDate);
-        apiStartDate.setDate(apiStartDate.getDate() - 1);
-        
-        return {
-            ...filters,
-            startDate: formatDateForInput(apiStartDate),
-        };
-    }, [filters]);
-
+        const adjustedFilters = useMemo(() => {
+            // If no adjustments are needed for the API, then adjustedFilters can simply be filters.
+            // However, if other adjustments are required in the future,
+            // it's good to keep the structure. For now, we pass the original dates.
+            return {
+                ...filters
+            };
+        }, [filters]);
 
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-8 bg-neutral min-h-screen font-body">
@@ -241,13 +236,13 @@ const OccupancyReport = () => {
                     <SearchableSelect
                         options={[{ value: '', label: 'All Events' }, ...events.map(e => ({ value: e._id, label: e.name }))]}
                         value={filters.eventId}
-                        onChange={(e) => handleFilterChange({ target: { name: 'eventId', value: e.target.value } })}
+                        onChange={(e) => handleFilterChange(e)}
                         placeholder="All Events"
                     />
                      <SearchableSelect
                         options={[{ value: '', label: 'All Buildings' }, ...buildings.map(b => ({ value: b._id, label: b.name }))]}
                         value={filters.buildingId}
-                        onChange={(e) => handleFilterChange({ target: { name: 'buildingId', value: e.target.value } })}
+                        onChange={(e) => handleFilterChange(e)}
                         placeholder="All Buildings"
                     />
                     <select name="gender" value={filters.gender} onChange={handleFilterChange} className="p-2 border rounded-lg bg-white">

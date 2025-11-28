@@ -38,7 +38,14 @@ const EventCard = ({ event }) => {
     }
   };
 
-  const isBookingActive = new Date() >= new Date(event.bookingStartDate) && new Date() <= new Date(event.bookingEndDate);
+  const bookingStartAdjusted = new Date(event.bookingStartDate);
+  bookingStartAdjusted.setHours(0, 1, 0, 0); // Set to 00:01:00.000
+
+  const bookingEndAdjusted = new Date(event.bookingEndDate);
+  bookingEndAdjusted.setDate(bookingEndAdjusted.getDate() - 1); // Subtract one day
+  bookingEndAdjusted.setHours(23, 59, 59, 999); // Set to 23:59:59.999 of the adjusted day
+
+  const isBookingActive = new Date() >= bookingStartAdjusted && new Date() <= bookingEndAdjusted;
 
   // Base classes for the button
   const baseButtonClasses = "w-full py-3 text-white font-semibold rounded-lg shadow-soft transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-primary/50";

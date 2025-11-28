@@ -63,12 +63,56 @@ const OccupantDetailsModal = ({ isOpen, person, onClose }) => {
     );
 };
 
+// Helper function to format date objects as YYYY-MM-DD strings for input fields
+const formatDateForInput = (date) => date.toISOString().split('T')[0];
+
+/**
+ * Helper function to get the current date/month boundaries locked to IST (UTC + 5:30).
+ * This ensures the UI defaults to the correct calendar month (e.g., Oct 1st to Oct 31st).
+ */
+const getIstDateBoundaries = () => {
+    // Current date/time in IST
+    const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
+    const nowIst = new Date(new Date().getTime() + IST_OFFSET_MS);
+    
+    // Get year and month based on IST
+    const year = nowIst.getUTCFullYear();
+    const month = nowIst.getUTCMonth();
+    const day = nowIst.getUTCDate(); // Get day to set the selectedDate to the current day
+
+    // Today's Date (IST) -> Current day of the current month
+    // We create it as a UTC date to ensure correct formatting later
+    const today = new Date(Date.UTC(year, month, day));
+
+    return { today };
+};
+
+/**
+ * Helper function to get the last day of the month for a given date in YYYY-MM-DD format.
+ */
+const getMaxDateForMonth = (dateString) => {
+    let date = new Date(dateString);
+
+    // Fallback to today's date if the provided dateString is invalid
+    if (isNaN(date.getTime())) {
+        const { today } = getIstDateBoundaries();
+        date = today;
+    }
+
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const lastDay = new Date(year, month + 1, 0); // Day 0 of the next month is the last day of the current month
+    return formatDateForInput(lastDay);
+};
+
 const StructureView = () => {
     const [buildings, setBuildings] = useState([]);
     const [people, setPeople] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+    
+    const { today } = useMemo(getIstDateBoundaries, []);
+    const [selectedDate, setSelectedDate] = useState(formatDateForInput(today));
     const [modalData, setModalData] = useState({ isOpen: false, person: null });
     
     // STATES for filtering
@@ -154,7 +198,27 @@ const StructureView = () => {
                 {/* Date filter shifted slightly left */}
                 <div className="flex items-center space-x-4 mt-4 md:mt-0 mr-4">
                     <label htmlFor="date-picker" className="font-semibold text-gray-700">Date (IST):</label>
-                    <input type="date" id="date-picker" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} className="p-2 border rounded-lg shadow-sm" />
+                    <input
+                        type="date"
+                        id="date-picker"
+                        value={selectedDate}
+                        onChange={(e) => {
+                            const { value } = e.target;
+                            const inputDate = new Date(value);
+
+                            // Validate the date: Check if it's a valid date object
+                            // and if the date value itself matches the input to catch roll-overs (e.g. Nov 31 -> Dec 1)
+                            if (isNaN(inputDate.getTime()) || inputDate.toISOString().split('T')[0] !== value) {
+                                console.error(`Invalid date selected: ${value}`);
+                                // Prevent updating the state with an invalid date.
+                                return;
+                            }
+
+                            setSelectedDate(value);
+                        }}
+                        max={getMaxDateForMonth(selectedDate)}
+                        className="p-2 border rounded-lg shadow-sm"
+                    />
                 </div>
             </div>
 
