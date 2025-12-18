@@ -181,10 +181,19 @@ const setupPendingBookingCheckJob = () => {
   schedule.scheduleJob('*/30 * * * *', async () => {
     console.log('Running 30-minute check for pending bookings...');
     try {
-      const pendingCount = await Booking.countDocuments({ status: 'pending' });
+      // Find events that are NOT over (active events)
+      // An event is over if endDate < now. So active events have endDate >= now.
+      const activeEvents = await Event.find({ endDate: { $gte: new Date() } }).select('_id');
+      const activeEventIds = activeEvents.map(e => e._id);
+
+      // Count pending bookings for active events only
+      const pendingCount = await Booking.countDocuments({
+        status: 'pending',
+        eventId: { $in: activeEventIds }
+      });
 
       if (pendingCount > 0) {
-        console.log(`Found ${pendingCount} pending bookings. Notifying operators.`);
+        console.log(`Found ${pendingCount} pending bookings for active events. Notifying operators.`);
         
         // Find all users with the required roles
         const targetRoles = ['admin', 'super-admin', 'operator', 'super-operator'];
@@ -200,7 +209,7 @@ const setupPendingBookingCheckJob = () => {
           });
         }
       } else {
-        console.log('No pending bookings found.');
+        console.log('No pending bookings found for active events.');
       }
     } catch (error) {
       console.error('Error during pending booking check job:', error);

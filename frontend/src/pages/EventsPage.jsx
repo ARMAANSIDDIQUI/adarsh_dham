@@ -800,8 +800,8 @@ const EventsPage = () => {
 
       let content = "";
       if (bookingAvailableMap.has(key)) {
-        const bs = event.bookingStartDate ? new Date(event.bookingStartDate).toLocaleDateString() : "";
-        const be = event.bookingEndDate ? new Date(event.bookingEndDate).toLocaleDateString() : "";
+        const bs = event.bookingStartDate ? new Date(event.bookingStartDate).toLocaleDateString('en-GB') : "";
+        const be = event.bookingEndDate ? new Date(event.bookingEndDate).toLocaleDateString('en-GB') : "";
         content = `Booking open for ${event.name} (${bs} — ${be})`;
       } else if (eventRangeMap.has(key)) {
         content = `${event.name} (in progress)`;

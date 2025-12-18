@@ -3,7 +3,9 @@ import { motion } from 'framer-motion';
 import api from '../../api/api.js';
 import Button from '../common/Button.jsx';
 import { FaEdit, FaTrashAlt, FaPlus, FaSpinner } from 'react-icons/fa';
+import DynamicDateInput from '../common/DynamicDateInput.jsx';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel, confirmText, isAlert = false }) => {
     if (!isOpen) return null;
@@ -96,6 +98,7 @@ const ManageEvents = () => {
         const validationError = validateDates(newEvent);
         if (validationError) {
             setError(validationError);
+            toast.error(validationError);
             return;
         }
         try {
@@ -105,6 +108,7 @@ const ManageEvents = () => {
             navigate('/admin/manage-buildings');
         } catch {
             setError('Failed to add event.');
+            toast.error('Failed to add event.');
         }
     };
 
@@ -113,6 +117,7 @@ const ManageEvents = () => {
         const validationError = validateDates(editingEvent);
         if (validationError) {
             setError(validationError);
+            toast.error(validationError);
             return;
         }
         try {
@@ -121,6 +126,7 @@ const ManageEvents = () => {
             fetchEvents();
         } catch {
             setError('Failed to update event.');
+            toast.error('Failed to update event.');
         }
     };
 
@@ -189,21 +195,35 @@ const ManageEvents = () => {
                     <input type="text" placeholder="Event Name" value={newEvent.name} onChange={e => setNewEvent({ ...newEvent, name: e.target.value })} className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-500" required />
                     <input type="text" placeholder="Location" value={newEvent.location} onChange={e => setNewEvent({ ...newEvent, location: e.target.value })} className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-500" required />
                     <textarea placeholder="Description" value={newEvent.description} onChange={e => setNewEvent({ ...newEvent, description: e.target.value })} className="sm:col-span-2 px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-500" required />
-                    <div className="flex flex-col">
-                        <label className="text-sm font-medium text-gray-700">Start Date</label>
-                        <input type="date" value={newEvent.startDate} onChange={e => setNewEvent({ ...newEvent, startDate: e.target.value })} className="px-4 py-2 border border-gray-300 rounded-lg" required />
-                    </div>
-                    <div className="flex flex-col">
-                        <label className="text-sm font-medium text-gray-700">End Date</label>
-                        <input type="date" value={newEvent.endDate} onChange={e => setNewEvent({ ...newEvent, endDate: e.target.value })} className="px-4 py-2 border border-gray-300 rounded-lg" required />
-                    </div>
-                    <div className="flex flex-col">
-                        <label className="text-sm font-medium text-gray-700">Booking Start Date</label>
-                        <input type="date" value={newEvent.bookingStartDate} onChange={e => setNewEvent({ ...newEvent, bookingStartDate: e.target.value })} className="px-4 py-2 border border-gray-300 rounded-lg" required />
-                    </div>
-                    <div className="flex flex-col">
-                        <label className="text-sm font-medium text-gray-700">Booking End Date</label>
-                        <input type="date" value={newEvent.bookingEndDate} onChange={e => setNewEvent({ ...newEvent, bookingEndDate: e.target.value })} className="px-4 py-2 border border-gray-300 rounded-lg" required />
+                    <div className="col-span-1 sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <DynamicDateInput
+                            label="Start Date"
+                            name="startDate"
+                            value={newEvent.startDate}
+                            onChange={e => setNewEvent({ ...newEvent, startDate: e.target.value })}
+                            required
+                        />
+                        <DynamicDateInput
+                            label="End Date"
+                            name="endDate"
+                            value={newEvent.endDate}
+                            onChange={e => setNewEvent({ ...newEvent, endDate: e.target.value })}
+                            required
+                        />
+                        <DynamicDateInput
+                            label="Booking Start Date"
+                            name="bookingStartDate"
+                            value={newEvent.bookingStartDate}
+                            onChange={e => setNewEvent({ ...newEvent, bookingStartDate: e.target.value })}
+                            required
+                        />
+                        <DynamicDateInput
+                            label="Booking End Date"
+                            name="bookingEndDate"
+                            value={newEvent.bookingEndDate}
+                            onChange={e => setNewEvent({ ...newEvent, bookingEndDate: e.target.value })}
+                            required
+                        />
                     </div>
                     <div className="sm:col-span-2 pt-2">
                         <Button type="submit" className="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-2 rounded-lg shadow-md transition-colors">
@@ -234,27 +254,41 @@ const ManageEvents = () => {
 
             {editingEvent && (
                 <div className="fixed inset-0 bg-black bg-opacity-60 overflow-y-auto h-full w-full flex items-center justify-center z-[1000]">
-                    <motion.div initial={{scale: 0.9, opacity: 0}} animate={{scale: 1, opacity: 1}} className="relative p-6 bg-card w-full max-w-lg rounded-2xl shadow-soft m-4">
+                    <motion.div initial={{scale: 0.9, opacity: 0}} animate={{scale: 1, opacity: 1}} className="relative p-6 bg-card w-full max-w-4xl rounded-2xl shadow-soft m-4">
                         <h3 className="text-2xl font-bold font-heading text-primaryDark mb-4">Edit Event: {editingEvent.name}</h3>
                         <form onSubmit={handleUpdateEvent} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <input type="text" placeholder="Event Name" value={editingEvent.name} onChange={e => setEditingEvent({ ...editingEvent, name: e.target.value })} className="px-4 py-2 border border-gray-300 rounded-lg" required />
                             <input type="text" placeholder="Location" value={editingEvent.location} onChange={e => setEditingEvent({ ...editingEvent, location: e.target.value })} className="px-4 py-2 border border-gray-300 rounded-lg" required />
                             <textarea placeholder="Description" value={editingEvent.description} onChange={e => setEditingEvent({ ...editingEvent, description: e.target.value })} className="sm:col-span-2 px-4 py-2 border border-gray-300 rounded-lg" required />
-                            <div className="flex flex-col">
-                                <label className="text-sm font-medium text-gray-700">Start Date</label>
-                                <input type="date" value={editingEvent.startDate?.split('T')[0]} onChange={e => setEditingEvent({ ...editingEvent, startDate: e.target.value })} className="px-4 py-2 border border-gray-300 rounded-lg" required />
-                            </div>
-                            <div className="flex flex-col">
-                                <label className="text-sm font-medium text-gray-700">End Date</label>
-                                <input type="date" value={editingEvent.endDate?.split('T')[0]} onChange={e => setEditingEvent({ ...editingEvent, endDate: e.target.value })} className="px-4 py-2 border border-gray-300 rounded-lg" required />
-                            </div>
-                            <div className="flex flex-col">
-                                <label className="text-sm font-medium text-gray-700">Booking Start Date</label>
-                                <input type="date" value={editingEvent.bookingStartDate?.split('T')[0]} onChange={e => setEditingEvent({ ...editingEvent, bookingStartDate: e.target.value })} className="px-4 py-2 border border-gray-300 rounded-lg" required />
-                            </div>
-                            <div className="flex flex-col">
-                                <label className="text-sm font-medium text-gray-700">Booking End Date</label>
-                                <input type="date" value={editingEvent.bookingEndDate?.split('T')[0]} onChange={e => setEditingEvent({ ...editingEvent, bookingEndDate: e.target.value })} className="px-4 py-2 border border-gray-300 rounded-lg" required />
+                            <div className="col-span-1 sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <DynamicDateInput
+                                    label="Start Date"
+                                    name="startDate"
+                                    value={editingEvent.startDate?.split('T')[0]}
+                                    onChange={e => setEditingEvent({ ...editingEvent, startDate: e.target.value })}
+                                    required
+                                />
+                                <DynamicDateInput
+                                    label="End Date"
+                                    name="endDate"
+                                    value={editingEvent.endDate?.split('T')[0]}
+                                    onChange={e => setEditingEvent({ ...editingEvent, endDate: e.target.value })}
+                                    required
+                                />
+                                <DynamicDateInput
+                                    label="Booking Start Date"
+                                    name="bookingStartDate"
+                                    value={editingEvent.bookingStartDate?.split('T')[0]}
+                                    onChange={e => setEditingEvent({ ...editingEvent, bookingStartDate: e.target.value })}
+                                    required
+                                />
+                                <DynamicDateInput
+                                    label="Booking End Date"
+                                    name="bookingEndDate"
+                                    value={editingEvent.bookingEndDate?.split('T')[0]}
+                                    onChange={e => setEditingEvent({ ...editingEvent, bookingEndDate: e.target.value })}
+                                    required
+                                />
                             </div>
                             <div className="sm:col-span-2 flex justify-end space-x-3 pt-2">
                                 <Button type="submit" className="bg-pink-500 hover:bg-pink-600 text-white font-medium">Update Event</Button>

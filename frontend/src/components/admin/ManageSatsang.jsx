@@ -4,6 +4,7 @@ import { DateTime } from 'luxon';
 import api from '../../api/api.js'; 
 import Button from '../common/Button.jsx';
 import { FaEdit, FaTrashAlt, FaPlus, FaSpinner, FaLink, FaClock, FaYoutube } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 
 // Helper function to format ISO dates to IST for datetime-local input
 const formatDateTimeLocal = (isoString) => {
@@ -95,7 +96,9 @@ const ManageSatsang = () => {
         setError(null); 
         const processedUrl = extractSrcFromIframe(newLink.youtubeEmbedUrl);
         if (newLink.youtubeEmbedUrl && newLink.youtubeEmbedUrl.includes('<iframe') && !processedUrl) {
-            setError("Invalid iframe code. Could not find a valid 'src' URL inside the tag.");
+            const msg = "Invalid iframe code. Could not find a valid 'src' URL inside the tag.";
+            setError(msg);
+            toast.error(msg);
             return;
         }
 
@@ -111,8 +114,11 @@ const ManageSatsang = () => {
             await api.post('/satsang/live-links', linkToSubmit);
             setNewLink({ name: '', url: '', youtubeEmbedUrl: '', liveFrom: '', liveTo: '' }); 
             fetchLiveLinks();
+            toast.success("Live link added successfully");
         } catch (err) {
-            setError('Failed to add live link.');
+            const msg = 'Failed to add live link.';
+            setError(msg);
+            toast.error(msg);
         }
     };
 
@@ -121,7 +127,9 @@ const ManageSatsang = () => {
         setError(null);
         const processedUrl = extractSrcFromIframe(editingLink.youtubeEmbedUrl);
         if (editingLink.youtubeEmbedUrl && editingLink.youtubeEmbedUrl.includes('<iframe') && !processedUrl) {
-            setError("Invalid iframe code. Could not find a valid 'src' URL inside the tag.");
+            const msg = "Invalid iframe code. Could not find a valid 'src' URL inside the tag.";
+            setError(msg);
+            toast.error(msg);
             setEditingLink(null);
             return;
         }
@@ -138,8 +146,11 @@ const ManageSatsang = () => {
             await api.put(`/satsang/live-links/${editingLink._id}`, linkToSubmit);
             setEditingLink(null);
             fetchLiveLinks();
+            toast.success("Live link updated successfully");
         } catch (err) {
-            setError('Failed to update live link.');
+            const msg = 'Failed to update live link.';
+            setError(msg);
+            toast.error(msg);
         }
     };
 
@@ -157,16 +168,19 @@ const ManageSatsang = () => {
         try {
             await api.delete(`/satsang/live-links/${id}`);
             fetchLiveLinks();
+            toast.success("Live link deleted successfully");
         } catch (err) {
+            const msg = err.response?.data?.message || 'Failed to delete live link.';
             setModalData({
                 title: 'Deletion Failed',
-                message: err.response?.data?.message || 'Failed to delete live link.',
+                message: msg,
                 confirmText: 'Got It',
                 isAlert: true,
                 onConfirm: () => setIsModalOpen(false),
                 onCancel: () => setIsModalOpen(false),
             });
             setIsModalOpen(true);
+            toast.error(msg);
         }
     };
 

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../api/api.js';
 import Button from '../common/Button.jsx';
 import { FaTrashAlt, FaPlus, FaSpinner, FaBed, FaTimes, FaFilter, FaEdit, FaSave, FaSearch, FaChevronDown, FaUserCheck, FaMale, FaFemale, FaRestroom } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 
 const DeleteConfirmationModal = ({ item, type, isOpen, onClose, onDelete }) => {
     if (!isOpen) return null;
@@ -65,9 +66,12 @@ const EditBedModal = ({ isOpen, onClose, bed, onBedUpdated, rooms, buildings }) 
                 roomId: editedBed.roomId
             });
             onBedUpdated();
+            toast.success("Bed updated successfully");
             onClose();
         } catch (err) {
-            setError(err.response?.data?.message || 'Failed to update bed.');
+            const msg = err.response?.data?.message || 'Failed to update bed.';
+            setError(msg);
+            toast.error(msg);
         } finally {
             setLoading(false);
         }
@@ -255,8 +259,11 @@ const ManageBeds = () => {
             setAddBedBuildingSearch('');
             setAddBedRoomSearch('');
             await fetchAllData();
+            toast.success("Bed added successfully");
         } catch (err) {
-            setError(err.response?.data?.message || 'Failed to add bed.');
+            const msg = err.response?.data?.message || 'Failed to add bed.';
+            setError(msg);
+            toast.error(msg);
         }
     };
 
@@ -270,8 +277,11 @@ const ManageBeds = () => {
         try {
             await api.delete(`/beds/${bedToDelete._id}`);
             await fetchAllData();
+            toast.success("Bed deleted successfully");
         } catch (err) {
-            setError(err.response?.data?.message || 'Failed to delete bed.');
+            const msg = err.response?.data?.message || 'Failed to delete bed.';
+            setError(msg);
+            toast.error(msg);
         } finally {
             setBedToDelete(null);
             setIsDeleteModalOpen(false);

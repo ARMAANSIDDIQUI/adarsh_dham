@@ -3,6 +3,7 @@ import api from '../../api/api.js';
 import Button from '../common/Button.jsx';
 import { FaSpinner, FaLock, FaUser, FaCheck, FaTimes, FaKey, FaSearch, FaEye, FaEyeSlash } from 'react-icons/fa'; // FaEye and FaEyeSlash are now correctly imported
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'react-toastify';
 
 const PasswordModal = ({
     isOpen,
@@ -148,6 +149,7 @@ const AdminUserManagement = () => {
         e.preventDefault();
         if (passwordInput.length < 6) {
             setModalError('Password must be at least 6 characters.');
+            toast.error('Password must be at least 6 characters.');
             return;
         }
 
@@ -161,11 +163,14 @@ const AdminUserManagement = () => {
             });
 
             setGlobalMessage(`Password successfully changed for ${currentUser.name}.`);
+            toast.success(`Password successfully changed for ${currentUser.name}.`);
             handleCloseModal();
         
         } catch (err) {
-            setModalError(err.response?.data?.message || 'Failed to change password on server.');
+            const msg = err.response?.data?.message || 'Failed to change password on server.';
+            setModalError(msg);
             setIsModalLoading(false);
+            toast.error(msg);
         }
     };
 

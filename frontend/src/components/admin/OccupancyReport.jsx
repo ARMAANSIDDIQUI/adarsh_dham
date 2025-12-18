@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../api/api.js';
 import Button from '../common/Button.jsx';
 import { FaUsers, FaFilter, FaSearch, FaChevronDown } from 'react-icons/fa';
+import DynamicDateInput from '../common/DynamicDateInput.jsx';
 import AllocationsView from './AllocationsView';
 import Pagination from './Pagination';
 
@@ -223,15 +224,21 @@ const OccupancyReport = () => {
                             className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-pink-500 focus:border-pink-500"/>
                     </div>
                     
-                    <div className="flex items-center space-x-2 border border-background rounded-lg p-1 bg-white shadow-sm">
-                        <span className="text-sm font-medium text-gray-600">From:</span>
-                        <input type="date" name="startDate" value={filters.startDate} onChange={handleFilterChange} className="p-1 w-full focus:outline-none"/>
-                    </div>
+                    <DynamicDateInput
+                        label="From"
+                        name="startDate"
+                        value={filters.startDate}
+                        onChange={handleFilterChange}
+                        className="w-full"
+                    />
                     
-                    <div className="flex items-center space-x-2 border border-background rounded-lg p-1 bg-white shadow-sm">
-                        <span className="text-sm font-medium text-gray-600">To:</span>
-                        <input type="date" name="endDate" value={filters.endDate} onChange={handleFilterChange} className="p-1 w-full focus:outline-none"/>
-                    </div>
+                    <DynamicDateInput
+                        label="To"
+                        name="endDate"
+                        value={filters.endDate}
+                        onChange={handleFilterChange}
+                        className="w-full"
+                    />
                     
                     <SearchableSelect
                         options={[{ value: '', label: 'All Events' }, ...events.map(e => ({ value: e._id, label: e.name }))]}

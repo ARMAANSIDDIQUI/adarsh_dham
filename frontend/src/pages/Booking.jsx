@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import BookingForm from '../components/user/BookingForm';
 import api from '../api/api';
 import Button from '../components/common/Button'; // Import the themed Button
+import { toast } from 'react-toastify';
 
 const Booking = () => {
     const { eventId } = useParams();
@@ -25,6 +26,7 @@ const Booking = () => {
         try {
             await api.post('/bookings', { eventId, formData });
             setSuccess(true);
+            toast.success("Booking request submitted successfully!");
         } catch (err) {
             setError(err.response?.data?.message || 'Failed to submit booking request.');
         } finally {

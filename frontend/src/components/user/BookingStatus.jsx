@@ -93,10 +93,9 @@ const BookingStatus = ({ bookings, onDelete }) => {
                                 <span>{booking.status}</span>
                             </div>
                         </div>
-                        <span className="text-xs px-3 py-1 rounded-full bg-background/50 text-gray-700 shadow-inner">
-                            Requested: {new Date(booking.createdAt).toLocaleDateString()}
-                        </span>
-                    </div>
+                                        <span className="text-xs px-3 py-1 rounded-full bg-background/50 text-gray-700 shadow-inner">
+                                            Requested: {new Date(booking.createdAt).toLocaleDateString('en-GB')}
+                                        </span>                    </div>
 
                     {booking.status === 'approved' && (
                         <div className="mt-4 space-y-3 p-4 bg-card rounded-lg shadow-inner">

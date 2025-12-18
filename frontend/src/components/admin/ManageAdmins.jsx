@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import Button from '../common/Button.jsx';
 import { FaUsers, FaEdit, FaTrashAlt, FaKey, FaTimes, FaPlusCircle, FaEye, FaEyeSlash } from 'react-icons/fa';
 import api from '../../api/api.js';
+import { toast } from 'react-toastify';
 
 const roles = ['admin', 'super-operator', 'operator', 'satsang-operator'];
 
@@ -25,9 +26,12 @@ const AdminModal = ({ user, modalOpen, setModalOpen, fetchUsers, setError }) => 
     try {
       await api.put(`/admin/update-details/${user._id}`, updateForm);
       fetchUsers();
+      toast.success("Details updated successfully");
       setModalOpen(false);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to update user details.');
+      const msg = err.response?.data?.message || 'Failed to update user details.';
+      setError(msg);
+      toast.error(msg);
     }
   };
 
@@ -38,9 +42,12 @@ const AdminModal = ({ user, modalOpen, setModalOpen, fetchUsers, setError }) => 
       fetchUsers();
       setPasswordForm({ newPassword: '' });
       setShowPassword(false); // Reset visibility after submission
+      toast.success("Password changed successfully");
       setModalOpen(false);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to change password.');
+      const msg = err.response?.data?.message || 'Failed to change password.';
+      setError(msg);
+      toast.error(msg);
     }
   };
 
@@ -48,9 +55,12 @@ const AdminModal = ({ user, modalOpen, setModalOpen, fetchUsers, setError }) => 
     try {
       await api.delete(`/admin/delete-admin/${user._id}`);
       fetchUsers();
+      toast.success("User deleted successfully");
       setModalOpen(false);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to delete user.');
+      const msg = err.response?.data?.message || 'Failed to delete user.';
+      setError(msg);
+      toast.error(msg);
     }
   };
 
@@ -188,8 +198,10 @@ const ManageAdmins = () => {
         u._id === userId ? { ...u, roles: hasRole ? u.roles.filter(r => r !== role) : [...u.roles, role] } : u
       ));
       await api.post(`/admin/toggle-role/${userId}`, { role, hasRole: !hasRole });
+      toast.success("Role updated successfully");
     } catch (err) {
       setError('Failed to update user role. Reverting changes.');
+      toast.error('Failed to update user role. Reverting changes.');
       fetchUsers(); 
     }
   };
@@ -215,8 +227,11 @@ const ManageAdmins = () => {
       setNewAdminForm({ name: '', phone: '', password: '', roles: [] });
       setShowNewAdminPassword(false); // Reset visibility
       fetchUsers();
+      toast.success("Admin added successfully");
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to add admin.');
+      const msg = err.response?.data?.message || 'Failed to add admin.';
+      setError(msg);
+      toast.error(msg);
     }
   };
 

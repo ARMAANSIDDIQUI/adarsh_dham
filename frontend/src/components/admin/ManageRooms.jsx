@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../api/api.js';
 import Button from '../common/Button.jsx';
 import { FaEdit, FaTrashAlt, FaPlus, FaSpinner, FaTimes, FaSearch, FaChevronDown, FaMale, FaFemale, FaRestroom, FaDoorOpen, FaUsers } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 
 // Custom Modal Component for Delete Confirmation and Alerts
 const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel, confirmText, isAlert = false }) => {
@@ -200,8 +201,11 @@ const ManageRooms = () => {
             setNewRoomData({ roomNumber: '', buildingId: '', beds: [{ name: '', type: 'single' }] });
             setBuildingCreateSearch('');
             await fetchAllData();
+            toast.success("Room created successfully");
         } catch (err) {
-            setError(err.response?.data?.message || 'Failed to create room.');
+            const msg = err.response?.data?.message || 'Failed to create room.';
+            setError(msg);
+            toast.error(msg);
         }
     };
 
@@ -210,9 +214,12 @@ const ManageRooms = () => {
         try {
             await api.delete(`/rooms/${id}`);
             await fetchAllData();
+            toast.success("Room deleted successfully");
         } catch (err) {
-            setModalData({ title: 'Deletion Failed', message: err.response?.data?.message || 'Failed to delete room. It might have associated bookings.', confirmText: 'Got It', isAlert: true, onConfirm: () => setIsModalOpen(false) });
+            const msg = err.response?.data?.message || 'Failed to delete room. It might have associated bookings.';
+            setModalData({ title: 'Deletion Failed', message: msg, confirmText: 'Got It', isAlert: true, onConfirm: () => setIsModalOpen(false) });
             setIsModalOpen(true);
+            toast.error(msg);
         }
     };
 
@@ -228,8 +235,11 @@ const ManageRooms = () => {
             await api.put(`/rooms/${editingRoom._id}`, { roomNumber: editingRoom.roomNumber });
             setEditingRoom(null);
             await fetchAllData();
+            toast.success("Room updated successfully");
         } catch (err) {
-             setError(err.response?.data?.message || 'Failed to update room.');
+             const msg = err.response?.data?.message || 'Failed to update room.';
+             setError(msg);
+             toast.error(msg);
         }
     };
 

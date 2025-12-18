@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../api/api.js';
+import DynamicDateInput from '../common/DynamicDateInput.jsx';
 import Button from '../common/Button.jsx';
 import { FaCheck, FaTimes, FaSpinner, FaEdit, FaUserShield, FaFilter, FaFilePdf, FaInfoCircle, FaChevronDown, FaSearch } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 
 const datesOverlap = (startA, endA, startB, endB) => {
     if (!startA || !endA || !startB || !endB) return false;
@@ -212,7 +214,7 @@ const AccordionItem = ({ title, children }) => {
     );
 };
 
-const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, buildings, rooms, people, onShowRoomDetails, setError }) => {
+const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, buildings, rooms, people, onShowRoomDetails, setError, readOnly = false }) => {
     const { formData = {}, userId = {}, status, _id: bookingId, bookingNumber, allocations: savedAllocations, eventId = {} } = booking || {};
     const pendingAllocations = allocations?.[bookingId] || [];
     const safeSavedAllocations = Array.isArray(savedAllocations) ? savedAllocations : [];
@@ -375,7 +377,7 @@ const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, b
                 )}
             </div>
 
-            {status === 'pending' && (
+            {status === 'pending' && !readOnly && (
                 <div className="mt-4 pt-4 border-t border-gray-100">
                     <h5 className="font-bold mb-3 text-pink-600 flex items-center font-heading"><FaEdit className="mr-2" /> Allocate ({formData?.people?.length || 0} People)</h5>
                     <div className="space-y-4">
@@ -477,7 +479,9 @@ const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, b
                         ))}
                     </div>
                     <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mt-4">
-                        <Button onClick={() => onAction(bookingId, 'pending')} className="bg-pink-500 hover:bg-pink-600"><FaEdit className="inline mr-2" /> Edit Allocation</Button>
+                        {!readOnly && (
+                            <Button onClick={() => onAction(bookingId, 'pending')} className="bg-pink-500 hover:bg-pink-600"><FaEdit className="inline mr-2" /> Edit Allocation</Button>
+                        )}
                         <Button onClick={handleDownloadPdf} className="bg-blue-500 hover:bg-blue-600"><FaFilePdf className="inline mr-2" /> Download Pass</Button>
                     </div>
                 </div>
@@ -486,14 +490,16 @@ const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, b
             {status === 'declined' && (
                 <div className="mt-4 pt-4 border-t border-gray-100">
                     <div className="text-sm text-gray-600 italic mb-4">This booking was declined. You can reconsider it.</div>
-                    <Button onClick={() => onAction(bookingId, 'pending')} className="w-full sm:w-auto bg-pink-500 hover:bg-pink-600 text-white font-medium rounded-lg"><FaEdit className="inline mr-2" /> Reconsider</Button>
+                    {!readOnly && (
+                        <Button onClick={() => onAction(bookingId, 'pending')} className="w-full sm:w-auto bg-pink-500 hover:bg-pink-600 text-white font-medium rounded-lg"><FaEdit className="inline mr-2" /> Reconsider</Button>
+                    )}
                 </div>
             )}
         </div>
     );
 };
 
-const BookingSection = ({ title, color = 'pink', bookings, ...props }) => {
+const BookingSection = ({ title, color = 'pink', bookings, readOnly, ...props }) => {
     const safeBookings = Array.isArray(bookings) ? bookings : [];
     const colorMap = {
         pink: { border: 'border-pink-500', text: 'text-pink-700' },
@@ -510,7 +516,7 @@ const BookingSection = ({ title, color = 'pink', bookings, ...props }) => {
             {safeBookings.length === 0 ? (
                 <p className="text-gray-600 italic">No {title.toLowerCase()} bookings.</p>
             ) : (
-                safeBookings.map((booking) => <BookingCard key={booking._id} booking={booking} {...props} />)
+                safeBookings.map((booking) => <BookingCard key={booking._id} booking={booking} readOnly={readOnly} {...props} />)
             )}
         </div>
     );
@@ -577,6 +583,7 @@ const ManageAllocations = () => {
                 return b;
             }));
             await api.put(`/bookings/${bookingId}/status`, { status: action, allocations: allocationData });
+            toast.success(`Booking ${action} successfully`);
             setAllocations(prev => {
                 const newAlloc = { ...(prev || {}) };
                 delete newAlloc[bookingId];
@@ -584,7 +591,9 @@ const ManageAllocations = () => {
             });
             await fetchAllData();
         } catch (err) {
-            setError(err?.response?.data?.message || `Failed to perform action: ${action}. Please reload.`);
+            const msg = err?.response?.data?.message || `Failed to perform action: ${action}. Please reload.`;
+            setError(msg);
+            toast.error(msg);
             console.error(err);
             await fetchAllData();
         }
@@ -626,17 +635,20 @@ const ManageAllocations = () => {
 
     const filteredBookings = useMemo(() => {
         const today = new Date();
-        today.setHours(23, 59, 59, 999); // End of today
+        today.setHours(0, 0, 0, 0); // Start of today
 
         return (bookings || []).filter(b => {
-            const stayToDate = b.formData?.stayTo ? new Date(b.formData.stayTo) : null;
+            // Use Event End Date if available (priority), otherwise fallback to Stay To date
+            const relevantEndDate = b.eventId?.endDate 
+                ? new Date(b.eventId.endDate) 
+                : (b.formData?.stayTo ? new Date(b.formData.stayTo) : null);
 
             if (showOldAllocations) {
-                // Show old allocations: stayToDate must be in the past.
-                if (!stayToDate || stayToDate >= today) return false;
+                // Show old allocations: relevantEndDate must be strictly before today
+                if (!relevantEndDate || relevantEndDate >= today) return false;
             } else {
-                // Show current allocations: stayToDate should be today or in the future.
-                if (stayToDate && stayToDate < today) return false;
+                // Show current allocations: relevantEndDate should be today or in the future
+                if (relevantEndDate && relevantEndDate < today) return false;
             }
 
             const { userName, email, phone, memberName, event, bookingDate, stayFrom, stayTo } = filters;
@@ -676,18 +688,27 @@ const ManageAllocations = () => {
                     <input type="text" placeholder="Phone" value={filters.phone} onChange={(e) => setFilters({ ...filters, phone: e.target.value })} className="p-2 border rounded-lg w-full" />
                     <input type="text" placeholder="Member Name" value={filters.memberName} onChange={(e) => setFilters({ ...filters, memberName: e.target.value })} className="p-2 border rounded-lg w-full" />
                     <input type="text" placeholder="Event" value={filters.event} onChange={(e) => setFilters({ ...filters, event: e.target.value })} className="p-2 border rounded-lg w-full" />
-                    <div>
-                        <label className="text-xs text-gray-500">Date of Booking</label>
-                        <input type="date" value={filters.bookingDate} onChange={(e) => setFilters({ ...filters, bookingDate: e.target.value })} className="p-2 border rounded-lg w-full" />
-                    </div>
-                    <div>
-                        <label className="text-xs text-gray-500">Stay From</label>
-                        <input type="date" value={filters.stayFrom} onChange={(e) => setFilters({ ...filters, stayFrom: e.target.value })} className="p-2 border rounded-lg w-full" />
-                    </div>
-                    <div>
-                        <label className="text-xs text-gray-500">Stay To</label>
-                        <input type="date" value={filters.stayTo} onChange={(e) => setFilters({ ...filters, stayTo: e.target.value })} className="p-2 border rounded-lg w-full" />
-                    </div>
+                    <DynamicDateInput
+                        label="Date of Booking"
+                        name="bookingDate"
+                        value={filters.bookingDate}
+                        onChange={(e) => setFilters({ ...filters, bookingDate: e.target.value })}
+                        className="w-full"
+                    />
+                    <DynamicDateInput
+                        label="Stay From"
+                        name="stayFrom"
+                        value={filters.stayFrom}
+                        onChange={(e) => setFilters({ ...filters, stayFrom: e.target.value })}
+                        className="w-full"
+                    />
+                    <DynamicDateInput
+                        label="Stay To"
+                        name="stayTo"
+                        value={filters.stayTo}
+                        onChange={(e) => setFilters({ ...filters, stayTo: e.target.value })}
+                        className="w-full"
+                    />
                 </div>
                 <div className="mt-4 flex flex-wrap items-center gap-4">
                     <Button onClick={() => setFilters({ userName: '', email: '', phone: '', memberName: '', event: '', bookingDate: '', stayFrom: '', stayTo: '' })} className="bg-gray-500 text-white">Clear Filters</Button>
@@ -701,9 +722,9 @@ const ManageAllocations = () => {
             {error && <p className="text-red-600 bg-red-100 p-3 rounded-md mb-6">{error}</p>}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <BookingSection title="Pending" color="pink" bookings={pendingBookings} onAction={handleAction} allocations={allocations} handleAllocationChange={handleAllocationChange} buildings={buildings} rooms={rooms} people={people} onShowRoomDetails={handleShowRoomDetails} setError={setError} />
-                <BookingSection title="Approved" color="emerald" bookings={approvedBookings} onAction={handleAction} allocations={allocations} handleAllocationChange={handleAllocationChange} buildings={buildings} rooms={rooms} people={people} onShowRoomDetails={handleShowRoomDetails} setError={setError} />
-                <BookingSection title="Declined" color="rose" bookings={declinedBookings} onAction={handleAction} allocations={allocations} handleAllocationChange={handleAllocationChange} buildings={buildings} rooms={rooms} people={people} onShowRoomDetails={handleShowRoomDetails} setError={setError} />
+                <BookingSection title="Pending" color="pink" bookings={pendingBookings} onAction={handleAction} allocations={allocations} handleAllocationChange={handleAllocationChange} buildings={buildings} rooms={rooms} people={people} onShowRoomDetails={handleShowRoomDetails} setError={setError} readOnly={showOldAllocations} />
+                <BookingSection title="Approved" color="emerald" bookings={approvedBookings} onAction={handleAction} allocations={allocations} handleAllocationChange={handleAllocationChange} buildings={buildings} rooms={rooms} people={people} onShowRoomDetails={handleShowRoomDetails} setError={setError} readOnly={showOldAllocations} />
+                <BookingSection title="Declined" color="rose" bookings={declinedBookings} onAction={handleAction} allocations={allocations} handleAllocationChange={handleAllocationChange} buildings={buildings} rooms={rooms} people={people} onShowRoomDetails={handleShowRoomDetails} setError={setError} readOnly={showOldAllocations} />
             </div>
 
             <RoomOccupantsModal

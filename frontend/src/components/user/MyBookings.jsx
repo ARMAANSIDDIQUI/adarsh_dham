@@ -5,6 +5,7 @@ import { FaSpinner, FaTrash, FaFilePdf, FaBed, FaBuilding, FaDoorOpen, FaTimesCi
 import Button from '../../components/common/Button.jsx';
 import { Link, useNavigate } from 'react-router-dom';
 import EditBookingModal from './EditBookingModal.jsx';
+import { toast } from 'react-toastify';
 
 
 const BookingCard = ({ booking, onEdit, onDelete, onDownloadPdf, navigateToEvent }) => {
@@ -72,7 +73,7 @@ const BookingCard = ({ booking, onEdit, onDelete, onDownloadPdf, navigateToEvent
                         <FaFilePdf className="inline mr-1" /> Download Pass
                     </Button>
                 )}
-                {(booking.status === 'pending' || booking.status === 'approved') && (
+                {(booking.status === 'pending' || booking.status === 'approved') && new Date(booking.eventId?.bookingEndDate) >= new Date() && (
                     <Button onClick={() => onEdit(booking)} className="w-full sm:w-auto bg-blue-500 hover:bg-blue-600 text-white text-sm py-2"> {/* Changed to blue for edit */}
                         <FaEdit className="inline mr-1" /> Edit
                     </Button>
@@ -89,7 +90,6 @@ const MyBookings = () => {
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [message, setMessage] = useState(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedBooking, setSelectedBooking] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
@@ -115,9 +115,10 @@ const MyBookings = () => {
             try {
                 await api.delete(`/bookings/delete/${bookingId}`);
                 fetchMyBookings();
-                setMessage({ type: 'success', text: 'Booking withdrawn successfully.' });
+                toast.success('Booking withdrawn successfully.');
             } catch (err) {
-                setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to withdraw booking.' });
+                const msg = err.response?.data?.message || 'Failed to withdraw booking.';
+                toast.error(msg);
             }
         }
     };
@@ -130,7 +131,7 @@ const MyBookings = () => {
     const handleUpdateSuccess = () => {
         setIsEditModalOpen(false);
         setSelectedBooking(null);
-        setMessage({ type: 'success', text: 'Booking updated and is now pending re-approval.' });
+        toast.success('Booking updated and is now pending re-approval.');
         fetchMyBookings();
     };
 
@@ -182,17 +183,6 @@ const MyBookings = () => {
                     onChange={e => setSearchQuery(e.target.value)}
                     className="w-full p-3 mb-6 border border-background rounded-lg focus:ring-primary focus:border-primary transition-colors"
                 />
-
-                {message && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className={`my-4 p-3 rounded-xl text-center font-medium shadow-soft cursor-pointer ${message.type === 'success' ? 'bg-accent/10 text-accent border border-accent/20' : 'bg-highlight/10 text-highlight border border-highlight/20'}`}
-                        onClick={() => setMessage(null)}
-                    >
-                        {message.text}
-                    </motion.div>
-                )}
 
                 {['upcoming', 'ongoing', 'finished'].map(category => {
                     const filtered = categorizedBookings[category].filter(b =>

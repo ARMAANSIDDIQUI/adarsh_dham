@@ -4,7 +4,7 @@ import { FaTimes, FaCalendarAlt, FaUserFriends, FaBed } from 'react-icons/fa';
 const BookingDetailsModal = ({ booking, onClose }) => {
     if (!booking) return null;
 
-    const formatDate = (dateString) => new Date(dateString).toLocaleDateString();
+    const formatDate = (dateString) => new Date(dateString).toLocaleDateString('en-GB');
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4 font-body">

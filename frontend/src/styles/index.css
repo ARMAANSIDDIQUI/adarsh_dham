@@ -2,8 +2,96 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@layer base {
+  body {
+    font-family: 'Poppins', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    @apply bg-neutral text-gray-800;
+  }
+}
+
+/* Universal Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #EEDAC5; /* card color */
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #E29C9C; /* primary color */
+  border-radius: 5px;
+  border: 2px solid #EEDAC5; /* Creates padding effect */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #f6339a; /* primaryDark color */
+}
+
+/* Firefox Scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #E29C9C #EEDAC5;
+}
+
+/* React Toastify Custom Theme */
+:root {
+  --toastify-color-light: #EEDAC5;
+  --toastify-color-dark: #121212;
+  --toastify-color-info: #3498db;
+  --toastify-color-success: #10B981; /* emerald-500 */
+  --toastify-color-warning: #f1c40f;
+  --toastify-color-error: #DB2777; /* pink-600/highlight */
+  --toastify-text-color-light: #4A4A4A;
+  --toastify-font-family: 'Poppins', sans-serif;
+}
+
+.Toastify__toast {
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.Toastify__toast--success {
+  background: #ECFDF5; /* emerald-50 */
+  border-left: 6px solid #10B981;
+  color: #065F46;
+}
+
+.Toastify__toast--error {
+  background: #FFF1F2; /* rose-50 */
+  border-left: 6px solid #DB2777; /* highlight */
+  color: #9F1239;
+}
+
+.Toastify__toast--info {
+  background: #EFF6FF; /* blue-50 */
+  border-left: 6px solid #3B82F6;
+  color: #1E40AF;
+}
+
+.Toastify__progress-bar {
+  height: 4px;
+}
+
+.Toastify__progress-bar--success {
+  background: #10B981;
+}
+
+.Toastify__progress-bar--error {
+  background: #DB2777;
+}
+
+.Toastify__close-button {
+  color: #777;
+  opacity: 0.7;
+}
+
+.Toastify__close-button:hover {
+  color: #000;
+  opacity: 1;
 }

@@ -283,6 +283,7 @@ import { motion } from 'framer-motion';
 import Button from '../common/Button.jsx';
 import { FaUserPlus, FaMapMarkerAlt, FaPhoneAlt, FaCalendarAlt, FaEnvelope, FaUniversity, FaUsers, FaPen, FaTimesCircle, FaSpinner } from 'react-icons/fa';
 import api from '../../api/api.js';
+import { toast } from 'react-toastify';
 
 const ThemedInput = ({ label, name, value, onChange, required, type = "text", icon, min, max, colSpan = "" }) => (
   <div className={colSpan}>
@@ -401,22 +402,40 @@ const EditBookingModal = ({ booking, onClose, onUpdate }) => {
     setError('');
 
     const total = formData.numMales + formData.numFemales + formData.numBoys + formData.numGirls;
-    if (total === 0) return setValidationError("You must have at least one person in the booking.");
+    if (total === 0) {
+      const msg = "You must have at least one person in the booking.";
+      setValidationError(msg);
+      toast.error(msg);
+      return;
+    }
 
     const invalid = formData.people.find(p => (p.gender === 'boy' || p.gender === 'girl') && parseInt(p.age, 10) > 16);
-    if (invalid) return setValidationError(`Age for ${invalid.name} (${invalid.gender}) is over 16.`);
+    if (invalid) {
+      const msg = `Age for ${invalid.name} (${invalid.gender}) is over 16.`;
+      setValidationError(msg);
+      toast.error(msg);
+      return;
+    }
 
     const fromDate = new Date(formData.stayFrom);
     const toDate = new Date(formData.stayTo);
-    if (fromDate > toDate) return setValidationError("Stay 'From' date cannot be after 'To' date.");
+    if (fromDate > toDate) {
+      const msg = "Stay 'From' date cannot be after 'To' date.";
+      setValidationError(msg);
+      toast.error(msg);
+      return;
+    }
 
     setSubmitLoading(true);
     try {
       const { numMales, numFemales, numBoys, numGirls, ...submissionData } = formData;
       await api.put(`/bookings/update/${booking._id}`, { formData: submissionData });
+      toast.success("Booking updated successfully!");
       onUpdate();
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to update booking.');
+      const msg = err.response?.data?.message || 'Failed to update booking.';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setSubmitLoading(false);
     }

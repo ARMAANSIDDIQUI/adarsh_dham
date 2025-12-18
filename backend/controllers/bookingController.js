@@ -549,7 +549,7 @@ exports.getBookings = async (req, res) => {
     try {
         const bookings = await Booking.find()
             .populate('userId', 'name')
-            .populate('eventId', 'name')
+            .populate('eventId', 'name startDate endDate bookingEndDate')
             .populate('allocations.buildingId', 'name')
             .populate('allocations.roomId', 'roomNumber capacity')
             .populate('allocations.bedId', 'name type capacity')
@@ -567,7 +567,7 @@ exports.getBookings = async (req, res) => {
 exports.getUserBookings = async (req, res) => {
     try {
         const bookings = await Booking.find({ userId: req.user.id })
-            .populate('eventId', 'name')
+            .populate('eventId', 'name startDate endDate bookingEndDate')
             .populate('allocations.buildingId', 'name')
             .populate('allocations.roomId', 'roomNumber')
             .populate('allocations.bedId', 'name type')

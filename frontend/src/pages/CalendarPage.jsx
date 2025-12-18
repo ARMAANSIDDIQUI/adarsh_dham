@@ -499,8 +499,8 @@ const CalendarPage = () => {
             const key = date.toDateString();
             if (bookingEventMap.has(key)) {
                 const event = bookingEventMap.get(key);
-                const bs = event.bookingStartDate ? new Date(event.bookingStartDate).toLocaleDateString() : '';
-                const be = event.bookingEndDate ? new Date(event.bookingEndDate).toLocaleDateString() : '';
+                const bs = event.bookingStartDate ? new Date(event.bookingStartDate).toLocaleDateString('en-GB') : '';
+                const be = event.bookingEndDate ? new Date(event.bookingEndDate).toLocaleDateString('en-GB') : '';
                 return (
                     <div
                         data-tooltip-id="event-tooltip"

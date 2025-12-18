@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Button from "../common/Button.jsx";
+import DynamicDateInput from "../common/DynamicDateInput.jsx";
 import {
   FaUserPlus,
   FaMapMarkerAlt,
@@ -12,6 +13,7 @@ import {
   FaPen,
 } from "react-icons/fa";
 import { useParams } from "react-router-dom";
+import { toast } from 'react-toastify';
 
 const ThemedInput = ({
   label,
@@ -223,22 +225,47 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
     e.preventDefault();
     setValidationError(null);
     const total = formData.numMales + formData.numFemales + formData.numBoys + formData.numGirls;
-    if (total === 0) return setValidationError("You must add at least one person.");
+    if (total === 0) {
+      const msg = "You must add at least one person.";
+      setValidationError(msg);
+      toast.error(msg);
+      return;
+    }
     const invalid = formData.people.find(
       p => (p.gender === "boy" || p.gender === "girl") && parseInt(p.age, 10) > 16
     );
-    if (invalid)
-      return setValidationError(`Age for ${invalid.name} (${invalid.gender}) is over 16.`);
-    if (!formData.baijiMahatmaJi || !formData.baijiContact)
-      return setValidationError("Baiji / Mahatma Ji's name and contact are mandatory.");
-    if (formData.contactNumber.length !== 10)
-      return setValidationError("Please enter a valid 10-digit contact number.");
-    if (formData.baijiContact.length !== 10)
-      return setValidationError("Please enter a valid 10-digit Baiji / Mahatma Ji contact number.");
+    if (invalid) {
+      const msg = `Age for ${invalid.name} (${invalid.gender}) is over 16.`;
+      setValidationError(msg);
+      toast.error(msg);
+      return;
+    }
+    if (!formData.baijiMahatmaJi || !formData.baijiContact) {
+      const msg = "Baiji / Mahatma Ji's name and contact are mandatory.";
+      setValidationError(msg);
+      toast.error(msg);
+      return;
+    }
+    if (formData.contactNumber.length !== 10) {
+      const msg = "Please enter a valid 10-digit contact number.";
+      setValidationError(msg);
+      toast.error(msg);
+      return;
+    }
+    if (formData.baijiContact.length !== 10) {
+      const msg = "Please enter a valid 10-digit Baiji / Mahatma Ji contact number.";
+      setValidationError(msg);
+      toast.error(msg);
+      return;
+    }
     const fromDate = new Date(formData.stayFrom);
     const toDate = new Date(formData.stayTo);
-    if (fromDate > toDate)
-      return setValidationError("Stay 'From' date cannot be after 'To' date.");
+    if (fromDate > toDate) {
+      const msg = "Stay 'From' date cannot be after 'To' date.";
+      setValidationError(msg);
+      toast.error(msg);
+      return;
+    }
     const { numMales, numFemales, numBoys, numGirls, ...data } = formData;
     onSubmit(data);
   };
@@ -285,13 +312,12 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <ThemedInput
+                <DynamicDateInput
                   label="From"
                   name="stayFrom"
                   value={formData.stayFrom}
                   onChange={handleChange}
                   required
-                  type="date"
                   icon={<FaCalendarAlt />}
                   min={minStayDate.toISOString().split("T")[0]}
                   max={maxStayDate.toISOString().split("T")[0]}
@@ -299,13 +325,12 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
                 <p className="text-sm text-gray-500 mt-1">Please note:  You may opt for stay from 5 days before the event begins.</p>
               </div>
               <div>
-                <ThemedInput
+                <DynamicDateInput
                   label="To"
                   name="stayTo"
                   value={formData.stayTo}
                   onChange={handleChange}
                   required
-                  type="date"
                   icon={<FaCalendarAlt />}
                   min={formData.stayFrom || minStayDate.toISOString().split("T")[0]}
                   max={maxStayDate.toISOString().split("T")[0]}

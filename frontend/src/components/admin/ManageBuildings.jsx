@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import api from '../../api/api.js';
 import Button from '../common/Button.jsx';
 import { FaEdit, FaTrashAlt, FaPlus, FaSpinner, FaBuilding, FaTimes, FaBed, FaUserCheck, FaUserMinus, FaSearch } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 
 const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel, confirmText, isAlert = false }) => {
     if (!isOpen) return null;
@@ -85,8 +86,11 @@ const ManageBuildings = () => {
             await api.post('/buildings', newBuilding);
             setNewBuilding({ name: '', gender: '' });
             fetchBuildings();
+            toast.success("Building added successfully");
         } catch (err) {
-            setError(err.response?.data?.message || 'Failed to add building.');
+            const msg = err.response?.data?.message || 'Failed to add building.';
+            setError(msg);
+            toast.error(msg);
         }
     };
 
@@ -96,8 +100,11 @@ const ManageBuildings = () => {
             await api.put(`/buildings/${editingBuilding._id}`, { name: editingBuilding.name, gender: editingBuilding.gender });
             setEditingBuilding(null);
             fetchBuildings();
+            toast.success("Building updated successfully");
         } catch (err) {
-            setError(err.response?.data?.message || 'Failed to update building.');
+            const msg = err.response?.data?.message || 'Failed to update building.';
+            setError(msg);
+            toast.error(msg);
         }
     };
 
@@ -106,15 +113,18 @@ const ManageBuildings = () => {
         try {
             await api.delete(`/buildings/${id}`);
             fetchBuildings();
+            toast.success("Building deleted successfully");
         } catch (err) {
+            const msg = err.response?.data?.message || 'Could not delete building. Ensure it has no occupants.';
             setModalData({
                 title: 'Deletion Failed',
-                message: err.response?.data?.message || 'Could not delete building. Ensure it has no occupants.',
+                message: msg,
                 confirmText: 'Got It',
                 isAlert: true,
                 onConfirm: () => setIsModalOpen(false),
             });
             setIsModalOpen(true);
+            toast.error(msg);
         }
     };
 
