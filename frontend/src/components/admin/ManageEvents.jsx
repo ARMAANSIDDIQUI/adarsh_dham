@@ -58,7 +58,7 @@ const EventTable = ({ events, handleEdit, handleDelete }) => (
 const ManageEvents = () => {
     const navigate = useNavigate();
     const [events, setEvents] = useState([]);
-    const [newEvent, setNewEvent] = useState({ name: '', description: '', location: '', startDate: '', endDate: '', bookingStartDate: '', bookingEndDate: '' });
+    const [newEvent, setNewEvent] = useState({ name: '', description: '', location: '', startDate: '', endDate: '', bookingStartDate: '', bookingEndDate: '', isBookingOpen: true, bookingClosedMessage: 'Bookings closed' });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [editingEvent, setEditingEvent] = useState(null);
@@ -103,7 +103,7 @@ const ManageEvents = () => {
         }
         try {
             await api.post('/events', newEvent);
-            setNewEvent({ name: '', description: '', location: '', startDate: '', endDate: '', bookingStartDate: '', bookingEndDate: '' });
+            setNewEvent({ name: '', description: '', location: '', startDate: '', endDate: '', bookingStartDate: '', bookingEndDate: '', isBookingOpen: true, bookingClosedMessage: 'Bookings closed' });
             fetchEvents();
             navigate('/admin/manage-buildings');
         } catch {
@@ -225,6 +225,26 @@ const ManageEvents = () => {
                             required
                         />
                     </div>
+                    <div className="col-span-1 sm:col-span-2 space-y-2 mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                            <input 
+                                type="checkbox" 
+                                checked={newEvent.isBookingOpen} 
+                                onChange={e => setNewEvent({ ...newEvent, isBookingOpen: e.target.checked })} 
+                                className="form-checkbox h-5 w-5 text-pink-500 rounded focus:ring-pink-500" 
+                            />
+                            <span className="text-gray-700 font-medium">Bookings Open</span>
+                        </label>
+                        {!newEvent.isBookingOpen && (
+                            <input 
+                                type="text" 
+                                placeholder="Message to display when booking is closed (e.g., 'Bookings Full')" 
+                                value={newEvent.bookingClosedMessage} 
+                                onChange={e => setNewEvent({ ...newEvent, bookingClosedMessage: e.target.value })} 
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-500 text-sm" 
+                            />
+                        )}
+                    </div>
                     <div className="sm:col-span-2 pt-2">
                         <Button type="submit" className="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-2 rounded-lg shadow-md transition-colors">
                             <FaPlus className="inline mr-2" /> Add Event
@@ -289,6 +309,30 @@ const ManageEvents = () => {
                                     onChange={e => setEditingEvent({ ...editingEvent, bookingEndDate: e.target.value })}
                                     required
                                 />
+                            </div>
+                            <div className="col-span-1 sm:col-span-2 space-y-2 mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                <label className="flex items-center space-x-2 cursor-pointer">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={editingEvent.isBookingOpen !== undefined ? editingEvent.isBookingOpen : true} 
+                                        onChange={e => setEditingEvent({ 
+                                            ...editingEvent, 
+                                            isBookingOpen: e.target.checked,
+                                            bookingClosedMessage: !e.target.checked && !editingEvent.bookingClosedMessage ? 'Bookings closed' : editingEvent.bookingClosedMessage 
+                                        })} 
+                                        className="form-checkbox h-5 w-5 text-pink-500 rounded focus:ring-pink-500" 
+                                    />
+                                    <span className="text-gray-700 font-medium">Bookings Open</span>
+                                </label>
+                                {!editingEvent.isBookingOpen && (
+                                    <input 
+                                        type="text" 
+                                        placeholder="Message to display when booking is closed" 
+                                        value={editingEvent.bookingClosedMessage || ''} 
+                                        onChange={e => setEditingEvent({ ...editingEvent, bookingClosedMessage: e.target.value })} 
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-500 text-sm" 
+                                    />
+                                )}
                             </div>
                             <div className="sm:col-span-2 flex justify-end space-x-3 pt-2">
                                 <Button type="submit" className="bg-pink-500 hover:bg-pink-600 text-white font-medium">Update Event</Button>

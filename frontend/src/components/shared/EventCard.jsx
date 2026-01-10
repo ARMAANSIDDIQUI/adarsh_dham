@@ -46,7 +46,12 @@ const EventCard = ({ event }) => {
   bookingEndAdjusted.setHours(23, 59, 59, 999); // Set to 23:59:59.999 of the adjusted day
 
   const now = new Date();
-  const isBookingActive = now >= bookingStartAdjusted && now <= bookingEndAdjusted;
+  
+  // Logic to determine booking status
+  const isManuallyClosed = event.isBookingOpen === false;
+  const isDateWindowActive = now >= bookingStartAdjusted && now <= bookingEndAdjusted;
+  
+  const isBookingActive = isDateWindowActive && !isManuallyClosed;
   const isBookingNotYetOpen = now < bookingStartAdjusted;
 
   // Base classes for the button
@@ -116,12 +121,26 @@ const EventCard = ({ event }) => {
           >
             Request Booking
           </button>
+        ) : isManuallyClosed ? (
+          <div className="w-full">
+            <button 
+              className={`${baseButtonClasses} ${inactiveClasses}`} 
+              disabled
+            >
+              Booking Closed
+            </button>
+            {event.bookingClosedMessage && (
+              <p className="text-red-500 text-sm mt-2 text-center font-medium bg-red-50 p-2 rounded border border-red-100">
+                {event.bookingClosedMessage}
+              </p>
+            )}
+          </div>
         ) : isBookingNotYetOpen ? (
           <button 
             className={`${baseButtonClasses} ${inactiveClasses}`} 
             disabled
           >
-            Booking Not Yet Open
+            Bookings not started yet
           </button>
         ) : (
           <button 

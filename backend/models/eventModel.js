@@ -26,6 +26,14 @@ const eventSchema = new Schema({
   bookingEndDate: {
     type: Date,
     required: true
+  },
+  isBookingOpen: {
+    type: Boolean,
+    default: true
+  },
+  bookingClosedMessage: {
+    type: String,
+    default: ""
   }
 }, { timestamps: true });
 
