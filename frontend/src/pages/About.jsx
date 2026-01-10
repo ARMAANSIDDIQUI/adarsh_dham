@@ -76,10 +76,17 @@ const RulesSection = () => {
                 </div>
               ))}
             </div>
-            <div className="mt-6 pt-4 border-t border-gray-100 text-center">
-                <p className="text-sm text-highlight font-bold uppercase tracking-wider flex items-center justify-center gap-2">
+            <div className="mt-6 pt-4 border-t border-gray-100 text-center flex justify-center">
+                <button 
+                  className="text-sm text-highlight font-bold uppercase tracking-wider flex items-center justify-center gap-2 border-2 border-highlight rounded-full px-6 py-2 transition-all duration-300 hover:bg-highlight hover:text-white hover:shadow-lg transform hover:-translate-y-1"
+                  onClick={(e) => {
+                    e.stopPropagation(); 
+                    setIsFlipped(!isFlipped);
+                  }}
+                >
+
                     Click to Read in English <span className="text-lg">↻</span>
-                </p>
+                </button>
             </div>
         </div>
 
@@ -102,10 +109,17 @@ const RulesSection = () => {
                 </div>
               ))}
             </div>
-            <div className="mt-6 pt-4 border-t border-gray-100 text-center">
-                <p className="text-sm text-highlight font-bold uppercase tracking-wider flex items-center justify-center gap-2">
+            <div className="mt-6 pt-4 border-t border-gray-100 text-center flex justify-center">
+                <button 
+                  className="text-sm text-highlight font-bold uppercase tracking-wider flex items-center justify-center gap-2 border-2 border-highlight rounded-full px-6 py-2 transition-all duration-300 hover:bg-highlight hover:text-white hover:shadow-lg transform hover:-translate-y-1"
+                  onClick={(e) => {
+                    e.stopPropagation(); 
+                    setIsFlipped(!isFlipped);
+                  }}
+                >
+
                     हिंदी में पढ़ने के लिए क्लिक करें <span className="text-lg">↻</span>
-                </p>
+                </button>
             </div>
         </div>
       </motion.div>
