@@ -11,41 +11,41 @@ const containerAnimation = {
 };
 
 const RULES_HINDI = [
-  "1. प्रातःकाल उठकर शौचादि से निवृत्त होने के उपरान्त भजनाभ्यास, आरती-पूजा नित्य नियमपूर्वक करना, तत्पश्चात् अपने सम्बन्धित सेवा कार्य में लगे रहना।",
-  "2. दोनों समय की आरती-पूजा में उपस्थित होना एवं प्रतिदिन 2 घंटे का भजनाभ्यास अनिवार्य एवं आवश्यक है।",
-  "3. अपनी इच्छाओं को नियन्त्रित रखना, सादा व शाकाहारी भोजन करना और सादा वस्त्र पहनना।",
-  "4. ब्रह्मचर्य पालन सबके लिए अनिवार्य है।",
-  "5. अपने चित्त में किसी के प्रति वैर-विरोध अथवा द्वेष को स्थान न देना, सद्भावना एवं नम्रतापूर्वक सबके साथ स्नेहपूर्ण व्यवहार करना।",
-  "6. वाद-विवाद तथा व्यर्थ बातों में समय नष्ट करने से परहेज करना, अवकाश के क्षणों में सन्तों की वाणियों का स्वाध्याय करना तथा सत्संग में व्यतीत करना।",
-  "7. अपने आचरण को पवित्र एवं शुद्ध रखना। असत्य-भाषण तथा अन्यान्य बुराइयों से दूर रहना।",
-  "8. प्रत्येक के साथ प्रेम और सभ्यता से व्यवहार करना।",
-  "9. समय का पूरा पूरा लाभ उठाना। सेवा, भजन-बन्दगी और सत्संग में दिल लगाना।",
-  "10. सच्चाई, सहनशीलता, सन्तुष्टि आदि गुणों को अपने अन्दर समाहित करने का प्रयत्न करना।",
-  "11. दूसरों के अवगुणों पर दृष्टि न रखते हुए अपने अवगुणों का सुधार करना।",
-  "12. भक्ति के नियमों व सिद्धान्तों को अपनाना तथा श्री आज्ञा में सदा तत्पर रहना।",
-  "13. श्री सद्गुरुदेव जी महाराज के श्री चरणों में अटल श्रद्धा, भक्ति और विश्वास रखते हुए सदैव सद्गुरु की पवित्र आज्ञा व श्री मौज में प्रसन्न रहना।",
-  "14. अपने लक्ष्य अर्थात् ‘जीवात्मा के कल्याण’ को हर समय याद रखना तथा क्रियात्मक जीवन बनाना।",
-  "15. हर समय प्रसन्नचित्त रहना, क्योंकि प्रसन्नचित्त व्यक्ति ही प्रत्येक कार्य में सफलता प्राप्त कर सकता है। यह प्रसन्नता तथा शान्ति केवल सच्चे नाम से तथा उपरलिखित नियमों का पालन करने से ही प्राप्त हो सकती है।",
-  "16. श्री दरबार के नियमों पर चल कर श्री दरबार की प्रबन्धक-समिति के निर्देश का पालन करना।"
+  { title: "1. दैनिक दिनचर्या", content: "प्रातःकाल उठकर शौचादि से निवृत्त होने के उपरान्त भजनाभ्यास, आरती-पूजा नित्य नियमपूर्वक करना, तत्पश्चात् अपने सम्बन्धित सेवा कार्य में लगे रहना।" },
+  { title: "2. आध्यात्मिक सहभागिता", content: "दोनों समय की आरती-पूजा में उपस्थित होना एवं प्रतिदिन 2 घंटे का भजनाभ्यास अनिवार्य एवं आवश्यक है।" },
+  { title: "3. जीवनशैली", content: "अपनी इच्छाओं को नियन्त्रित रखना, सादा व शाकाहारी भोजन करना और सादा वस्त्र पहनना।" },
+  { title: "4. संयम", content: "ब्रह्मचर्य पालन सबके लिए अनिवार्य है।" },
+  { title: "5. आंतरिक व्यवहार", content: "अपने चित्त में किसी के प्रति वैर-विरोध अथवा द्वेष को स्थान न देना, सद्भावना एवं नम्रतापूर्वक सबके साथ स्नेहपूर्ण व्यवहार करना।" },
+  { title: "6. समय का सदुपयोग", content: "वाद-विवाद तथा व्यर्थ बातों में समय नष्ट करने से परहेज करना, अवकाश के क्षणों में सन्तों की वाणियों का स्वाध्याय करना तथा सत्संग में व्यतीत करना।" },
+  { title: "7. चरित्र की पवित्रता", content: "अपने आचरण को पवित्र एवं शुद्ध रखना। असत्य-भाषण तथा अन्यान्य बुराइयों से दूर रहना।" },
+  { title: "8. सामाजिक व्यवहार", content: "प्रत्येक के साथ प्रेम और सभ्यता से व्यवहार करना।" },
+  { title: "9. कर्म और भक्ति", content: "समय का पूरा पूरा लाभ उठाना। सेवा, भजन-बन्दगी और सत्संग में दिल लगाना।" },
+  { title: "10. सद्गुण", content: "सच्चाई, सहनशीलता, सन्तुष्टि आदि गुणों को अपने अन्दर समाहित करने का प्रयत्न करना।" },
+  { title: "11. आत्म-सुधार", content: "दूसरों के अवगुणों पर दृष्टि न रखते हुए अपने अवगुणों का सुधार करना।" },
+  { title: "12. भक्ति के सिद्धांत", content: "भक्ति के नियमों व सिद्धान्तों को अपनाना तथा श्री आज्ञा में सदा तत्पर रहना।" },
+  { title: "13. गुरु-निष्ठा", content: "श्री सद्गुरुदेव जी महाराज के श्री चरणों में अटल श्रद्धा, भक्ति और विश्वास रखते हुए सदैव सद्गुरु की पवित्र आज्ञा व श्री मौज में प्रसन्न रहना।" },
+  { title: "14. जीवन का लक्ष्य", content: "अपने लक्ष्य अर्थात् ‘जीवात्मा के कल्याण’ को हर समय याद रखना तथा क्रियात्मक जीवन बनाना।" },
+  { title: "15. सकारात्मक दृष्टिकोण", content: "हर समय प्रसन्नचित्त रहना, क्योंकि प्रसन्नचित्त व्यक्ति ही प्रत्येक कार्य में सफलता प्राप्त कर सकता है। यह प्रसन्नता तथा शान्ति केवल सच्चे नाम से तथा उपरलिखित नियमों का पालन करने से ही प्राप्त हो सकती है।" },
+  { title: "16. प्रशासन एवं अनुशासन", content: "श्री दरबार के नियमों पर चल कर श्री दरबार की प्रबन्धक-समिति के निर्देश का पालन करना।" }
 ];
 
 const RULES_ENGLISH = [
-  "1. Morning Routine: After waking up and finishing morning ablutions, perform Bhajan-Abhyas and Aarti-Puja with regular discipline. Thereafter, engage yourself in your respective Seva (service) tasks.",
-  "2. Spiritual Participation: Attending Aarti-Puja at both times (morning and evening) and dedicating at least 2 hours daily to Bhajan-Abhyas is mandatory and essential.",
-  "3. Lifestyle: Keep your desires under control, consume simple vegetarian food, and wear simple, modest clothing.",
-  "4. Celibacy: Observance of Brahmacharya (celibacy) is compulsory for everyone.",
-  "5. Inner Conduct: Do not harbor animosity, opposition, or malice towards anyone. Behave with everyone with goodwill, humility, and affection.",
-  "6. Use of Time: Refrain from wasting time in arguments or vain talk. Spend your leisure hours studying the teachings of Saints (Swadhyaya) and participating in Satsang.",
-  "7. Purity of Character: Maintain a pure and clean character. Stay away from untruthfulness and other vices.",
-  "8. Social Behavior: Treat everyone with love, civility, and politeness.",
-  "9. Productivity: Make the best use of your time. Devote your heart to Seva (service), Bhajan-Bandagi (worship), and Satsang.",
-  "10. Virtues: Strive to cultivate virtues like truthfulness, tolerance, and contentment within yourself.",
-  "11. Self-Improvement: Instead of focusing on the flaws of others, focus on improving your own shortcomings.",
-  "12. Devotional Principles: Adopt the rules and principles of Bhakti and always remain ready to follow the \"Shri Agya\" (Divine Commands).",
-  "13. Faith in Guru: Maintain unwavering faith, devotion, and trust in the holy feet of Shri Sadgurudev Ji Maharaj, always remaining happy in his sacred commands and \"Shri Mauj\" (Divine Will).",
-  "14. Life Goal: Always remember your ultimate goal—the ‘welfare of the soul’—and lead a practical, purposeful life.",
-  "15. Positive Mindset: Always remain cheerful, as only a cheerful person can achieve success in every task. This happiness and peace can only be attained through the \"True Name\" and by following the above-mentioned rules.",
-  "16. Administration: Follow the rules of the \"Shri Darbar\" and comply with the instructions of the Management Committee of Shri Darbar."
+  { title: "1. Morning Routine", content: "After waking up and finishing morning ablutions, perform Bhajan-Abhyas and Aarti-Puja with regular discipline. Thereafter, engage yourself in your respective Seva (service) tasks." },
+  { title: "2. Spiritual Participation", content: "Attending Aarti-Puja at both times (morning and evening) and dedicating at least 2 hours daily to Bhajan-Abhyas is mandatory and essential." },
+  { title: "3. Lifestyle", content: "Keep your desires under control, consume simple vegetarian food, and wear simple, modest clothing." },
+  { title: "4. Celibacy", content: "Observance of Brahmacharya (celibacy) is compulsory for everyone." },
+  { title: "5. Inner Conduct", content: "Do not harbor animosity, opposition, or malice towards anyone. Behave with everyone with goodwill, humility, and affection." },
+  { title: "6. Use of Time", content: "Refrain from wasting time in arguments or vain talk. Spend your leisure hours studying the teachings of Saints (Swadhyaya) and participating in Satsang." },
+  { title: "7. Purity of Character", content: "Maintain a pure and clean character. Stay away from untruthfulness and other vices." },
+  { title: "8. Social Behavior", content: "Treat everyone with love, civility, and politeness." },
+  { title: "9. Productivity", content: "Make the best use of your time. Devote your heart to Seva (service), Bhajan-Bandagi (worship), and Satsang." },
+  { title: "10. Virtues", content: "Strive to cultivate virtues like truthfulness, tolerance, and contentment within yourself." },
+  { title: "11. Self-Improvement", content: "Instead of focusing on the flaws of others, focus on improving your own shortcomings." },
+  { title: "12. Devotional Principles", content: "Adopt the rules and principles of Bhakti and always remain ready to follow the \"Shri Agya\" (Divine Commands)." },
+  { title: "13. Faith in Guru", content: "Maintain unwavering faith, devotion, and trust in the holy feet of Shri Sadgurudev Ji Maharaj, always remaining happy in his sacred commands and \"Shri Mauj\" (Divine Will)." },
+  { title: "14. Life Goal", content: "Always remember your ultimate goal—the ‘welfare of the soul’—and lead a practical, purposeful life." },
+  { title: "15. Positive Mindset", content: "Always remain cheerful, as only a cheerful person can achieve success in every task. This happiness and peace can only be attained through the \"True Name\" and by following the above-mentioned rules." },
+  { title: "16. Administration", content: "Follow the rules of the \"Shri Darbar\" and comply with the instructions of the Management Committee of Shri Darbar." }
 ];
 
 const RulesSection = () => {
@@ -71,8 +71,9 @@ const RulesSection = () => {
             </p>
             <div className="space-y-4 overflow-y-auto flex-grow pr-2 custom-scrollbar">
               {RULES_HINDI.map((rule, index) => (
-                <div key={index} className="flex gap-2">
-                   <p className="text-lg leading-relaxed">{rule}</p>
+                <div key={index} className="flex flex-col gap-1 mb-3">
+                   <h3 className="text-lg font-bold text-highlight tracking-wide">{rule.title}</h3>
+                   <p className="text-lg leading-relaxed">{rule.content}</p>
                 </div>
               ))}
             </div>
@@ -103,9 +104,9 @@ const RulesSection = () => {
             </p>
             <div className="space-y-4 overflow-y-auto flex-grow pr-2 custom-scrollbar">
               {RULES_ENGLISH.map((rule, index) => (
-                <div key={index} className="flex gap-2">
-                    {/* Mimic list style for English too for consistency, or just text block */}
-                   <p className="text-lg leading-relaxed">{rule}</p>
+                <div key={index} className="flex flex-col gap-1 mb-3">
+                   <h3 className="text-lg font-bold text-highlight tracking-wide">{rule.title}</h3>
+                   <p className="text-lg leading-relaxed">{rule.content}</p>
                 </div>
               ))}
             </div>
