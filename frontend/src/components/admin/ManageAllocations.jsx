@@ -347,8 +347,9 @@ const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, b
 
             <div className="space-y-2 text-sm">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 mb-2">
-                    <p><strong>Stay:</strong> {formatDate(formData?.stayFrom)} to {formatDate(formData?.stayTo)}</p>
+                    <p><strong>Booked On:</strong> {formatDate(booking.createdAt)}</p>
                     <p><strong>Group:</strong> {(formData?.people?.length) || 0} People</p>
+                    <p className="col-span-full"><strong>Stay:</strong> {formatDate(formData?.stayFrom)} to {formatDate(formData?.stayTo)}</p>
                     <p className="col-span-full"><strong>Event:</strong> {booking.eventId?.name || 'N/A'}</p>
                 </div>
 
@@ -660,7 +661,9 @@ const ManageAllocations = () => {
                 if (!((b.formData?.people || []).some(p => String(p?.name || '').toLowerCase().includes(memberName.toLowerCase())))) return false;
             }
             if (bookingDate) {
-                const bookingCreated = b.createdAt ? new Date(b.createdAt).toISOString().slice(0, 10) : null;
+                if (!b.createdAt) return false;
+                const d = new Date(b.createdAt);
+                const bookingCreated = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
                 if (bookingCreated !== bookingDate) return false;
             }
             if (!datesRoughlyMatch(b.formData?.stayFrom, b.formData?.stayTo, stayFrom, stayTo)) return false;

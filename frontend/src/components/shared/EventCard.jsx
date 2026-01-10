@@ -45,7 +45,9 @@ const EventCard = ({ event }) => {
   bookingEndAdjusted.setDate(bookingEndAdjusted.getDate() - 1); // Subtract one day
   bookingEndAdjusted.setHours(23, 59, 59, 999); // Set to 23:59:59.999 of the adjusted day
 
-  const isBookingActive = new Date() >= bookingStartAdjusted && new Date() <= bookingEndAdjusted;
+  const now = new Date();
+  const isBookingActive = now >= bookingStartAdjusted && now <= bookingEndAdjusted;
+  const isBookingNotYetOpen = now < bookingStartAdjusted;
 
   // Base classes for the button
   const baseButtonClasses = "w-full py-3 text-white font-semibold rounded-lg shadow-soft transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-primary/50";
@@ -113,6 +115,13 @@ const EventCard = ({ event }) => {
             className={`${baseButtonClasses} ${activeClasses}`}
           >
             Request Booking
+          </button>
+        ) : isBookingNotYetOpen ? (
+          <button 
+            className={`${baseButtonClasses} ${inactiveClasses}`} 
+            disabled
+          >
+            Booking Not Yet Open
           </button>
         ) : (
           <button 
