@@ -40,58 +40,76 @@
 
 /* React Toastify Custom Theme */
 :root {
-  --toastify-color-light: #EEDAC5;
-  --toastify-color-dark: #121212;
-  --toastify-color-info: #3498db;
-  --toastify-color-success: #10B981; /* emerald-500 */
-  --toastify-color-warning: #f1c40f;
-  --toastify-color-error: #DB2777; /* pink-600/highlight */
+  --toastify-color-light: #EEDAC5; /* card */
   --toastify-text-color-light: #4A4A4A;
+  --toastify-color-success: #10B981;
+  --toastify-color-error: #DB2777; /* highlight */
+  --toastify-color-warning: #D4A373; /* accent */
+  --toastify-color-info: #3B82F6;
   --toastify-font-family: 'Poppins', sans-serif;
+  --toastify-toast-width: 380px;
 }
 
+/* Force override of the main toast container */
 .Toastify__toast {
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  background-color: #EEDAC5 !important; /* card color */
+  border-radius: 16px !important;
+  box-shadow: 0 10px 30px rgba(212,163,115,0.35) !important; /* Stronger accent shadow */
+  border: 1px solid rgba(226, 156, 156, 0.6) !important; /* primary color border */
+  padding: 12px 16px !important;
+  margin-bottom: 1rem !important;
+  color: #4A4A4A !important;
+  overflow: hidden !important;
 }
 
+.Toastify__toast-body {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: inherit;
+}
+
+/* Specific variants - keeping the background consistent or slightly tinted, but respecting the theme */
 .Toastify__toast--success {
-  background: #ECFDF5; /* emerald-50 */
-  border-left: 6px solid #10B981;
-  color: #065F46;
+  background-color: #EEDAC5 !important; /* Keep card background */
+  border-left: 8px solid #10B981 !important; /* Strong marker */
+  color: #065F46 !important;
 }
 
 .Toastify__toast--error {
-  background: #FFF1F2; /* rose-50 */
-  border-left: 6px solid #DB2777; /* highlight */
-  color: #9F1239;
+  background-color: #EEDAC5 !important; /* Keep card background */
+  border-left: 8px solid #DB2777 !important; /* Strong marker */
+  color: #9F1239 !important;
 }
 
 .Toastify__toast--info {
-  background: #EFF6FF; /* blue-50 */
-  border-left: 6px solid #3B82F6;
-  color: #1E40AF;
+  background-color: #EEDAC5 !important;
+  border-left: 8px solid #3B82F6 !important;
+  color: #1E40AF !important;
 }
 
+.Toastify__toast--warning {
+  background-color: #EEDAC5 !important;
+  border-left: 8px solid #D4A373 !important;
+  color: #78350f !important;
+}
+
+/* Progress bar adjustments */
 .Toastify__progress-bar {
-  height: 4px;
+  height: 4px !important;
+  border-radius: 0 0 16px 16px;
+  opacity: 0.8;
 }
 
-.Toastify__progress-bar--success {
-  background: #10B981;
-}
-
-.Toastify__progress-bar--error {
-  background: #DB2777;
-}
+.Toastify__progress-bar--success { background: #10B981 !important; }
+.Toastify__progress-bar--error { background: #DB2777 !important; }
+.Toastify__progress-bar--warning { background: #D4A373 !important; }
+.Toastify__progress-bar--info { background: #3B82F6 !important; }
 
 .Toastify__close-button {
-  color: #777;
-  opacity: 0.7;
+  color: #4A4A4A !important;
+  opacity: 0.6;
 }
 
 .Toastify__close-button:hover {
-  color: #000;
   opacity: 1;
 }
