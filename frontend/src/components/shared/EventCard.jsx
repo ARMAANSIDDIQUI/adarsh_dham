@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import Button from '../common/Button';
 import api from '../../api/api';
 import { FaMapMarkerAlt, FaCalendarAlt, FaTicketAlt, FaPlayCircle } from 'react-icons/fa';
 

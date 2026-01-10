@@ -451,8 +451,11 @@ const CalendarPage = () => {
             bookingStart.setHours(0, 0, 0, 0); 
             const bookingEnd = new Date(event.bookingEndDate);
             bookingEnd.setHours(23, 59, 59, 999);
-    
-            if (now >= bookingStart && now <= bookingEnd) {
+            
+            // Default to true if undefined, ensuring backward compatibility
+            const isBookingOpen = event.isBookingOpen !== false;
+
+            if (now >= bookingStart && now <= bookingEnd && isBookingOpen) {
                 const id = event._id || event.id || event.slug || '';
                 if (id) navigate(`/booking/${id}`);
                 return;

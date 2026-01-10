@@ -265,7 +265,10 @@ const EventsPage = () => {
         const bookingEnd = new Date(eventForBookingAvailable.bookingEndDate);
         bookingEnd.setHours(23, 59, 59, 999);
 
-        if (now >= bookingStart && now <= bookingEnd) {
+        // Default to true if undefined
+        const isBookingOpen = eventForBookingAvailable.isBookingOpen !== false;
+
+        if (now >= bookingStart && now <= bookingEnd && isBookingOpen) {
             const id = eventForBookingAvailable._id || eventForBookingAvailable.id || eventForBookingAvailable.slug || "";
             if (id) {
                 navigate(`/booking/${id}`);
