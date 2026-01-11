@@ -1,25 +1,36 @@
 {
   "short_name": "Adarsh Dham",
   "name": "Adarsh Dham - Ashram Management",
+  "description": "Adarsh Dham | Online Platform for Visitor Registration, Accommodation & Program Management",
   "icons": [
     {
-      "src": "VM401196.png",
+      "src": "/VM401196.png",
       "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "VM401196.png",
+      "src": "/VM401196.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "VM401196.png",
+      "src": "/VM401196.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/VM401196.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
-  "start_url": ".",
+  "start_url": "/",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#E29C9C",
+  "background_color": "#F5F5DC",
+  "orientation": "portrait"
 }
