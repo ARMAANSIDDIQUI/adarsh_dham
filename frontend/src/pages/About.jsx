@@ -1,8 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FaBookOpen, FaHandsHelping, FaLaptopCode } from 'react-icons/fa';
+import { FaBookOpen, FaHandsHelping } from 'react-icons/fa';
 import { GiLotus } from 'react-icons/gi';
-import { useSelector } from 'react-redux';
+import { useSelector } from 'react-redux'; // Import useSelector
 import { useTranslation } from '../hooks/useTranslation';
 
 const containerAnimation = {
@@ -116,77 +116,37 @@ const RULES_ENGLISH = [
 ];
 
 const RulesSection = () => {
-  const [isFlipped, setIsFlipped] = React.useState(false);
+  const { language } = useSelector((state) => state.ui); // Use language from Redux
+  const rules = language === 'hi' ? RULES_HINDI : RULES_ENGLISH;
+  const t = useTranslation();
 
   return (
-    <div className="flex justify-center my-12" style={{ perspective: "1500px" }}>
+    <div className="flex justify-center my-12">
       <motion.div
-        className="relative w-full max-w-7xl bg-card rounded-2xl shadow-soft cursor-pointer text-gray-700 border border-gray-100 grid"
-        onClick={() => setIsFlipped(!isFlipped)}
-        initial={false}
-        animate={{ rotateY: isFlipped ? 180 : 0 }}
-        transition={{ duration: 0.8, ease: "easeInOut" }}
-        style={{ transformStyle: "preserve-3d" }}
+        className="relative w-full max-w-7xl bg-card rounded-2xl shadow-soft cursor-default text-gray-700 border border-gray-100 grid" // Removed cursor-pointer and hover effect
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
       >
-        {/* Front (English - Default) */}
         <div 
           className="col-start-1 row-start-1 p-8 md:p-12 flex flex-col" 
-          style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
         >
             <h2 className="text-2xl md:text-4xl font-bold font-heading text-primaryDark mb-6 text-center leading-tight">
-              Guidelines & Rules for Devotees and Visitors of Shri Anandpur Satsang Ashram (Shri Adarsh Dham)
+              {t.about.rules.title}
             </h2>
-            <p className="mb-6 text-center font-medium text-lg text-primaryDark max-w-4xl mx-auto">
-              To preserve the divine tranquility and sacred vibration of the Ashram, we humbly request all our permanent residents and visitors to gracefully embrace the following guidelines:
+            <p className="mb-6 text-center font-medium text-lg text-primaryDark max-w-4xl mx-auto" style={language === 'hi' ? { fontFamily: 'serif' } : {}}>
+              {t.about.rules.intro}
             </p>
             <div className="space-y-6">
-              {RULES_ENGLISH.map((rule, index) => (
+              {rules.map((rule, index) => (
                 <div key={index} className="flex flex-col gap-1 pb-2 border-b border-gray-300/30 last:border-0">
-                   <h3 className="text-xl font-bold text-highlight tracking-wide">{rule.title}</h3>
-                   <p className="text-lg leading-relaxed text-gray-800">{rule.content}</p>
+                   <h3 className="text-xl font-bold text-highlight tracking-wide" style={language === 'hi' ? { fontFamily: 'serif' } : {}}>{rule.title}</h3>
+                   <p className="text-lg leading-relaxed text-gray-800" style={language === 'hi' ? { fontFamily: 'serif' } : {}}>{rule.content}</p>
                 </div>
               ))}
             </div>
-            <div className="mt-6 pt-4 border-t border-gray-200 text-center flex justify-center">
-                <button 
-                  className="text-base text-highlight font-bold uppercase tracking-wider flex items-center justify-center gap-2 border-2 border-highlight rounded-full px-8 py-3 transition-all duration-300 hover:bg-highlight hover:text-white hover:shadow-lg transform hover:-translate-y-1 "
-                  onClick={(e) => {
-                    e.stopPropagation(); 
-                    setIsFlipped(true);
-                  }}
-                >
-                    Click to Read in Hindi <span className="text-xl">↻</span>
-                </button>
-            </div>
-        </div>
-
-        {/* Back (Hindi) */}
-        <div className="col-start-1 row-start-1 p-8 md:p-12 flex flex-col" style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: "rotateY(180deg)" }}>
-            <h2 className="text-2xl md:text-4xl font-bold font-heading text-primaryDark mb-6 text-center leading-tight">
-              श्री आनंदपुर सत्संग आश्रम (श्री आदर्श धाम) के शरणागत स्थायी निवासियों और आगंतुकों के लिए दिशा-निर्देश एवं नियम
-            </h2>
-            <p className="mb-6 text-center font-medium text-lg text-primaryDark max-w-4xl mx-auto" style={{ fontFamily: 'serif' }}>
-              आश्रम की दिव्य शांति और पवित्र स्पंदन को बनाए रखने के लिए, हम अपने सभी स्थायी निवासियों और आगंतुकों से विनम्रतापूर्वक निम्नलिखित दिशा-निर्देशों को सहर्ष अपनाने का अनुरोध करते हैं:
-            </p>
-            <div className="space-y-6">
-              {RULES_HINDI.map((rule, index) => (
-                <div key={index} className="flex flex-col gap-1 pb-2 border-b border-gray-300/30 last:border-0">
-                   <h3 className="text-xl font-bold text-highlight tracking-wide" style={{ fontFamily: 'serif' }}>{rule.title}</h3>
-                   <p className="text-lg leading-loose text-gray-800" style={{ fontFamily: 'serif' }}>{rule.content}</p>
-                </div>
-              ))}
-            </div>
-            <div className="mt-6 pt-4 border-t border-gray-200 text-center flex justify-center">
-                <button 
-                  className="text-base text-highlight font-bold uppercase tracking-wider flex items-center justify-center gap-2 border-2 border-highlight rounded-full px-8 py-3 transition-all duration-300 hover:bg-highlight hover:text-white hover:shadow-lg transform hover:-translate-y-1 "
-                  onClick={(e) => {
-                    e.stopPropagation(); 
-                    setIsFlipped(false);
-                  }}
-                >
-                    अंग्रेजी में पढ़ने के लिए क्लिक करें <span className="text-xl">↻</span>
-                </button>
-            </div>
+            {/* Removed the button div completely */}
         </div>
       </motion.div>
     </div>
@@ -271,7 +231,7 @@ const About = () => {
           </div>
         </motion.div>
 
-        {/* --- Rules Section (Flippable) --- */}
+        {/* --- Rules Section --- */}
         <RulesSection />
 
       </main>
