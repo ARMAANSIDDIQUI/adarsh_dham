@@ -1,21 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import axios from "axios";
 import { useTranslation } from "../hooks/useTranslation";
 import {
   FaCalendarAlt,
   FaBuilding,
-  FaHeart,
   FaLandmark,
   FaBell,
-  FaOm,
   FaSpinner,
   FaYoutube,
   FaMapMarkerAlt,
   FaEnvelope,
   FaPhone,
+  FaTimes,
+  FaArrowRight
 } from "react-icons/fa";
 
 // --- Internal Footer Component ---
@@ -116,12 +116,82 @@ const Footer = () => {
   );
 };
 
+// --- Upcoming Event Modal ---
+const UpcomingEventModal = ({ isOpen, onClose, event }) => {
+  const navigate = useNavigate();
+  const t = useTranslation();
+
+  if (!isOpen || !event) return null;
+
+  const handleBookNow = () => {
+    onClose();
+    navigate(`/booking/${event._id || event.id}`);
+  };
+
+  const bs = event.bookingStartDate ? new Date(event.bookingStartDate).toLocaleDateString('en-GB') : "TBA";
+  const be = event.bookingEndDate ? new Date(event.bookingEndDate).toLocaleDateString('en-GB') : "TBA";
+  const start = new Date(event.startDate).toLocaleDateString('en-GB');
+  const end = new Date(event.endDate).toLocaleDateString('en-GB');
+
+  return (
+    <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4 backdrop-blur-sm">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        className="bg-card w-full max-w-lg rounded-2xl shadow-2xl border-4 border-primary overflow-hidden relative"
+      >
+        <button 
+          onClick={onClose}
+          className="absolute top-3 right-3 text-gray-500 hover:text-red-500 transition-colors p-1 bg-white/50 rounded-full"
+        >
+          <FaTimes size={20} />
+        </button>
+
+        <div className="bg-primary/10 p-6 text-center border-b border-primary/20">
+          <h3 className="text-sm font-bold text-highlight uppercase tracking-widest mb-1">{t.events?.nextEvent || "Upcoming Event"}</h3>
+          <h2 className="text-2xl md:text-3xl font-heading font-bold text-primaryDark">{event.name}</h2>
+        </div>
+
+        <div className="p-6 space-y-4">
+          <p className="text-gray-700 text-center text-sm md:text-base leading-relaxed">
+            {event.description}
+          </p>
+
+          <div className="grid grid-cols-2 gap-4 bg-background/30 p-4 rounded-xl">
+            <div className="text-center">
+              <p className="text-xs font-bold text-gray-500 uppercase">{t.events?.card?.dates || "Dates"}</p>
+              <p className="font-semibold text-primaryDark text-sm">{start} - {end}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-xs font-bold text-gray-500 uppercase">{t.events?.card?.bookingWindow || "Booking Open"}</p>
+              <p className="font-semibold text-primaryDark text-sm">{bs} - {be}</p>
+            </div>
+          </div>
+
+          <button 
+            onClick={handleBookNow}
+            className="w-full bg-highlight hover:bg-primaryDark text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 group"
+          >
+            <span>{t.events?.card?.requestBooking || "Book Now"}</span>
+            <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
 const Home = () => {
   const { isAuthenticated } = useSelector((state) => state.auth);
   const t = useTranslation();
   const [liveLinks, setLiveLinks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [imagesLoaded, setImagesLoaded] = useState(false);
+  
+  // Modal state
+  const [upcomingEvent, setUpcomingEvent] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Carousel state
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -176,24 +246,49 @@ const Home = () => {
     loadAllImages();
   }, []);
 
-  // Fetch live links
+  // Fetch live links AND Upcoming Event
   useEffect(() => {
-    const fetchLiveLinks = async () => {
+    const fetchData = async () => {
       try {
         const apiUrl = process.env.REACT_APP_API_BASE_URL || '';
-        const response = await axios.get(
-          `${apiUrl}/api/satsang/live-links/active`
-        );
-        setLiveLinks(response.data || []);
+        
+        // 1. Fetch Live Links
+        const liveRes = await axios.get(`${apiUrl}/api/satsang/live-links/active`);
+        setLiveLinks(liveRes.data || []);
+
+        // 2. Fetch Events for Modal
+        const eventsRes = await axios.get(`${apiUrl}/api/events`);
+        const allEvents = Array.isArray(eventsRes.data) ? eventsRes.data : [];
+        
+        const now = new Date();
+        const upcoming = allEvents
+          .filter(e => new Date(e.startDate) >= now || (new Date(e.startDate) <= now && new Date(e.endDate) >= now)) // Upcoming or Ongoing
+          .sort((a, b) => new Date(a.startDate) - new Date(b.startDate)); // Sort by nearest start date
+
+        if (upcoming.length > 0) {
+          setUpcomingEvent(upcoming[0]);
+          setIsModalOpen(true);
+        }
+
       } catch (error) {
-        console.error("Error fetching live links:", error);
+        console.error("Error fetching home data:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchLiveLinks();
-    const interval = setInterval(fetchLiveLinks, 60000);
+    fetchData();
+    // Refresh live links every minute
+    const interval = setInterval(() => {
+        const fetchLive = async () => {
+            try {
+                const apiUrl = process.env.REACT_APP_API_BASE_URL || '';
+                const liveRes = await axios.get(`${apiUrl}/api/satsang/live-links/active`);
+                setLiveLinks(liveRes.data || []);
+            } catch(e) { console.error(e); }
+        };
+        fetchLive();
+    }, 60000);
     return () => clearInterval(interval);
   }, []);
 
@@ -316,6 +411,17 @@ const Home = () => {
       className="min-h-screen bg-neutral font-body"
     >
       <LiveMarquee links={liveLinks} />
+
+      {/* Render the Modal if an event exists and modal is open */}
+      <AnimatePresence>
+        {isModalOpen && upcomingEvent && (
+          <UpcomingEventModal 
+            isOpen={isModalOpen} 
+            onClose={() => setIsModalOpen(false)} 
+            event={upcomingEvent} 
+          />
+        )}
+      </AnimatePresence>
 
       <section className="relative w-full h-[60vh] md:h-[70vh] overflow-hidden">
         <AnimatePresence custom={direction} initial={false}>
