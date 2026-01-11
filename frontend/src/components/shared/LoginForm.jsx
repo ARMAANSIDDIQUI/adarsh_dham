@@ -6,6 +6,7 @@ import Button from '../common/Button';
 import { motion } from 'framer-motion';
 import { FaLock, FaPhoneAlt, FaEye, FaEyeSlash } from 'react-icons/fa'; // FaEye and FaEyeSlash imported
 import api from '../../api/api';
+import { urlBase64ToUint8Array } from '../../utils/helpers';
 
 // Your VAPID Public Key for Web Push notifications
 const VAPID_PUBLIC_KEY = "BBtSN3ZjmBjiT-jODQkhdTKl2Sb9F-4F13B1ibE2ENbRIm6_UPgF8r-X-pUN7Hs_F2Bg_cGdCm4pDDmcgktH_Jg";
@@ -38,9 +39,10 @@ const LoginForm = () => {
             const existingSubscription = await registration.pushManager.getSubscription();
 
             if (!existingSubscription) {
+                const applicationServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
                 const subscription = await registration.pushManager.subscribe({
                     userVisibleOnly: true,
-                    applicationServerKey: VAPID_PUBLIC_KEY,
+                    applicationServerKey: applicationServerKey,
                 });
                 await api.post('/notifications/subscribe', subscription);
                 console.log('User subscribed to push notifications.');

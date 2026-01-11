@@ -1,21 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { FaBell, FaBellSlash, FaSpinner } from 'react-icons/fa';
 import api from '../../api/api';
+import { urlBase64ToUint8Array } from '../../utils/helpers';
 
 // Your VAPID Public Key
 const VAPID_PUBLIC_KEY = "BBtSN3ZjmBjiT-jODQkhdTKl2Sb9F-4F13B1ibE2ENbRIm6_UPgF8r-X-pUN7Hs_F2Bg_cGdCm4pDDmcgktH_Jg";
-
-// This helper function converts the VAPID key string into the format the browser needs.
-function urlBase64ToUint8Array(base64String) {
-  const padding = "=".repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-  const rawData = window.atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray;
-}
 
 const EnableNotificationsButton = () => {
   const [isSubscribed, setIsSubscribed] = useState(false);
