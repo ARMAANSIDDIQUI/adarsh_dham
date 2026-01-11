@@ -82,13 +82,13 @@ const RulesSection = () => {
             </div>
             <div className="mt-6 pt-4 border-t border-gray-200 text-center flex justify-center">
                 <button 
-                  className="text-base text-highlight font-bold uppercase tracking-wider flex items-center justify-center gap-2 border-2 border-highlight rounded-full px-8 py-3 transition-all duration-300 hover:bg-highlight hover:text-white hover:shadow-lg transform hover:-translate-y-1 bg-white"
+                  className="text-base text-highlight font-bold uppercase tracking-wider flex items-center justify-center gap-2 border-2 border-highlight rounded-full px-8 py-3 transition-all duration-300 hover:bg-highlight hover:text-white hover:shadow-lg transform hover:-translate-y-1 "
                   onClick={(e) => {
                     e.stopPropagation(); 
                     setIsFlipped(true);
                   }}
                 >
-                    हिंदी में पढ़ने के लिए क्लिक करें <span className="text-xl">↻</span>
+                    Click to Read in Hindi <span className="text-xl">↻</span>
                 </button>
             </div>
         </div>
@@ -111,13 +111,13 @@ const RulesSection = () => {
             </div>
             <div className="mt-6 pt-4 border-t border-gray-200 text-center flex justify-center">
                 <button 
-                  className="text-base text-highlight font-bold uppercase tracking-wider flex items-center justify-center gap-2 border-2 border-highlight rounded-full px-8 py-3 transition-all duration-300 hover:bg-highlight hover:text-white hover:shadow-lg transform hover:-translate-y-1 bg-white"
+                  className="text-base text-highlight font-bold uppercase tracking-wider flex items-center justify-center gap-2 border-2 border-highlight rounded-full px-8 py-3 transition-all duration-300 hover:bg-highlight hover:text-white hover:shadow-lg transform hover:-translate-y-1 "
                   onClick={(e) => {
                     e.stopPropagation(); 
                     setIsFlipped(false);
                   }}
                 >
-                    Click to Read in English <span className="text-xl">↻</span>
+                    अंग्रेजी में पढ़ने के लिए क्लिक करें <span className="text-xl">↻</span>
                 </button>
             </div>
         </div>
