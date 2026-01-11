@@ -66,6 +66,8 @@ exports.createAndSaveNotification = async ({ message, userIds = [], targetGroup,
             const payload = JSON.stringify({
                 title: "Adarsh Dham: New Update",
                 body: message,
+                icon: '/VM401196.png',
+                url: '/notifications'
             });
 
             const sendPromises = pushSubscriptions.map(sub => 
