@@ -30,96 +30,94 @@ const RULES_HINDI = [
 ];
 
 const RULES_ENGLISH = [
-  { title: "1. Morning Routine", content: "After waking up and finishing morning ablutions, perform Bhajan-Abhyas and Aarti-Puja with regular discipline. Thereafter, engage yourself in your respective Seva (service) tasks." },
-  { title: "2. Spiritual Participation", content: "Attending Aarti-Puja at both times (morning and evening) and dedicating at least 2 hours daily to Bhajan-Abhyas is mandatory and essential." },
-  { title: "3. Lifestyle", content: "Keep your desires under control, consume simple vegetarian food, and wear simple, modest clothing." },
-  { title: "4. Celibacy", content: "Observance of Brahmacharya (celibacy) is compulsory for everyone." },
-  { title: "5. Inner Conduct", content: "Do not harbor animosity, opposition, or malice towards anyone. Behave with everyone with goodwill, humility, and affection." },
-  { title: "6. Use of Time", content: "Refrain from wasting time in arguments or vain talk. Spend your leisure hours studying the teachings of Saints (Swadhyaya) and participating in Satsang." },
-  { title: "7. Purity of Character", content: "Maintain a pure and clean character. Stay away from untruthfulness and other vices." },
-  { title: "8. Social Behavior", content: "Treat everyone with love, civility, and politeness." },
-  { title: "9. Productivity", content: "Make the best use of your time. Devote your heart to Seva (service), Bhajan-Bandagi (worship), and Satsang." },
-  { title: "10. Virtues", content: "Strive to cultivate virtues like truthfulness, tolerance, and contentment within yourself." },
-  { title: "11. Self-Improvement", content: "Instead of focusing on the flaws of others, focus on improving your own shortcomings." },
-  { title: "12. Devotional Principles", content: "Adopt the rules and principles of Bhakti and always remain ready to follow the \"Shri Agya\" (Divine Commands)." },
-  { title: "13. Faith in Guru", content: "Maintain unwavering faith, devotion, and trust in the holy feet of Shri Sadgurudev Ji Maharaj, always remaining happy in his sacred commands and \"Shri Mauj\" (Divine Will)." },
-  { title: "14. Life Goal", content: "Always remember your ultimate goal—the ‘welfare of the soul’—and lead a practical, purposeful life." },
-  { title: "15. Positive Mindset", content: "Always remain cheerful, as only a cheerful person can achieve success in every task. This happiness and peace can only be attained through the \"True Name\" and by following the above-mentioned rules." },
-  { title: "16. Administration", content: "Follow the rules of the \"Shri Darbar\" and comply with the instructions of the Management Committee of Shri Darbar." }
+  { title: "1. Morning Routine:", content: "After waking up and finishing morning ablutions, perform Bhajan-Abhyas and Aarti-Puja with regular discipline. Thereafter, engage yourself in your respective Seva (service) tasks." },
+  { title: "2. Spiritual Participation:", content: "Attending Aarti-Puja at both times (morning and evening) and dedicating at least 2 hours daily to Bhajan-Abhyas is mandatory and essential." },
+  { title: "3. Lifestyle:", content: "Keep your desires under control, consume simple vegetarian food, and wear simple, modest clothing." },
+  { title: "4. Celibacy:", content: "Observance of Brahmacharya (celibacy) is compulsory for everyone." },
+  { title: "5. Inner Conduct:", content: "Do not harbor animosity, opposition, or malice towards anyone. Behave with everyone with goodwill, humility, and affection." },
+  { title: "6. Use of Time:", content: "Refrain from wasting time in arguments or vain talk. Spend your leisure hours studying the teachings of Saints (Swadhyaya) and participating in Satsang." },
+  { title: "7. Purity of Character:", content: "Maintain a pure and clean character. Stay away from untruthfulness and other vices." },
+  { title: "8. Social Behavior:", content: "Treat everyone with love, civility, and politeness." },
+  { title: "9. Productivity:", content: "Make the best use of your time. Devote your heart to Seva (service), Bhajan-Bandagi (worship), and Satsang." },
+  { title: "10. Virtues:", content: "Strive to cultivate virtues like truthfulness, tolerance, and contentment within yourself." },
+  { title: "11. Self-Improvement:", content: "Instead of focusing on the flaws of others, focus on improving your own shortcomings." },
+  { title: "12. Devotional Principles:", content: "Adopt the rules and principles of Bhakti and always remain ready to follow the \"Shri Agya\" (Divine Commands)." },
+  { title: "13. Faith in Guru:", content: "Maintain unwavering faith, devotion, and trust in the holy feet of Shri Sadgurudev Ji Maharaj, always remaining happy in his sacred commands and \"Shri Mauj\" (Divine Will)." },
+  { title: "14. Life Goal:", content: "Always remember your ultimate goal—the ‘welfare of the soul’—and lead a practical, purposeful life." },
+  { title: "15. Positive Mindset:", content: "Always remain cheerful, as only a cheerful person can achieve success in every task. This happiness and peace can only be attained through the \"True Name\" and by following the above-mentioned rules." },
+  { title: "16. Administration:", content: "Follow the rules of the \"Shri Darbar\" and comply with the instructions of the Management Committee of Shri Darbar." }
 ];
 
 const RulesSection = () => {
   const [isFlipped, setIsFlipped] = React.useState(false);
 
   return (
-    <div className="flex justify-center my-12" style={{ perspective: "1000px" }}>
+    <div className="flex justify-center my-12" style={{ perspective: "1500px" }}>
       <motion.div
-        className="relative w-full max-w-6xl bg-card rounded-2xl shadow-soft cursor-pointer text-gray-700 border border-gray-100"
+        className="relative w-full max-w-7xl bg-card rounded-2xl shadow-soft cursor-pointer text-gray-700 border border-gray-100"
         onClick={() => setIsFlipped(!isFlipped)}
         initial={false}
         animate={{ rotateY: isFlipped ? 180 : 0 }}
         transition={{ duration: 0.8, ease: "easeInOut" }}
-        style={{ transformStyle: "preserve-3d", minHeight: "1000px" }}
+        style={{ transformStyle: "preserve-3d", height: "1200px" }}
       >
-        {/* Front (Hindi) */}
-        <div className="absolute inset-0 p-8 md:p-12 flex flex-col" style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}>
-            <h2 className="text-2xl md:text-3xl font-bold font-heading text-primaryDark mb-6 text-center leading-tight">
-              श्री आनन्दपुर सत्संग आश्रम के शरणागत स्थायी निवासियों व प्रवासियों के लिए नियम
+        {/* Front (English - Default) */}
+        <div 
+          className="absolute inset-0 p-8 md:p-12 flex flex-col" 
+          style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
+        >
+            <h2 className="text-2xl md:text-4xl font-bold font-heading text-primaryDark mb-6 text-center leading-tight">
+              Rules for the Devotees and Visitors of Shri Anandpur Satsang Ashram
             </h2>
-            <p className="mb-6 text-center font-medium text-lg text-primaryDark">
-              प्रत्येक स्त्री-पुरुष के लिए जो श्री आनन्दपुर सत्संग आश्रम में स्थायी निवासी व प्रवासी हैं, निम्नलिखित नियमों का पालन आवश्यक एवं अनिवार्य है—
+            <p className="mb-6 text-center font-medium text-lg text-primaryDark max-w-4xl mx-auto">
+              It is essential and mandatory for every man and woman, whether a permanent resident or a visitor at Shri Anandpur Satsang Ashram, to adhere to the following rules:
             </p>
-            <div className="space-y-4 overflow-y-auto flex-grow pr-2 custom-scrollbar">
-              {RULES_HINDI.map((rule, index) => (
-                <div key={index} className="flex flex-col gap-1 mb-3">
-                   <h3 className="text-lg font-bold text-highlight tracking-wide">{rule.title}</h3>
-                   <p className="text-lg leading-relaxed">{rule.content}</p>
+            <div className="space-y-6 overflow-y-auto flex-grow pr-4 custom-scrollbar">
+              {RULES_ENGLISH.map((rule, index) => (
+                <div key={index} className="flex flex-col gap-1 pb-2 border-b border-gray-300/30 last:border-0">
+                   <h3 className="text-xl font-bold text-highlight tracking-wide">{rule.title}</h3>
+                   <p className="text-lg leading-relaxed text-gray-800">{rule.content}</p>
                 </div>
               ))}
             </div>
-            <div className="mt-6 pt-4 border-t border-gray-100 text-center flex justify-center">
+            <div className="mt-6 pt-4 border-t border-gray-200 text-center flex justify-center">
                 <button 
-                  className="text-sm text-highlight font-bold uppercase tracking-wider flex items-center justify-center gap-2 border-2 border-highlight rounded-full px-6 py-2 transition-all duration-300 hover:bg-highlight hover:text-white hover:shadow-lg transform hover:-translate-y-1"
+                  className="text-base text-highlight font-bold uppercase tracking-wider flex items-center justify-center gap-2 border-2 border-highlight rounded-full px-8 py-3 transition-all duration-300 hover:bg-highlight hover:text-white hover:shadow-lg transform hover:-translate-y-1"
                   onClick={(e) => {
                     e.stopPropagation(); 
-                    setIsFlipped(!isFlipped);
+                    setIsFlipped(true);
                   }}
                 >
-
-                    Click to Read in English <span className="text-lg">↻</span>
+                    हिंदी में पढ़ने के लिए क्लिक करें <span className="text-xl">↻</span>
                 </button>
             </div>
         </div>
 
-        {/* Back (English) */}
-        <div 
-          className="absolute inset-0 p-8 md:p-12 flex flex-col" 
-          style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: "rotateY(180deg)" }}
-        >
-            <h2 className="text-2xl md:text-3xl font-bold font-heading text-primaryDark mb-6 text-center leading-tight">
-              Rules for Permanent Residents and Visitors Taking Refuge at Shri Anandpur Satsang Ashram
+        {/* Back (Hindi) */}
+        <div className="absolute inset-0 p-8 md:p-12 flex flex-col" style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: "rotateY(180deg)" }}>
+            <h2 className="text-2xl md:text-4xl font-bold font-heading text-primaryDark mb-6 text-center leading-tight">
+              श्री आनन्दपुर सत्संग आश्रम के शरणागत स्थायी निवासियों व प्रवासियों के लिए नियम
             </h2>
-            <p className="mb-6 text-center font-medium text-lg text-primaryDark">
-              It is essential and mandatory for every man and woman who is a permanent resident or visitor at Shri Anandpur Satsang Ashram to follow the following rules:
+            <p className="mb-6 text-center font-medium text-lg text-primaryDark max-w-4xl mx-auto">
+              प्रत्येक स्त्री-पुरुष के लिए जो श्री आनन्दपुर सत्संग आश्रम में स्थायी निवासी व प्रवासी हैं, निम्नलिखित नियमों का पालन आवश्यक एवं अनिवार्य है—
             </p>
-            <div className="space-y-4 overflow-y-auto flex-grow pr-2 custom-scrollbar">
-              {RULES_ENGLISH.map((rule, index) => (
-                <div key={index} className="flex flex-col gap-1 mb-3">
-                   <h3 className="text-lg font-bold text-highlight tracking-wide">{rule.title}</h3>
-                   <p className="text-lg leading-relaxed">{rule.content}</p>
+            <div className="space-y-6 overflow-y-auto flex-grow pr-4 custom-scrollbar">
+              {RULES_HINDI.map((rule, index) => (
+                <div key={index} className="flex flex-col gap-1 pb-2 border-b border-gray-300/30 last:border-0">
+                   <h3 className="text-xl font-bold text-highlight tracking-wide" style={{ fontFamily: 'Poppins, sans-serif' }}>{rule.title}</h3>
+                   <p className="text-lg leading-loose text-gray-800">{rule.content}</p>
                 </div>
               ))}
             </div>
-            <div className="mt-6 pt-4 border-t border-gray-100 text-center flex justify-center">
+            <div className="mt-6 pt-4 border-t border-gray-200 text-center flex justify-center">
                 <button 
-                  className="text-sm text-highlight font-bold uppercase tracking-wider flex items-center justify-center gap-2 border-2 border-highlight rounded-full px-6 py-2 transition-all duration-300 hover:bg-highlight hover:text-white hover:shadow-lg transform hover:-translate-y-1"
+                  className="text-base text-highlight font-bold uppercase tracking-wider flex items-center justify-center gap-2 border-2 border-highlight rounded-full px-8 py-3 transition-all duration-300 hover:bg-highlight hover:text-white hover:shadow-lg transform hover:-translate-y-1"
                   onClick={(e) => {
                     e.stopPropagation(); 
-                    setIsFlipped(!isFlipped);
+                    setIsFlipped(false);
                   }}
                 >
-
-                    हिंदी में पढ़ने के लिए क्लिक करें <span className="text-lg">↻</span>
+                    Click to Read in English <span className="text-xl">↻</span>
                 </button>
             </div>
         </div>
