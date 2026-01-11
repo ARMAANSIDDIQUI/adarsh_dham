@@ -5,9 +5,10 @@ import { motion } from 'framer-motion';
 import { FaPaperPlane, FaSpinner, FaUserCircle, FaTrashAlt } from 'react-icons/fa';
 import api from '../../api/api';
 import { toast } from 'react-toastify';
+import { useTranslation } from '../../hooks/useTranslation';
 
 // Simple Confirmation Modal for Deletion
-const ConfirmationModal = ({ isOpen, message, onConfirm, onCancel }) => {
+const ConfirmationModal = ({ isOpen, message, onConfirm, onCancel, title, cancelText, confirmText }) => {
     if (!isOpen) return null;
 
     return (
@@ -17,20 +18,20 @@ const ConfirmationModal = ({ isOpen, message, onConfirm, onCancel }) => {
                 animate={{ scale: 1, opacity: 1 }}
                 className="bg-card p-6 rounded-2xl shadow-soft w-full max-w-sm m-4"
             >
-                <h3 className="text-xl font-bold font-heading text-primaryDark mb-4">Confirm Deletion</h3>
+                <h3 className="text-xl font-bold font-heading text-primaryDark mb-4">{title}</h3>
                 <p className="text-gray-700 mb-6">{message}</p>
                 <div className="flex justify-end space-x-3">
                     <button
                         onClick={onCancel}
                         className="px-4 py-2 bg-gray-300 text-gray-800 font-medium rounded-lg hover:bg-gray-400 transition-colors"
                     >
-                        Cancel
+                        {cancelText || 'Cancel'}
                     </button>
                     <button
                         onClick={onConfirm}
                         className="px-4 py-2 bg-red-500 text-white font-medium rounded-lg hover:bg-red-600 transition-colors"
                     >
-                        Delete
+                        {confirmText || 'Delete'}
                     </button>
                 </div>
             </motion.div>
@@ -47,6 +48,7 @@ const CommentsPage = () => {
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
     const [commentToDelete, setCommentToDelete] = useState(null);
+    const t = useTranslation();
 
     const isCommentEmpty = newComment.trim() === '';
     const isButtonDisabled = submitting || isCommentEmpty;
@@ -57,7 +59,7 @@ const CommentsPage = () => {
             const { data } = await api.get('/comments'); 
             setComments(data);
         } catch (err) {
-            setError('Failed to fetch comments.');
+            setError(t.comments.error.fetchFail);
             console.error(err);
         } finally {
             setLoading(false);
@@ -66,24 +68,24 @@ const CommentsPage = () => {
 
     useEffect(() => {
         fetchComments();
-    }, [isAuthenticated]);
+    }, [isAuthenticated, t.comments.error.fetchFail]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (isCommentEmpty) {
-            toast.error("Comment cannot be empty.");
+            toast.error(t.comments.error.empty);
             return;
         }
         setSubmitting(true);
         try {
             await api.post('/comments', { content: newComment });
             setNewComment('');
-            toast.success('Your comment has been submitted for review!');
+            toast.success(t.comments.error.submitSuccess);
             if (isAuthenticated) {
                 fetchComments();
             }
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to submit comment.');
+            toast.error(err.response?.data?.message || t.comments.error.submitFail);
             console.error(err);
         } finally {
             setSubmitting(false);
@@ -95,10 +97,10 @@ const CommentsPage = () => {
 
         try {
             await api.delete(`/comments/${commentToDelete}`);
-            toast.success('Your comment has been deleted.');
+            toast.success(t.comments.error.deleteSuccess);
             setComments(prev => prev.filter(c => c._id !== commentToDelete));
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to delete comment.');
+            toast.error(err.response?.data?.message || t.comments.error.deleteFail);
             console.error(err);
         } finally {
             setCommentToDelete(null); 
@@ -114,16 +116,16 @@ const CommentsPage = () => {
             className="p-4 md:p-8 bg-neutral min-h-screen font-body"
         >
             <div className="max-w-4xl mx-auto">
-                <h2 className="text-3xl font-bold font-heading mb-6 text-primaryDark border-b-4 border-primary pb-2">Comments & Reviews</h2>
+                <h2 className="text-3xl font-bold font-heading mb-6 text-primaryDark border-b-4 border-primary pb-2 text-center">{t.comments.title}</h2>
 
                 {isAuthenticated ? (
                     <div className="bg-card p-6 rounded-2xl shadow-soft mb-8">
-                        <h3 className="text-xl font-semibold font-heading mb-4 text-primaryDark">Leave a Review</h3>
+                        <h3 className="text-xl font-semibold font-heading mb-4 text-primaryDark">{t.comments.leaveReview}</h3>
                         <form onSubmit={handleSubmit}>
                             <textarea
                                 value={newComment}
                                 onChange={(e) => setNewComment(e.target.value)}
-                                placeholder="Share your experience..."
+                                placeholder={t.comments.placeholder}
                                 className="w-full p-3 border border-background bg-neutral/50 rounded-lg focus:ring-2 focus:ring-primary transition"
                                 rows="4"
                                 disabled={submitting}
@@ -139,14 +141,14 @@ const CommentsPage = () => {
                                         }`}
                                 >
                                     {submitting ? <FaSpinner className="animate-spin mr-2" /> : <FaPaperPlane className="mr-2" />}
-                                    {submitting ? 'Submitting...' : 'Submit Review'}
+                                    {submitting ? t.comments.submitting : t.comments.submit}
                                 </button>
                             </div>
                         </form>
                     </div>
                 ) : (
                     <p className="p-4 mb-8 text-center bg-card rounded-2xl shadow-soft text-gray-700">
-                        Please <a href="/login" className="text-highlight font-semibold hover:underline">log in</a> to leave a comment or review.
+                        {t.comments.loginPrompt} <a href="/login" className="text-highlight font-semibold hover:underline">{t.comments.loginLink}</a> {t.comments.loginSuffix}
                     </p>
                 )}
 
@@ -172,7 +174,7 @@ const CommentsPage = () => {
                                         <FaUserCircle className="text-3xl text-gray-400 mr-4 flex-shrink-0" />
                                         <div className="flex-1">
                                             <div className="flex justify-between items-center">
-                                                <p className="font-bold font-heading text-primaryDark">{comment.user?.name || 'Anonymous'}</p>
+                                                <p className="font-bold font-heading text-primaryDark">{comment.user?.name || t.comments.anonymous}</p>
                                                 <div className="flex items-center space-x-4">
                                                     {isOwner && (
                                                         <button
@@ -195,13 +197,16 @@ const CommentsPage = () => {
                             );
                         })
                     ) : (
-                        <p className="text-gray-700 text-center italic py-4">No comments yet. Be the first to leave a review!</p>
+                        <p className="text-gray-700 text-center italic py-4">{t.comments.noComments}</p>
                     )}
                 </div>
             </div>
             <ConfirmationModal
                 isOpen={!!commentToDelete}
-                message="Are you sure you want to permanently delete this comment?"
+                message={t.comments.deleteMessage}
+                title={t.comments.deleteTitle}
+                confirmText={t.comments.deleteButton}
+                cancelText={t.common.cancel}
                 onConfirm={handleDelete}
                 onCancel={() => setCommentToDelete(null)}
             />

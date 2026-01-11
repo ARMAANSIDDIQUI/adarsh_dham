@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { toast } from 'react-toastify';
 import api from '../../api/api';
 import { FaLock, FaSpinner, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { useTranslation } from '../../hooks/useTranslation';
 
 /**
  * Reusable component for a password input field with a toggle to show/hide the password.
@@ -42,6 +43,7 @@ const PasswordInput = ({ name, placeholder, value, onChange }) => {
 
 
 const ChangePasswordForm = () => {
+    const t = useTranslation();
     const [formData, setFormData] = useState({
         currentPassword: '',
         newPassword: '',
@@ -61,12 +63,12 @@ const ChangePasswordForm = () => {
         e.preventDefault();
 
         if (formData.newPassword.length < 6) {
-            toast.error("New password must be at least 6 characters long.");
+            toast.error(t.profile.passwordForm.lengthError);
             return;
         }
 
         if (formData.newPassword !== formData.confirmNewPassword) {
-            toast.error("New passwords do not match.");
+            toast.error(t.profile.passwordForm.matchError);
             return;
         }
 
@@ -76,43 +78,43 @@ const ChangePasswordForm = () => {
                 currentPassword: formData.currentPassword,
                 newPassword: formData.newPassword
             });
-            toast.success(data.message || 'Password changed successfully!');
+            toast.success(data.message || t.profile.passwordForm.success);
             // Reset form fields on success
             setFormData({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
         } catch (error) {
-            toast.error(error.response?.data?.message || 'Failed to change password.');
+            toast.error(error.response?.data?.message || t.profile.passwordForm.error);
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="bg-card p-6 rounded-2xl shadow-soft font-body">
-            <h3 className="text-xl font-semibold font-heading mb-4 text-primaryDark border-b border-background pb-2">Change Password</h3>
+        <div className="bg-card p-6 rounded-2xl shadow-soft font-body h-full">
+            <h3 className="text-xl font-semibold font-heading mb-4 text-primaryDark border-b border-background pb-2">{t.profile.passwordForm.title}</h3>
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                    <label className="text-sm font-medium text-gray-700">Current Password</label>
+                    <label className="text-sm font-medium text-gray-700">{t.profile.passwordForm.current}</label>
                     <PasswordInput
                         name="currentPassword"
-                        placeholder="Enter your current password"
+                        placeholder={t.profile.passwordForm.currentPlaceholder}
                         value={formData.currentPassword}
                         onChange={handleChange}
                     />
                 </div>
                 <div>
-                    <label className="text-sm font-medium text-gray-700">New Password</label>
+                    <label className="text-sm font-medium text-gray-700">{t.profile.passwordForm.new}</label>
                     <PasswordInput
                         name="newPassword"
-                        placeholder="Minimum 6 characters"
+                        placeholder={t.profile.passwordForm.newPlaceholder}
                         value={formData.newPassword}
                         onChange={handleChange}
                     />
                 </div>
                 <div>
-                    <label className="text-sm font-medium text-gray-700">Confirm New Password</label>
+                    <label className="text-sm font-medium text-gray-700">{t.profile.passwordForm.confirm}</label>
                     <PasswordInput
                         name="confirmNewPassword"
-                        placeholder="Re-enter new password"
+                        placeholder={t.profile.passwordForm.confirmPlaceholder}
                         value={formData.confirmNewPassword}
                         onChange={handleChange}
                     />
@@ -122,7 +124,7 @@ const ChangePasswordForm = () => {
                     <button 
                         type="submit" 
                         disabled={isButtonDisabled} 
-                        className={`w-full inline-flex justify-center items-center px-4 py-3 text-white font-semibold rounded-lg shadow-soft transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-primary/50 
+                        className={`w-full text-lg py-3 inline-flex justify-center items-center text-white font-semibold rounded-lg shadow-soft transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-primary/50 
                             ${isButtonDisabled 
                                 ? 'bg-gray-400 cursor-not-allowed opacity-70' // Disabled/Dull state
                                 : 'bg-highlight hover:bg-primaryDark' // Enabled state
@@ -130,10 +132,10 @@ const ChangePasswordForm = () => {
                     >
                         {loading ? (
                             <>
-                                <FaSpinner className="animate-spin mr-2 h-5 w-5" /> Updating...
+                                <FaSpinner className="animate-spin mr-2 h-5 w-5" /> {t.profile.passwordForm.updating}
                             </>
                         ) : (
-                            'Update Password'
+                            t.profile.passwordForm.button
                         )}
                     </button>
                 </div>

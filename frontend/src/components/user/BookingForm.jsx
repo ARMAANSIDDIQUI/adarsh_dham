@@ -14,6 +14,7 @@ import {
 } from "react-icons/fa";
 import { useParams } from "react-router-dom";
 import { toast } from 'react-toastify';
+import { useTranslation } from "../../hooks/useTranslation";
 
 const ThemedInput = ({
   label,
@@ -68,9 +69,10 @@ const InputGroup = ({ label, name, value, onChange }) => (
 
 const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing = false }) => {
   const { eventId } = useParams();
+  const t = useTranslation();
   const [event, setEvent] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [eventError, setEventError] = useState(null); // This line is added
+  const [eventError, setEventError] = useState(null);
   const [formData, setFormData] = useState({
     numMales: 0,
     numFemales: 0,
@@ -94,7 +96,7 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
   useEffect(() => {
     const fetchEvent = async () => {
       setIsLoading(true);
-      setEventError(null); // This line is added
+      setEventError(null);
       try {
         const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/events/${eventId}`);
         if (!res.ok) {
@@ -106,7 +108,7 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
       } catch (err) {
         console.error("Error fetching event:", err);
         setEvent(null);
-        setEventError(err.message); // This line is modified
+        setEventError(err.message);
       } finally {
         setIsLoading(false);
       }
@@ -193,10 +195,10 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
       .map(({ p, i }, idx) => (
         <div key={i} className="grid grid-cols-2 gap-4 pt-4 border-b-2 border-background pb-4 last:border-b-0">
           <h4 className="col-span-2 font-bold capitalize text-primaryDark">
-            {gender} #{idx + 1}
+            {t.booking.genders[gender] || gender} #{idx + 1}
           </h4>
           <div>
-            <label className="block text-xs font-medium text-gray-600">Name</label>
+            <label className="block text-xs font-medium text-gray-600">{t.booking.fields.name}</label>
             <input
               type="text"
               name="name"
@@ -207,7 +209,7 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600">Age</label>
+            <label className="block text-xs font-medium text-gray-600">{t.booking.fields.age}</label>
             <input
               type="number"
               name="age"
@@ -226,7 +228,7 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
     setValidationError(null);
     const total = formData.numMales + formData.numFemales + formData.numBoys + formData.numGirls;
     if (total === 0) {
-      const msg = "You must add at least one person.";
+      const msg = t.booking.errors.addPerson;
       setValidationError(msg);
       toast.error(msg);
       return;
@@ -235,25 +237,25 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
       p => (p.gender === "boy" || p.gender === "girl") && parseInt(p.age, 10) > 16
     );
     if (invalid) {
-      const msg = `Age for ${invalid.name} (${invalid.gender}) is over 16.`;
+      const msg = t.booking.errors.ageLimit.replace("{name}", invalid.name).replace("{gender}", t.booking.genders[invalid.gender] || invalid.gender);
       setValidationError(msg);
       toast.error(msg);
       return;
     }
     if (!formData.baijiMahatmaJi || !formData.baijiContact) {
-      const msg = "Baiji / Mahatma Ji's name and contact are mandatory.";
+      const msg = t.booking.errors.baijiRequired;
       setValidationError(msg);
       toast.error(msg);
       return;
     }
     if (formData.contactNumber.length !== 10) {
-      const msg = "Please enter a valid 10-digit contact number.";
+      const msg = t.booking.errors.contactLength;
       setValidationError(msg);
       toast.error(msg);
       return;
     }
     if (formData.baijiContact.length !== 10) {
-      const msg = "Please enter a valid 10-digit Baiji / Mahatma Ji contact number.";
+      const msg = t.booking.errors.baijiContactLength;
       setValidationError(msg);
       toast.error(msg);
       return;
@@ -261,7 +263,7 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
     const fromDate = new Date(formData.stayFrom);
     const toDate = new Date(formData.stayTo);
     if (fromDate > toDate) {
-      const msg = "Stay 'From' date cannot be after 'To' date.";
+      const msg = t.booking.errors.dateOrder;
       setValidationError(msg);
       toast.error(msg);
       return;
@@ -273,19 +275,17 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <p className="text-primaryDark text-5xl">Loading event details...</p>
+        <p className="text-primaryDark text-5xl">{t.booking.errors.loadingEvent}</p>
       </div>
     );
   }
 
-  // Render error message if there's an event-specific error
   if (eventError) {
     return <p className="text-center text-red-500 mt-10">Error: {eventError}</p>;
   }
 
-  // If not loading and no event (and no specific error, though eventError would cover most cases)
   if (!event) {
-    return <p className="text-center text-red-500 mt-10">Event not found. Please try again later.</p>;
+    return <p className="text-center text-red-500 mt-10">{t.booking.errors.eventNotFound}</p>;
   }
 
 
@@ -302,18 +302,18 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
         className="p-6 md:p-8 bg-card rounded-2xl shadow-soft max-w-2xl w-full mx-auto"
       >
         <h2 className="text-3xl font-bold font-heading mb-8 text-center text-primaryDark border-b-2 border-background pb-3">
-          {isEditing ? "Edit Your Booking" : `Request Accommodation for ${event.name}`}
+          {isEditing ? t.booking.editTitle : `${t.booking.title} ${event.name}`}
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-8">
           <div>
             <h3 className="text-xl font-semibold font-heading text-primaryDark mb-4 border-b border-background pb-2">
-              Period of Stay
+              {t.booking.sections.stay}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <DynamicDateInput
-                  label="From"
+                  label={t.booking.fields.from}
                   name="stayFrom"
                   value={formData.stayFrom}
                   onChange={handleChange}
@@ -322,11 +322,11 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
                   min={minStayDate.toISOString().split("T")[0]}
                   max={maxStayDate.toISOString().split("T")[0]}
                 />
-                <p className="text-sm text-gray-500 mt-1">Please note:  You may opt for stay from 5 days before the event begins.</p>
+                <p className="text-sm text-gray-500 mt-1">{t.booking.notices.stayFrom}</p>
               </div>
               <div>
                 <DynamicDateInput
-                  label="To"
+                  label={t.booking.fields.to}
                   name="stayTo"
                   value={formData.stayTo}
                   onChange={handleChange}
@@ -335,18 +335,18 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
                   min={formData.stayFrom || minStayDate.toISOString().split("T")[0]}
                   max={maxStayDate.toISOString().split("T")[0]}
                 />
-                <p className="text-sm text-gray-500 mt-1">Please note: You may opt for stay up to 5 days after the event concludes.</p>
+                <p className="text-sm text-gray-500 mt-1">{t.booking.notices.stayTo}</p>
               </div>
             </div>
           </div>
 
           <div>
             <h3 className="text-xl font-semibold font-heading text-primaryDark mb-4 border-b border-background pb-2">
-              Ashram & Reference Details
+              {t.booking.sections.ashram}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <ThemedInput
-                label="Ashram Name"
+                label={t.booking.fields.ashramName}
                 name="ashramName"
                 value={formData.ashramName}
                 onChange={handleChange}
@@ -355,14 +355,14 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
                 colSpan="md:col-span-2"
               />
               <ThemedInput
-                label="Baiji / Mahatma Ji Name"
+                label={t.booking.fields.baijiName}
                 name="baijiMahatmaJi"
                 value={formData.baijiMahatmaJi}
                 onChange={handleChange}
                 required
               />
               <ThemedInput
-                label="Baiji / Mahatma Ji Contact"
+                label={t.booking.fields.baijiContact}
                 name="baijiContact"
                 value={formData.baijiContact}
                 onChange={handleChange}
@@ -377,11 +377,11 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
 
           <div>
             <h3 className="text-xl font-semibold font-heading text-primaryDark mb-4 border-b border-background pb-2">
-              Your Details
+              {t.booking.sections.personal}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <ThemedInput
-                label="Email (Optional)"
+                label={t.booking.fields.email}
                 name="email"
                 type="email"
                 value={formData.email}
@@ -389,7 +389,7 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
                 icon={<FaEnvelope />}
               />
               <ThemedInput
-                label="Contact Number"
+                label={t.booking.fields.contact}
                 name="contactNumber"
                 type="tel"
                 value={formData.contactNumber}
@@ -401,7 +401,7 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
                 maxLength="10"
               />
               <ThemedInput
-                label="Address"
+                label={t.booking.fields.address}
                 name="address"
                 value={formData.address}
                 onChange={handleChange}
@@ -410,7 +410,7 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
                 colSpan="md:col-span-2"
               />
               <ThemedInput
-                label="City"
+                label={t.booking.fields.city}
                 name="city"
                 value={formData.city}
                 onChange={handleChange}
@@ -423,12 +423,12 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
 
           <div>
             <h3 className="text-xl font-semibold font-heading text-primaryDark mb-4 border-b border-background pb-2">
-              Group Details
+              {t.booking.sections.group}
             </h3>
             <div className="space-y-6">
               <div className="p-4 border border-background bg-background/50 rounded-lg">
                 <label className="text-sm font-medium text-gray-700 flex items-center mb-2">
-                  <FaUsers className="mr-2 text-primary" /> Are you filling this form for others?
+                  <FaUsers className="mr-2 text-primary" /> {t.booking.fields.fillingForOthers}
                 </label>
                 <div className="flex items-center space-x-6">
                   <label className="flex items-center cursor-pointer">
@@ -440,7 +440,7 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
                       onChange={handleRadioChange}
                       className="form-radio h-4 w-4 text-primary focus:ring-primary"
                     />
-                    <span className="ml-2 text-gray-700">Yes</span>
+                    <span className="ml-2 text-gray-700">{t.booking.notices.yes}</span>
                   </label>
                   <label className="flex items-center cursor-pointer">
                     <input
@@ -451,19 +451,19 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
                       onChange={handleRadioChange}
                       className="form-radio h-4 w-4 text-primary focus:ring-primary"
                     />
-                    <span className="ml-2 text-gray-700">No</span>
+                    <span className="ml-2 text-gray-700">{t.booking.notices.no}</span>
                   </label>
                 </div>
               </div>
               <div className="p-4 border border-primary/20 bg-primary/10 rounded-lg shadow-inner">
                 <label className="text-base font-semibold text-primaryDark flex items-center mb-3">
-                  <FaUserPlus className="mr-2 text-primary" /> Member Details
+                  <FaUserPlus className="mr-2 text-primary" /> {t.booking.fields.memberDetails}
                 </label>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                  <InputGroup label="Males" name="numMales" value={formData.numMales} onChange={handleGroupChange} />
-                  <InputGroup label="Females" name="numFemales" value={formData.numFemales} onChange={handleGroupChange} />
-                  <InputGroup label="Boys" name="numBoys" value={formData.numBoys} onChange={handleGroupChange} />
-                  <InputGroup label="Girls" name="numGirls" value={formData.numGirls} onChange={handleGroupChange} />
+                  <InputGroup label={t.booking.fields.males} name="numMales" value={formData.numMales} onChange={handleGroupChange} />
+                  <InputGroup label={t.booking.fields.females} name="numFemales" value={formData.numFemales} onChange={handleGroupChange} />
+                  <InputGroup label={t.booking.fields.boys} name="numBoys" value={formData.numBoys} onChange={handleGroupChange} />
+                  <InputGroup label={t.booking.fields.girls} name="numGirls" value={formData.numGirls} onChange={handleGroupChange} />
                 </div>
               </div>
               {formData.people.length > 0 && (
@@ -479,11 +479,11 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
 
           <div>
             <h3 className="text-xl font-semibold font-heading text-primaryDark mb-4 border-b border-background pb-2">
-              Additional Information
+              {t.booking.sections.additional}
             </h3>
             <div>
               <label className="text-sm font-medium text-gray-700 flex items-center mb-1">
-                <FaPen className="mr-2 text-primary" /> Special Requests / Notes
+                <FaPen className="mr-2 text-primary" /> {t.booking.fields.notes}
               </label>
               <textarea
                 name="notes"
@@ -537,7 +537,7 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
                 loading
               }
             >
-              {loading ? "Submitting..." : isEditing ? "Update Booking" : "Submit Request"}
+              {loading ? t.booking.submitting : isEditing ? t.booking.updateButton : t.booking.submitButton}
             </Button>
           </div>
         </form>

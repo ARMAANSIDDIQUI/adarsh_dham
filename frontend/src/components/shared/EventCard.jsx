@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import api from '../../api/api';
 import { FaMapMarkerAlt, FaCalendarAlt, FaTicketAlt, FaPlayCircle } from 'react-icons/fa';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const itemVariants = {
   hidden: { y: 20, opacity: 0 },
@@ -14,6 +15,7 @@ const EventCard = ({ event }) => {
   const navigate = useNavigate();
   const { isAuthenticated } = useSelector((state) => state.auth);
   const [liveLinks, setLiveLinks] = useState([]);
+  const t = useTranslation();
 
   useEffect(() => {
     const fetchLiveLinks = async () => {
@@ -76,15 +78,15 @@ const EventCard = ({ event }) => {
       <div className="text-sm text-gray-700 space-y-2 mb-6">
         <p className="flex items-center space-x-2">
           <FaMapMarkerAlt className="text-primary flex-shrink-0" />
-          <span><strong>Location:</strong> {event.location}</span>
+          <span><strong>{t.events.card.location}:</strong> {event.location}</span>
         </p>
         <p className="flex items-center space-x-2">
           <FaCalendarAlt className="text-primary flex-shrink-0" />
-          <span><strong>Dates:</strong> {new Date(event.startDate).toLocaleDateString('en-GB')} - {new Date(event.endDate).toLocaleDateString('en-GB')}</span>
+          <span><strong>{t.events.card.dates}:</strong> {new Date(event.startDate).toLocaleDateString('en-GB')} - {new Date(event.endDate).toLocaleDateString('en-GB')}</span>
         </p>
         <p className="flex items-center space-x-2">
           <FaTicketAlt className="text-primary flex-shrink-0" />
-          <span><strong>Booking Window:</strong> {new Date(event.bookingStartDate).toLocaleDateString('en-GB')} - {new Date(event.bookingEndDate).toLocaleDateString('en-GB')}</span>
+          <span><strong>{t.events.card.bookingWindow}:</strong> {new Date(event.bookingStartDate).toLocaleDateString('en-GB')} - {new Date(event.bookingEndDate).toLocaleDateString('en-GB')}</span>
         </p>
       </div>
 
@@ -92,7 +94,7 @@ const EventCard = ({ event }) => {
       {event.name.toLowerCase().includes('satsang') && liveLinks.length > 0 && (
         <div className="mb-6 p-3 bg-background/50 rounded-lg border border-background">
           <h4 className="font-semibold font-heading text-primaryDark mb-2 flex items-center space-x-1">
-            <FaPlayCircle className="text-primary" /> <span>Live Stream Links:</span>
+            <FaPlayCircle className="text-primary" /> <span>{t.events.card.liveLinks}:</span>
           </h4>
           <ul className="space-y-1">
             {liveLinks.map(link => (
@@ -118,7 +120,7 @@ const EventCard = ({ event }) => {
             onClick={handleBooking} 
             className={`${baseButtonClasses} ${activeClasses}`}
           >
-            Request Booking
+            {t.events.card.requestBooking}
           </button>
         ) : isManuallyClosed ? (
           <div className="w-full">
@@ -126,7 +128,7 @@ const EventCard = ({ event }) => {
               className={`${baseButtonClasses} ${inactiveClasses}`} 
               disabled
             >
-              Booking Closed
+              {t.events.card.bookingClosed}
             </button>
             {event.bookingClosedMessage && (
               <p className="text-red-500 text-sm mt-2 text-center font-medium bg-red-50 p-2 rounded border border-red-100">
@@ -139,14 +141,14 @@ const EventCard = ({ event }) => {
             className={`${baseButtonClasses} ${inactiveClasses}`} 
             disabled
           >
-            Bookings not started yet
+            {t.events.card.bookingNotStarted}
           </button>
         ) : (
           <button 
             className={`${baseButtonClasses} ${inactiveClasses}`} 
             disabled
           >
-            Booking Closed
+            {t.events.card.bookingClosed}
           </button>
         )}
       </div>

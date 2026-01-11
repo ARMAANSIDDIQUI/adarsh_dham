@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { useSelector } from 'react-redux'; // <--- ADDED
 import { AnimatePresence, motion } from 'framer-motion';
 import { ToastContainer } from 'react-toastify';
 
@@ -52,7 +53,7 @@ const AppLayout = () => {
   const isHomePage = location.pathname === '/';
 
   return (
-    <div className="flex flex-col min-h-screen bg-neutral font-body">
+    <div className="flex flex-col min-h-screen bg-neutral font-body transition-colors duration-300">
       <Header />
       <main className="flex-grow">
         <Routes>

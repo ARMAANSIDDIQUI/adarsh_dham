@@ -3,9 +3,11 @@ import { useDispatch } from 'react-redux';
 import { markOneAsRead } from '../../redux/slices/notificationSlice';
 import { FaBell, FaCheckCircle } from 'react-icons/fa';
 import { formatDistanceToNow } from 'date-fns';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const NotificationsList = ({ notifications, onMarkAsRead }) => {
     const dispatch = useDispatch();
+    const t = useTranslation();
     // --- NEW LOADING STATE ---
     // This will track the ID of the notification we are currently marking as read
     const [loadingId, setLoadingId] = useState(null);
@@ -29,7 +31,7 @@ const NotificationsList = ({ notifications, onMarkAsRead }) => {
     };
 
     if (!notifications || notifications.length === 0) {
-        return <p className="text-center text-gray-700 py-8 text-lg font-body">You have no notifications yet. Check back later!</p>;
+        return <p className="text-center text-gray-700 py-8 text-lg font-body">{t.notifications.noNotifications}</p>;
     }
 
     return (
@@ -62,7 +64,7 @@ const NotificationsList = ({ notifications, onMarkAsRead }) => {
                         <p className={`text-xs mt-1 ${
                             notification.read ? 'text-gray-400' : 'text-gray-700'
                         }`}>
-                            Received {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
+                            {t.notifications.received} {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
                         </p>
                     </div>
 
@@ -73,10 +75,10 @@ const NotificationsList = ({ notifications, onMarkAsRead }) => {
                             // Disable the button if it's the one being loaded
                             disabled={loadingId === notification._id} 
                             className="flex-shrink-0 text-xs text-primary hover:underline whitespace-nowrap disabled:text-gray-400 disabled:no-underline"
-                            title="Mark as read"
+                            title={t.notifications.markAsRead}
                         >
                             {/* Show "Marking..." if it's loading */}
-                            {loadingId === notification._id ? 'Marking...' : 'Mark as Read'}
+                            {loadingId === notification._id ? t.notifications.marking : t.notifications.markAsRead}
                         </button>
                     )}
                     {/* --- END UPDATED BUTTON --- */}

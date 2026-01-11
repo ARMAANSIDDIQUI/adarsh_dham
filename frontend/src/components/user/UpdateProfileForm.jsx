@@ -4,12 +4,12 @@ import { toast } from 'react-toastify';
 import api from '../../api/api.js';
 import { updateUser } from '../../redux/slices/authSlice.js';
 import { FaUser, FaPhoneAlt, FaSpinner } from 'react-icons/fa';
-// Removed Button import as we're using native button
-// import Button from '../common/Button.jsx'; 
 import ThemedInput from '../common/ThemedInput.jsx'; 
+import { useTranslation } from '../../hooks/useTranslation';
 
 const UpdateProfileForm = () => {
     const dispatch = useDispatch();
+    const t = useTranslation();
     const { user } = useSelector((state) => state.auth);
     const [name, setName] = useState(user?.name || '');
     const [loading, setLoading] = useState(false);
@@ -34,10 +34,10 @@ const UpdateProfileForm = () => {
             
             // Dispatch the updated user data to Redux
             dispatch(updateUser(res.data));
-            toast.success('Profile updated successfully!');
+            toast.success(t.profile.updateForm.success);
         } catch (err) {
             console.error("Profile update failed:", err);
-            const errorMessage = err.response?.data?.message || 'Profile update failed. Please try again.';
+            const errorMessage = err.response?.data?.message || t.profile.updateForm.error;
             toast.error(errorMessage);
         } finally {
             setLoading(false);
@@ -45,9 +45,10 @@ const UpdateProfileForm = () => {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6 font-body">
+        <form onSubmit={handleSubmit} className="space-y-6 font-body bg-card p-6 rounded-2xl shadow-soft h-full">
+            <h3 className="text-xl font-semibold font-heading mb-4 text-primaryDark border-b border-background pb-2">{t.profile.updateForm.button}</h3>
             <ThemedInput 
-                label="Name" 
+                label={t.profile.updateForm.name} 
                 name="name" 
                 value={name} 
                 onChange={(e) => setName(e.target.value)} 
@@ -55,33 +56,33 @@ const UpdateProfileForm = () => {
                 icon={<FaUser />}
             />
             <ThemedInput 
-                label="Phone Number" 
+                label={t.profile.updateForm.phone} 
                 name="phone" 
                 value={user?.phone || ''} 
                 disabled 
                 icon={<FaPhoneAlt />}
             />
-            <p className="text-xs text-gray-700 -mt-2">Phone number cannot be changed.</p>
+            <p className="text-xs text-gray-700 -mt-2">{t.profile.updateForm.phoneNotice}</p>
             
-            {/* Replaced Button with native button and dynamic styling */}
-            <button 
-                type="submit" 
-                disabled={isButtonDisabled} 
-                // Dynamic styling: Dull when disabled (loading or no valid change), bright when enabled.
-                className={`w-full text-lg py-3 inline-flex justify-center items-center text-white font-semibold rounded-lg shadow-soft transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-primary/50 
-                    ${isButtonDisabled 
-                        ? 'bg-gray-400 cursor-not-allowed opacity-70' 
-                        : 'bg-highlight hover:bg-primaryDark'
-                    }`}
-            >
-                {loading ? (
-                    <>
-                        <FaSpinner className="animate-spin mr-2 h-5 w-5" /> Updating...
-                    </>
-                ) : (
-                    'Update Details'
-                )}
-            </button>
+            <div className="pt-2">
+                <button 
+                    type="submit" 
+                    disabled={isButtonDisabled} 
+                    className={`w-full text-lg py-3 inline-flex justify-center items-center text-white font-semibold rounded-lg shadow-soft transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-primary/50 
+                        ${isButtonDisabled 
+                            ? 'bg-gray-400 cursor-not-allowed opacity-70' 
+                            : 'bg-highlight hover:bg-primaryDark'
+                        }`}
+                >
+                    {loading ? (
+                        <>
+                            <FaSpinner className="animate-spin mr-2 h-5 w-5" /> {t.profile.updateForm.updating}
+                        </>
+                    ) : (
+                        t.profile.updateForm.button
+                    )}
+                </button>
+            </div>
         </form>
     );
 };

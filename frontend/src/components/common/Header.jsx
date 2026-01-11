@@ -1,183 +1,3 @@
-// import React, { useState, useEffect } from 'react';
-// import { Link, NavLink as RouterNavLink } from 'react-router-dom';
-// import { useSelector, useDispatch } from 'react-redux';
-// import { motion, AnimatePresence } from 'framer-motion';
-// import {
-//     FaUser,
-//     FaSignInAlt,
-//     FaHome,
-//     FaInfoCircle,
-//     FaPhone,
-//     // FaCalendarAlt,
-//     FaBars,
-//     FaBookOpen,
-//     FaTimes,
-//     FaClipboardList,
-//     FaComments,
-//     FaUserShield,
-//     FaUserCircle,
-//     FaBell,
-//     FaSignOutAlt,
-// } from 'react-icons/fa';
-// import { logout } from '../../redux/slices/authSlice.js';
-// import FloatingActionButtons from './FloatingActionButtons';
-// import EnableNotificationsButton from './EnableNotificationsButton';
-
-// const NavLink = ({ to, icon, text, onClick, end = false }) => (
-//     <RouterNavLink
-//         to={to}
-//         onClick={onClick}
-//         end={end}
-//         className={({ isActive }) =>
-//             `flex items-center whitespace-nowrap space-x-2 px-3 py-2 transition-colors duration-300 rounded-md text-base font-medium ` +
-//             (isActive
-//                 ? 'bg-primary/20 text-primaryDark'
-//                 : 'text-gray-700 hover:bg-card hover:text-primaryDark')
-//         }
-//     >
-//         {icon}
-//         <span>{text}</span>
-//     </RouterNavLink>
-// );
-
-// const Header = () => {
-//     const { user, isAuthenticated } = useSelector((state) => state.auth);
-//     const dispatch = useDispatch();
-//     const [isMenuOpen, setIsMenuOpen] = useState(false);
-//     const [isMobile, setIsMobile] = useState(window.innerWidth < 1300);
-
-//     const handleMenuToggle = () => setIsMenuOpen(!isMenuOpen);
-//     const handleLogout = () => {
-//         dispatch(logout());
-//         setIsMenuOpen(false);
-//     };
-    
-//     const isAdmin = user?.roles?.some((role) =>
-//         ['admin', 'super-admin', 'super-operator', 'operator', 'satsang-operator'].includes(role)
-//     );
-
-//     useEffect(() => {
-//         const handleResize = () => setIsMobile(window.innerWidth < 1300);
-//         window.addEventListener('resize', handleResize);
-//         return () => window.removeEventListener('resize', handleResize);
-//     }, []);
-
-//     useEffect(() => {
-//         document.body.style.overflow = isMenuOpen ? 'hidden' : 'unset';
-//         return () => (document.body.style.overflow = 'unset');
-//     }, [isMenuOpen]);
-
-//     return (
-//         <>
-//             <header className="bg-background shadow-soft sticky top-0 z-[999] font-body border-b border-card">
-//                 <nav className="flex items-center justify-between px-4 py-3">
-//                     <Link to="/" className="text-2xl font-bold mr-5 text-primaryDark hover:text-opacity-80 transition-colors duration-200 flex items-center gap-x-1 font-heading">
-//                         <span className="whitespace-nowrap">Adarsh Dham</span>
-//                     </Link>
-
-//                     {!isMobile && (
-//                         <div className="flex-1 flex items-center justify-end gap-x-3">
-//                             <NavLink to="/" icon={<FaHome />} text="Home" end />
-//                             <NavLink to="/about" icon={<FaInfoCircle />} text="About" />
-//                             {/* <NavLink to="/calendar" icon={<FaCalendarAlt />} text="Calendar" /> */}
-//                             <NavLink to="/events" icon={<FaClipboardList />} text="Event List" />
-//                             <NavLink to="/events" icon={<FaBookOpen />} text="Request Booking" />
-//                             <NavLink to="/comments" icon={<FaComments />} text="Comments" />
-//                             <NavLink to="/contact" icon={<FaPhone className="rotate-90" />} text="Contact" />
-//                             {isAuthenticated && (
-//                                 <>
-//                                     <NavLink to="/my-bookings" icon={<FaClipboardList />} text="My Bookings" />
-//                                     <NavLink to="/notifications" icon={<FaBell />} text="Notifications" />
-//                                 </>
-//                             )}
-//                         </div>
-//                     )}
-
-//                     {!isMobile && !isAuthenticated && (
-//                         <div className="flex items-center gap-x-3">
-//                             <NavLink to="/login" icon={<FaSignInAlt />} text="Login" />
-//                             <NavLink to="/register" icon={<FaUser />} text="Register" />
-//                         </div>
-//                     )}
-                    
-//                     {isMobile && (
-//                         <button
-//                             onClick={handleMenuToggle}
-//                             className="text-primaryDark p-2 rounded-full hover:bg-card transition-colors duration-200 z-[1000]"
-//                         >
-//                             <AnimatePresence mode="wait">
-//                                 <motion.div
-//                                     key={isMenuOpen ? 'times' : 'bars'}
-//                                     initial={{ scale: 0.5, opacity: 0, rotate: -90 }}
-//                                     animate={{ scale: 1, opacity: 1, rotate: 0 }}
-//                                     exit={{ scale: 0.5, opacity: 0, rotate: 90 }}
-//                                     transition={{ duration: 0.2 }}
-//                                 >
-//                                     {isMenuOpen ? <FaTimes size={28} /> : <FaBars size={28} />}
-//                                 </motion.div>
-//                             </AnimatePresence>
-//                         </button>
-//                     )}
-//                 </nav>
-
-//                 <AnimatePresence>
-//                     {isMobile && isMenuOpen && (
-//                         <motion.div
-//                             initial={{ x: "100%" }}
-//                             animate={{ x: 0 }}
-//                             exit={{ x: "100%" }}
-//                             transition={{ type: "tween", ease: "easeInOut", duration: 0.4 }}
-//                             className="fixed top-0 right-0 h-full w-4/5 max-w-sm z-[998] bg-card overflow-y-auto shadow-xl"
-//                         >
-//                             <div className="flex flex-col h-full p-6 pt-24">
-//                                 <div className="flex flex-col items-start gap-y-6 text-xl">
-//                                     <NavLink to="/" icon={<FaHome />} text="Home" onClick={handleMenuToggle} end />
-//                                     <NavLink to="/about" icon={<FaInfoCircle />} text="About" onClick={handleMenuToggle} />
-//                                     {/* <NavLink to="/calendar" icon={<FaCalendarAlt />} text="Calendar" onClick={handleMenuToggle} /> */}
-//                                     <NavLink to="/events" icon={<FaClipboardList />} text="Event List" onClick={handleMenuToggle} />
-//                                     <NavLink to="/events" icon={<FaBookOpen />} text="Request Booking" />
-//                                     <NavLink to="/comments" icon={<FaComments />} text="Comments" onClick={handleMenuToggle} />
-//                                     <NavLink to="/contact" icon={<FaPhone className="rotate-90"/>} text="Contact" onClick={handleMenuToggle} />
-                                    
-//                                     <div className="w-full border-t border-background my-4"></div>
-                                    
-//                                     {isAuthenticated ? (
-//                                         <>
-//                                             <NavLink to="/profile" icon={<FaUserCircle />} text="My Profile" onClick={handleMenuToggle} />
-//                                             <NavLink to="/my-bookings" icon={<FaClipboardList />} text="My Bookings" onClick={handleMenuToggle} />
-//                                             <div className="my-2"><EnableNotificationsButton /></div>
-//                                             <NavLink to="/notifications" icon={<FaBell />} text="Notifications History" onClick={handleMenuToggle} />
-//                                             {isAdmin && <NavLink to="/admin" icon={<FaUserShield/>} text="Admin Panel" onClick={handleMenuToggle} />}
-//                                             <div className="mt-4">
-//                                                 <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-2 text-lg text-highlight bg-highlight/10 rounded-lg">
-//                                                     <FaSignOutAlt /> Logout
-//                                                 </button>
-//                                             </div>
-//                                         </>
-//                                     ) : (
-//                                         <>
-//                                             <NavLink to="/login" icon={<FaSignInAlt />} text="Login" onClick={handleMenuToggle} />
-//                                             <NavLink to="/register" icon={<FaUser />} text="Register" onClick={handleMenuToggle} />
-//                                         </>
-//                                     )}
-//                                 </div>
-//                             </div>
-//                         </motion.div>
-//                     )}
-//                 </AnimatePresence>
-//             </header>
-            
-//             {!isMobile && <FloatingActionButtons />}
-//         </>
-//     );
-// };
-
-// export default Header;
-
-
-
-
-
 import React, { useState, useEffect } from 'react';
 import { Link, NavLink as RouterNavLink } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
@@ -198,14 +18,15 @@ import {
     FaUserCircle,
     FaBell,
     FaSignOutAlt,
+    FaGlobe
 } from 'react-icons/fa';
 import { logout } from '../../redux/slices/authSlice.js';
-// --- NEW IMPORTS ---
 import { fetchUnreadCount } from '../../redux/slices/notificationSlice.js';
+import { setLanguage } from '../../redux/slices/uiSlice.js';
+import { useTranslation } from '../../hooks/useTranslation.js';
 import FloatingActionButtons from './FloatingActionButtons';
 import EnableNotificationsButton from './EnableNotificationsButton';
 
-// --- HELPER FOR BADGE ---
 const NotificationIcon = () => {
   const { unreadCount } = useSelector((state) => state.notification);
   return (
@@ -239,8 +60,9 @@ const NavLink = ({ to, icon, text, onClick, end = false }) => (
 
 const Header = () => {
     const { user, isAuthenticated } = useSelector((state) => state.auth);
-    // --- NEW REDUX STATE ---
     const { unreadCount } = useSelector((state) => state.notification);
+    const { language } = useSelector((state) => state.ui);
+    const t = useTranslation();
     const dispatch = useDispatch();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 1200);
@@ -250,22 +72,20 @@ const Header = () => {
         dispatch(logout());
         setIsMenuOpen(false);
     };
+
+    const handleLanguageToggle = () => dispatch(setLanguage(language === 'en' ? 'hi' : 'en'));
     
     const isAdmin = user?.roles?.some((role) =>
         ['admin', 'super-admin', 'super-operator', 'operator', 'satsang-operator'].includes(role)
     );
 
-    // --- NEW EFFECT TO FETCH COUNT ---
     useEffect(() => {
       if (isAuthenticated) {
-        // Fetch count on load, and set up an interval to re-fetch every 5 minutes
         dispatch(fetchUnreadCount());
-        
         const intervalId = setInterval(() => {
           dispatch(fetchUnreadCount());
-        }, 5 * 60 * 1000); // 5 minutes
-
-        return () => clearInterval(intervalId); // Clear interval on component unmount
+        }, 5 * 60 * 1000);
+        return () => clearInterval(intervalId);
       }
     }, [isAuthenticated, dispatch]);
 
@@ -282,7 +102,7 @@ const Header = () => {
 
     return (
         <>
-            <header className="bg-background shadow-soft sticky top-0 z-[999] font-body border-b border-card">
+            <header className="bg-background shadow-soft sticky top-0 z-[999] font-body border-b border-card transition-colors duration-300">
                 <nav className="flex items-center justify-between px-4 py-3">
                     <Link to="/" className="text-2xl font-bold mr-5 text-primaryDark hover:text-opacity-80 transition-colors duration-200 flex items-center gap-x-1 font-heading">
                         <span className="whitespace-nowrap">Adarsh Dham</span>
@@ -290,51 +110,75 @@ const Header = () => {
 
                     {!isMobile && (
                         <div className="flex-1 flex items-center justify-end gap-x-3">
-                            <NavLink to="/" icon={<FaHome />} text="Home" end />
-                            <NavLink to="/about" icon={<FaInfoCircle />} text="About" />
-                            {/* <NavLink to="/calendar" icon={<FaCalendarAlt />} text="Calendar" /> */}
-                            <NavLink to="/events" icon={<FaClipboardList />} text="Event List" />
-                            <NavLink to="/events" icon={<FaBookOpen />} text="Request Booking" />
-                            <NavLink to="/comments" icon={<FaComments />} text="Comments" />
-                            <NavLink to="/contact" icon={<FaPhone className="rotate-90" />} text="Contact" />
+                            <NavLink to="/" icon={<FaHome />} text={t.nav.home} end />
+                            <NavLink to="/about" icon={<FaInfoCircle />} text={t.nav.about} />
+                            <NavLink to="/events" icon={<FaClipboardList />} text={t.nav.eventList} />
+                            <NavLink to="/events" icon={<FaBookOpen />} text={t.nav.requestBooking} />
+                            <NavLink to="/comments" icon={<FaComments />} text={t.nav.comments} />
+                            <NavLink to="/contact" icon={<FaPhone className="rotate-90" />} text={t.nav.contact} />
                             {isAuthenticated && (
                                 <>
-                                    <NavLink to="/my-bookings" icon={<FaClipboardList />} text="My Bookings" />
-                                    {/* --- UPDATED NAVLINK --- */}
+                                    <NavLink to="/my-bookings" icon={<FaClipboardList />} text={t.nav.myBookings} />
                                     <NavLink 
                                       to="/notifications" 
                                       icon={<NotificationIcon />} 
-                                      text="Notifications" 
+                                      text={t.nav.notifications} 
                                     />
+                                    {/* Language Toggle (Desktop - Logged In) */}
+                                    <div className="relative group">
+                                        <button onClick={handleLanguageToggle} className="flex items-center gap-1 px-2 py-1 text-primaryDark font-medium hover:bg-black/5 rounded-md transition-colors" aria-label="Toggle Language">
+                                            <FaGlobe />
+                                            <span>{language.toUpperCase()}</span>
+                                        </button>
+                                        <div className="absolute right-0 top-full mt-2 w-max hidden group-hover:block z-50">
+                                            <div className="bg-card text-primaryDark px-3 py-2 rounded-lg shadow-xl text-sm font-semibold border border-primary/20">
+                                                {t.language.toggleTitle}
+                                            </div>
+                                        </div>
+                                    </div>
                                 </>
                             )}
                         </div>
                     )}
 
                     {!isMobile && !isAuthenticated && (
-                        <div className="flex items-center gap-x-3">
-                            <NavLink to="/login" icon={<FaSignInAlt />} text="Login" />
-                            <NavLink to="/register" icon={<FaUser />} text="Register" />
+                        <div className="flex items-center gap-x-3 ml-2">
+                            <NavLink to="/login" icon={<FaSignInAlt />} text={t.nav.login} />
+                            <NavLink to="/register" icon={<FaUser />} text={t.nav.register} />
+                            {/* Language Toggle (Desktop - Logged Out) */}
+                            <div className="relative group">
+                                <button onClick={handleLanguageToggle} className="flex items-center gap-1 px-2 py-1 text-primaryDark font-medium hover:bg-black/5 rounded-md transition-colors" aria-label="Toggle Language">
+                                    <FaGlobe />
+                                    <span>{language.toUpperCase()}</span>
+                                </button>
+                                <div className="absolute right-0 top-full mt-2 w-max hidden group-hover:block z-50">
+                                    <div className="bg-card text-primaryDark px-3 py-2 rounded-lg shadow-xl text-sm font-semibold border border-primary/20">
+                                        {t.language.toggleTitle}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     )}
                     
                     {isMobile && (
-                        <button
-                            onClick={handleMenuToggle}
-                            className="text-primaryDark p-2 rounded-full hover:bg-card transition-colors duration-200 z-[1000]"
-                        >
-                            <AnimatePresence mode="wait">
-                                <motion.div
-                                    key={isMenuOpen ? 'times' : 'bars'}
-                                    initial={{ scale: 0.5, opacity: 0, rotate: -90 }}
-                                    animate={{ scale: 1, opacity: 1, rotate: 0 }}
-                                    exit={{ scale: 0.5, opacity: 0, rotate: 90 }}
-                                    transition={{ duration: 0.2 }}
-                                >
-                                    {isMenuOpen ? <FaTimes size={28} /> : <FaBars size={28} />}
-                                </motion.div>
-                            </AnimatePresence>
-                        </button>
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={handleMenuToggle}
+                                className="text-primaryDark p-2 rounded-full hover:bg-card transition-colors duration-200 z-[1000]"
+                            >
+                                <AnimatePresence mode="wait">
+                                    <motion.div
+                                        key={isMenuOpen ? 'times' : 'bars'}
+                                        initial={{ scale: 0.5, opacity: 0, rotate: -90 }}
+                                        animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                                        exit={{ scale: 0.5, opacity: 0, rotate: 90 }}
+                                        transition={{ duration: 0.2 }}
+                                    >
+                                        {isMenuOpen ? <FaTimes size={28} /> : <FaBars size={28} />}
+                                    </motion.div>
+                                </AnimatePresence>
+                            </button>
+                        </div>
                     )}
                 </nav>
 
@@ -347,41 +191,44 @@ const Header = () => {
                             transition={{ type: "tween", ease: "easeInOut", duration: 0.4 }}
                             className="fixed top-0 right-0 h-full w-4/5 max-w-sm z-[998] bg-card overflow-y-auto shadow-xl"
                         >
-                            <div className="flex flex-col h-full p-6 pt-24">
+                            <div className="flex flex-col h-full p-6 pt-24 text-gray-800">
                                 <div className="flex flex-col items-start gap-y-6 text-xl">
-                                    <NavLink to="/" icon={<FaHome />} text="Home" onClick={handleMenuToggle} end />
-                                    <NavLink to="/about" icon={<FaInfoCircle />} text="About" onClick={handleMenuToggle} />
-                                    {/* <NavLink to="/calendar" icon={<FaCalendarAlt />} text="Calendar" onClick={handleMenuToggle} /> */}
-                                    <NavLink to="/events" icon={<FaClipboardList />} text="Event List" onClick={handleMenuToggle} />
-                                    <NavLink to="/events" icon={<FaBookOpen />} text="Request Booking" />
-                                    <NavLink to="/comments" icon={<FaComments />} text="Comments" onClick={handleMenuToggle} />
-                                    <NavLink to="/contact" icon={<FaPhone className="rotate-90"/>} text="Contact" onClick={handleMenuToggle} />
+                                    <NavLink to="/" icon={<FaHome />} text={t.nav.home} onClick={handleMenuToggle} end />
+                                    <NavLink to="/about" icon={<FaInfoCircle />} text={t.nav.about} onClick={handleMenuToggle} />
+                                    <NavLink to="/events" icon={<FaClipboardList />} text={t.nav.eventList} onClick={handleMenuToggle} />
+                                    <NavLink to="/events" icon={<FaBookOpen />} text={t.nav.requestBooking} />
+                                    <NavLink to="/comments" icon={<FaComments />} text={t.nav.comments} onClick={handleMenuToggle} />
+                                    <NavLink to="/contact" icon={<FaPhone className="rotate-90"/>} text={t.nav.contact} onClick={handleMenuToggle} />
                                     
                                     <div className="w-full border-t border-background my-4"></div>
                                     
+                                    <button onClick={handleLanguageToggle} className="flex items-center space-x-2 px-3 py-2 text-primaryDark font-medium hover:bg-black/5 rounded-md w-full text-left">
+                                        <FaGlobe />
+                                        <span>{language === 'en' ? t.language.hindi : t.language.english}</span>
+                                    </button>
+
                                     {isAuthenticated ? (
                                         <>
-                                            <NavLink to="/profile" icon={<FaUserCircle />} text="My Profile" onClick={handleMenuToggle} />
-                                            <NavLink to="/my-bookings" icon={<FaClipboardList />} text="My Bookings" onClick={handleMenuToggle} />
+                                            <NavLink to="/profile" icon={<FaUserCircle />} text={t.nav.myProfile} onClick={handleMenuToggle} />
+                                            <NavLink to="/my-bookings" icon={<FaClipboardList />} text={t.nav.myBookings} onClick={handleMenuToggle} />
                                             <div className="my-2"><EnableNotificationsButton /></div>
-                                            {/* --- UPDATED NAVLINK (MOBILE) --- */}
                                             <NavLink 
                                               to="/notifications" 
                                               icon={<NotificationIcon />} 
-                                              text="Notifications History" 
+                                              text={t.nav.notificationsHistory} 
                                               onClick={handleMenuToggle} 
                                             />
-                                            {isAdmin && <NavLink to="/admin" icon={<FaUserShield/>} text="Admin Panel" onClick={handleMenuToggle} />}
+                                            {isAdmin && <NavLink to="/admin" icon={<FaUserShield/>} text={t.nav.adminPanel} onClick={handleMenuToggle} />}
                                             <div className="mt-4">
                                                 <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-2 text-lg text-highlight bg-highlight/10 rounded-lg">
-                                                    <FaSignOutAlt /> Logout
+                                                    <FaSignOutAlt /> {t.nav.logout}
                                                 </button>
                                             </div>
                                         </>
                                     ) : (
                                         <>
-                                            <NavLink to="/login" icon={<FaSignInAlt />} text="Login" onClick={handleMenuToggle} />
-                                            <NavLink to="/register" icon={<FaUser />} text="Register" onClick={handleMenuToggle} />
+                                            <NavLink to="/login" icon={<FaSignInAlt />} text={t.nav.login} onClick={handleMenuToggle} />
+                                            <NavLink to="/register" icon={<FaUser />} text={t.nav.register} onClick={handleMenuToggle} />
                                         </>
                                     )}
                                 </div>

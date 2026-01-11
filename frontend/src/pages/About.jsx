@@ -2,6 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { FaBookOpen, FaHandsHelping, FaLaptopCode } from 'react-icons/fa';
 import { GiLotus } from 'react-icons/gi';
+import { useSelector } from 'react-redux';
+import { useTranslation } from '../hooks/useTranslation';
 
 const containerAnimation = {
     initial: { opacity: 0, y: 50 },
@@ -9,26 +11,6 @@ const containerAnimation = {
     viewport: { once: true },
     transition: { duration: 0.8, ease: "easeOut" }
 };
-
-// const RULES_HINDI = [
-//   { title: "1.) प्रातःकािीन नदनचया:", content: "नदन की र्ुरुआत ननयनमत अनुर्ासन के साथ भजन-अभ्यास और आरती-पूजा से करं। तत्पश्चात प्रेमपूवशक अपने सम्बनधधत सेवा कायशमं िग जाएं।" },
-//   { title: "2.) आध्यानत्मक भागीदारी:", content: "आश्रम की पनवत्रता बनाए रखने के निए, दोनं समय (सुबह और र्ाम) आरती-पूजा मं र्ानमि होना और प्रनतनदन कम से कम 2 घंटे भजन-अभ्यास के निए समनपशत करना अननवायश है।" },
-//   { title: "3.) सरि और र्ुद्ध जीवन:", content: "आत्म-संयम का अभ्यास करं, सानत्वक र्ाकाहारी भोजन ग्रहण करं और सादगीपूणश एवं र्ािीन वस्त्र चुनं, नजससे आंतररक और बाहरी पनवत्रता बनी रहे।" },
-//   { title: "4.) ब्रह्मचय:श", content: "ब्रह्मचयश का पािन सभी के निए अननवायश है और इसे आध्यानत्मक नवकास मं सहायक एक पनवत्र अनुर्ासन माना जाता है; इसका पूरी ननष्ठा और सम्मान के साथ अनुसरण करं।" },
-//   { title: "5.) नेक आचरण नवकनसत करना:", content: "क्रोध या द्वेर् की भावनाओं से बचं और सभी के साथ दया, नवनम्रता, स्नेह और सद्भावना का व्यवहार करं।" },
-//   { title: "6.) समय का साथशक उपयोग:", content: "वाद-नववाद या व्यथश की बातं मं र्ानमि होने के बजाय, अपना समय स्वाध्याय (आध्यानत्मक नर्क्षाओं का अध्ययन) और सत्संग मं व्यतीत करं।" },
-//   { title: "7.) चररत्र की पनवत्रता:", content: "आश्रम वातावरण की पनवत्रता बनाए रखने के निए मन, वचन और कमश मं ईमानदारी, सत्यननष्ठा और नैनतक स्वच्छता बनाए रखं।" },
-//   { title: "8.) सामंजस्यपूणश सामानजक जीवन:", content: "सभी व्यवहार नर्ष्टाचार, सम्मान और प्रेम से प्रेररत हं, नजससे सद्भाव और आपसी समझ का वातावरण बने।" },
-//   { title: "9.) समनपशत जीवन:", content: "प्रत्येक नदन का अनधकतम िाभ उठाते हुए अपने हृदय और प्रयासं को सेवा, भजन-बंदगी और सत्संग मं समनपशत करं।" },
-//   { title: "10.) आंतररक गुणं का पोर्ण:", content: "सचेत अभ्यास के माध्यम से सत्य, सहनर्ीिता, धैय,श संतोर् और करुणा जैसे गुणं को नवकनसत करं।" },
-//   { title: "11.) आत्म-सुधार:", content: "दूसरं की कनमयं पर ध्यान कंनित करने के बजाय, अपनी स्वयं की कनमयं को सुधारने पर ध्यान दं।" },
-//   { title: "12. भनतत के नसद्धंत:", content: "भनतत के नसद्धंतं को अपनाएं और खुिे मन से श्री आज्ञा का पािन करने के निए तत्पर रहं।" },
-//   { title: "13.) गुरु-ननष्ठा:", content: "श्री सद्गुरुदेव जी महाराज के श्री चरणं मं अटि श्रद्धा, भनतत और नवश्वास रखते हुए सदैव सद्गुरु की पनवत्र आज्ञा व श्री मौज मं प्रसन्न रहं।" },
-//   { title: "14.) जीवन का िक्ष्य:", content: "हमेर्ा अपने अंनतम िक्ष्य— \"आत्मा का कल्याण\" —को याद रखं और एक व्यावहाररक एवं उद्देश्यपूणश जीवन नजएं।" },
-//   { title: "15.) सकारात्मक दनष्टकोण ृ :", content: "प्रसन्ननचत्त रहं, तयंनक प्रसन्ननचत्त व्यनतत ही प्रत्येक कायश मं सफिता प्राप्त कर सकता है। यह प्रसन्नता तथा र्ानधत केवि सच्चे नाम से तथा उपरनिनखत ननयमं का पािन करने से ही प्राप्त हो सकती है।" },
-//   { title: "16.) अनुर्ासन:", content: "सभी भततं और आगंतुकं से नवनम्र अनुरोध है नक वे श्री दरबार के ननयमं और नदर्ा-ननदेर्ं का सम्मान करं और प्रबंधन सनमनत के मागदर्शन मं सहयोग कर श ं।" }
-// ];
-
 
 const RULES_HINDI = [
   {
@@ -212,6 +194,8 @@ const RulesSection = () => {
 };
 
 const About = () => {
+  const t = useTranslation();
+
   return (
     <div className="min-h-screen bg-neutral font-body">
       <main className="container mx-auto px-4 py-16 md:py-24 space-y-12">
@@ -224,12 +208,12 @@ const About = () => {
         >
           <div className="text-center">
             <h1 className="text-4xl md:text-5xl font-bold font-heading text-primaryDark">
-              About Shri Adarsh Dham
+              {t.about.title}
             </h1>
-            <p className="mt-2 text-lg text-highlight font-semibold">A Sanctuary for Spiritual Growth</p>
+            <p className="mt-2 text-lg text-highlight font-semibold">{t.about.subtitle}</p>
             <div className="w-24 h-1 bg-primary mx-auto my-6 rounded-full"></div>
             <p className="max-w-3xl mx-auto text-lg text-gray-700 leading-relaxed">
-              Located on Ramnagar Road in Kashipur, Uttarakhand, Shri Adarsh Dham Ashram is a serene sanctuary enveloped by nature. Affiliated with Shri Anandpur Trust and founded by visionary spiritual leaders, the ashram is dedicated to the profound journey of spiritual growth and self-realization.
+              {t.about.desc}
             </p>
           </div>
         </motion.div>
@@ -244,9 +228,9 @@ const About = () => {
             <div className="text-5xl text-primary mb-4">
               <FaBookOpen />
             </div>
-            <h2 className="text-2xl font-bold font-heading text-primaryDark mb-3">Spiritual Philosophy</h2>
+            <h2 className="text-2xl font-bold font-heading text-primaryDark mb-3">{t.about.philosophy.title}</h2>
             <p className="text-gray-700">
-              Our philosophy is rooted in <strong>Bhakti-Paramarth</strong>, highlighting the eternal essence of pure devotion and spiritual knowledge.
+              {t.about.philosophy.desc}
             </p>
           </motion.div>
 
@@ -258,9 +242,9 @@ const About = () => {
             <div className="text-5xl text-primary mb-4">
               <GiLotus />
             </div>
-            <h2 className="text-2xl font-bold font-heading text-primaryDark mb-3">Our Objectives</h2>
+            <h2 className="text-2xl font-bold font-heading text-primaryDark mb-3">{t.about.objectives.title}</h2>
             <p className="text-gray-700">
-              To foster a deeper understanding of spirituality, promote selfless services (sewa), and cultivate the knowledge of self-realization.
+              {t.about.objectives.desc}
             </p>
           </motion.div>
         </div>
@@ -272,15 +256,14 @@ const About = () => {
           className="bg-card rounded-2xl shadow-soft hover:shadow-accent p-8 md:p-12 grid md:grid-cols-2 gap-8 items-center cursor-pointer"
         >
           <div className="text-center md:text-left">
-              <h2 className="text-3xl font-bold font-heading text-primaryDark mb-4">Activities for the Soul</h2>
+              <h2 className="text-3xl font-bold font-heading text-primaryDark mb-4">{t.about.activities.title}</h2>
               <p className="text-gray-700 leading-relaxed mb-6">
-                  We offer a variety of practices designed to quiet the mind and open the heart.
+                  {t.about.activities.desc}
               </p>
               <ul className="space-y-3 text-gray-700 text-left">
-                  <li className="flex items-center"><FaHandsHelping className="text-primary mr-3 text-xl" /> Meditation & Self-Reflection</li>
-                  <li className="flex items-center"><FaHandsHelping className="text-primary mr-3 text-xl" /> Discourses on Spiritual Texts</li>
-                  <li className="flex items-center"><FaHandsHelping className="text-primary mr-3 text-xl" /> Kirtans and Bhajans</li>
-                  <li className="flex items-center"><FaHandsHelping className="text-primary mr-3 text-xl" /> Community Service (Sewa)</li>
+                  {t.about.activities.list.map((item, index) => (
+                    <li key={index} className="flex items-center"><FaHandsHelping className="text-primary mr-3 text-xl" /> {item}</li>
+                  ))}
               </ul>
           </div>
           <div className="hidden md:flex justify-center items-center">
@@ -290,21 +273,6 @@ const About = () => {
 
         {/* --- Rules Section (Flippable) --- */}
         <RulesSection />
-{/* 
-        --- Container 4: Digital Sanctuary ---
-        <motion.div
-          {...containerAnimation}
-          whileHover={{ y: -8, scale: 1.03, transition: { type: 'spring', stiffness: 300 } }}
-          className="bg-card rounded-2xl shadow-soft hover:shadow-accent p-8 flex flex-col items-center text-center cursor-pointer"
-        >
-            <div className="text-5xl text-primary mb-4">
-                <FaLaptopCode />
-            </div>
-            <h2 className="text-2xl font-bold font-heading text-primaryDark mb-3">Our Digital Sanctuary</h2>
-            <p className="text-gray-700 max-w-2xl">
-              This web application is an extension of our principle of sewa. It is designed to streamline event and accommodation management, allowing our community to seamlessly request lodging and stay updated.
-            </p>
-        </motion.div> */}
 
       </main>
     </div>

@@ -7,6 +7,7 @@ import { Tooltip } from "react-tooltip";
 import api from "../api/api.js";
 import EventCard from "../components/shared/EventCard.jsx";
 import { useParams, useNavigate } from "react-router-dom";
+import { useTranslation } from "../hooks/useTranslation";
 
 const theme = {
   card: "#EEDAC5",
@@ -159,6 +160,7 @@ input[type="date"]:focus {
 `;
 
 const EventsPage = () => {
+  const t = useTranslation();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -177,13 +179,13 @@ const EventsPage = () => {
         const response = await api.get("/events");
         setEvents(Array.isArray(response.data) ? response.data : []);
       } catch (err) {
-        setError("Failed to fetch events. Please try again later.");
+        setError(t.events.error);
       } finally {
         setLoading(false);
       }
     };
     fetchEvents();
-  }, []);
+  }, [t.events.error]);
 
   useEffect(() => {
     if (date) {
@@ -355,9 +357,9 @@ const EventsPage = () => {
       if (bookingAvailableMap.has(key)) {
         const bs = event.bookingStartDate ? new Date(event.bookingStartDate).toLocaleDateString('en-GB') : "";
         const be = event.bookingEndDate ? new Date(event.bookingEndDate).toLocaleDateString('en-GB') : "";
-        content = `Booking open for ${event.name} (${bs} — ${be})`;
+        content = `${t.events.bookingOpenFor} ${event.name} (${bs} — ${be})`;
       } else if (eventRangeMap.has(key)) {
-        content = `${event.name} (in progress)`;
+        content = `${event.name} (${t.events.inProgress})`;
       }
 
       return (
@@ -377,7 +379,7 @@ const EventsPage = () => {
     return (
       <div className="text-center p-10 flex justify-center items-center min-h-screen bg-neutral font-body">
         <FaSpinner className="animate-spin mr-3 text-primary text-4xl" />
-        <p className="text-xl text-gray-700">Loading events...</p>
+        <p className="text-xl text-gray-700">{t.events.loading}</p>
       </div>
     );
 
@@ -403,7 +405,7 @@ const EventsPage = () => {
             }}
             className={`px-4 py-2 rounded-lg font-semibold flex items-center space-x-2 ${viewMode === "list" ? "bg-primaryDark text-white shadow-lg" : "bg-card text-gray-700"}`}
           >
-            <FaList /> <span>All Events</span>
+            <FaList /> <span>{t.events.allEvents}</span>
           </button>
           <button
             onClick={() => {
@@ -413,7 +415,7 @@ const EventsPage = () => {
             }}
             className={`px-4 py-2 rounded-lg font-semibold flex items-center space-x-2 ${viewMode === "calendar" ? "bg-primaryDark text-white shadow-lg" : "bg-card text-gray-700"}`}
           >
-            <FaCalendarAlt /> <span>Calendar</span>
+            <FaCalendarAlt /> <span>{t.events.calendar}</span>
           </button>
         </div>
 
@@ -421,11 +423,11 @@ const EventsPage = () => {
           <div className="events-legend">
             <div className="legend-item">
               <span className="legend-swatch" style={{ background: theme.booking }} />
-              <span>Booking Dates</span>
+              <span>{t.events.bookingDates}</span>
             </div>
             <div className="legend-item">
               <span className="legend-swatch" style={{ background: `${theme.primary}33` }} />
-              <span>Event In Progress</span>
+              <span>{t.events.eventInProgress}</span>
             </div>
           </div>
         )}
@@ -433,7 +435,7 @@ const EventsPage = () => {
 
       {viewMode === "calendar" && (
         <div className="p-4 bg-card rounded-2xl shadow-soft max-w-3xl mx-auto">
-          <h2 className="text-2xl font-bold text-primaryDark text-center mb-4">Event Calendar</h2>
+          <h2 className="text-2xl font-bold text-primaryDark text-center mb-4">{t.events.calendar}</h2>
           <div className="flex justify-center mb-4">
             <input type="date" value={dateInput} onChange={handleDateChange} className="p-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-primary" />
           </div>
@@ -449,24 +451,24 @@ const EventsPage = () => {
 
       {viewMode === "list" && (
         <div className="p-4 md:p-8 bg-[#FFEAD9] rounded-2xl shadow-soft">
-          <h2 className="text-2xl font-bold font-heading text-primaryDark text-center mb-4">{date ? `Events on ${new Date(date).toDateString()}` : "All Events"}</h2>
+          <h2 className="text-2xl font-bold font-heading text-primaryDark text-center mb-4">{date ? `${t.events.eventsOn} ${new Date(date).toDateString()}` : t.events.allEvents}</h2>
           <div className="relative flex items-center mb-6 max-w-md mx-auto">
             <FaSearch className="absolute left-3 text-gray-400" />
-            <input type="text" placeholder="Search events..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 p-2 border border-background rounded-lg focus:ring-2 focus:ring-primary" />
+            <input type="text" placeholder={t.events.searchPlaceholder} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 p-2 border border-background rounded-lg focus:ring-2 focus:ring-primary" />
           </div>
 
           <motion.div className="space-y-8" ref={eventListRef} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             {closestUpcoming && (
               <div className="mb-6 p-4 bg-highlight/10 border-l-4 border-highlight rounded-lg shadow-sm">
-                <h3 className="font-semibold text-highlight mb-2">Next Event</h3>
+                <h3 className="font-semibold text-highlight mb-2">{t.events.nextEvent}</h3>
                 <EventCard event={closestUpcoming} />
               </div>
             )}
 
             {[
-              ["Upcoming Events", upcomingEvents],
-              ["Ongoing Events", ongoingEvents],
-              ["Finished Events", finishedEvents],
+              [t.events.upcomingEvents, upcomingEvents],
+              [t.events.ongoingEvents, ongoingEvents],
+              [t.events.finishedEvents, finishedEvents],
             ].map(([title, list]) =>
               list.length > 0 ? (
                 <div key={title}>

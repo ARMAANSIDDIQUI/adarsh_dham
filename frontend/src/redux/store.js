@@ -14,22 +14,23 @@ import storage from 'redux-persist/lib/storage'; // defaults to localStorage for
 
 import authReducer from './slices/authSlice';
 import bookingReducer from './slices/bookingSlice';
-import notificationReducer from './slices/notificationSlice'; // <-- ADD THIS
+import notificationReducer from './slices/notificationSlice'; 
+import uiReducer from './slices/uiSlice'; // <--- ADD THIS
 
 // 1. Configuration for Redux Persist
 const persistConfig = {
   key: 'root',
   storage,
-  // Only persist the 'auth' slice
-  // We do NOT persist 'notification' as it should be fresh on every load.
-  whitelist: ['auth'], 
+  // Persist auth and ui (preferences)
+  whitelist: ['auth', 'ui'], 
 };
 
 // 2. Combine reducers
 const rootReducer = combineReducers({
   auth: authReducer,
   booking: bookingReducer,
-  notification: notificationReducer, // <-- ADD THIS
+  notification: notificationReducer,
+  ui: uiReducer, // <--- ADD THIS
 });
 
 // 3. Create a persisted reducer wrapper

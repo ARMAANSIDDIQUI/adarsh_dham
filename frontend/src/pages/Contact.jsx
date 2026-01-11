@@ -3,6 +3,7 @@ import emailjs from '@emailjs/browser';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
 import { FaSpinner } from 'react-icons/fa';
+import { useTranslation } from '../hooks/useTranslation';
 
 // Configuration object for EmailJS keys
 const emailJsConfig = {
@@ -24,6 +25,7 @@ const FaPhone = (props) => (
 );
 
 const Contact = () => {
+    const t = useTranslation();
     const form = useRef();
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({ name: '', email: '', message: '' });
@@ -51,7 +53,7 @@ const Contact = () => {
             .then(
                 (result) => {
                     console.log('SUCCESS!', result.text);
-                    toast.success('Your message has been sent successfully!');
+                    toast.success(t.contact.form.success);
                     form.current.reset();
                     setFormData({ name: '', email: '', message: '' }); // Reset local state as well
                 },
@@ -60,7 +62,7 @@ const Contact = () => {
                     // The 400 error is likely here due to placeholder keys or title
                     toast.error(error.status === 400 
                         ? 'Failed to send: Check EmailJS template/key configuration.' 
-                        : 'Failed to send message. Please try again later.');
+                        : t.contact.form.error);
                 }
             ).finally(() => {
                 setLoading(false);
@@ -70,11 +72,11 @@ const Contact = () => {
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="container mx-auto p-4 md:p-10 min-h-screen bg-neutral font-body">
             <h1 className="text-3xl md:text-4xl font-bold font-heading text-primaryDark text-center mb-8 border-b-2 border-primary pb-3">
-                Contact Us
+                {t.contact.title}
             </h1>
             <div className="max-w-3xl mx-auto bg-card p-6 md:p-10 rounded-2xl shadow-soft text-gray-700 space-y-8">
                 <p className="text-center text-lg text-gray-700">
-                    For any inquiries regarding accommodations, events, or general information, please feel free to reach out to us. We are here to help.
+                    {t.contact.intro}
                 </p>
 
                 {/* Configuration Warning */}
@@ -89,25 +91,25 @@ const Contact = () => {
                     {/* 1. Address Block */}
                     <div className="flex flex-col items-center space-y-3 p-4 bg-background rounded-xl">
                         <FaMapMarkerAlt className="text-primaryDark w-6 h-6 flex-shrink-0" />
-                        <h3 className="text-xl font-semibold font-heading text-gray-800">Address</h3>
+                        <h3 className="text-xl font-semibold font-heading text-gray-800">{t.contact.address.title}</h3>
                         <p className="text-xs text-gray-700 text-center leading-relaxed">
-                            Shri Adarsh Dham, 9th KM Stone, Kashipur-Ramnagar Road, Village Bhogpur, Kashipur (Uttarakhand) Pin-244713
+                            {t.contact.address.text}
                         </p>
                     </div>
                     {/* 2. Email Block */}
                     <div className="flex flex-col items-center space-y-3 p-4 bg-background rounded-xl">
                         <FaEnvelope className="text-primaryDark w-6 h-6 flex-shrink-0" />
-                        <h3 className="text-xl font-semibold font-heading text-gray-800">Email</h3>
+                        <h3 className="text-xl font-semibold font-heading text-gray-800">{t.contact.email.title}</h3>
                         <a href="mailto:ssdn.kashipur@gmail.com" className="text-sm text-gray-700 hover:text-highlight transition-colors whitespace-nowrap">ssdn.kashipur@gmail.com</a>
                         <div className="h-4"></div> {/* Spacer to balance height with the Phone block */}
                     </div>
                     {/* 3. Phone Block */}
                     <div className="flex flex-col items-center space-y-3 p-4 bg-background rounded-xl">
                         <FaPhone className="text-primaryDark w-6 h-6 flex-shrink-0" />
-                        <h3 className="text-xl font-semibold font-heading text-gray-800">Phone</h3>
+                        <h3 className="text-xl font-semibold font-heading text-gray-800">{t.contact.phone.title}</h3>
                         <a href="tel:+919837050318" className="text-sm text-gray-700 hover:text-highlight transition-colors whitespace-nowrap">+91 98370 50318</a>
                         <div className="text-xs text-gray-600 text-center space-y-0.5">
-                            <p>Timing:</p>
+                            <p>{t.contact.phone.timing}</p>
                             <p>9:00 A.M - 1:00 P.M</p>
                             <p>4:00 P.M - 6:00 P.M</p>
                         </div>
@@ -115,13 +117,13 @@ const Contact = () => {
                 </div>
 
                 <form ref={form} onSubmit={sendEmail} className="mt-8 space-y-4 pt-4">
-                    <h3 className="text-2xl font-bold font-heading text-primaryDark mb-4 text-center">Send Us a Message</h3>
+                    <h3 className="text-2xl font-bold font-heading text-primaryDark mb-4 text-center">{t.contact.form.title}</h3>
                     
                     {/* HIDDEN INPUT FOR TEMPLATE SUBJECT/TITLE */}
                     <input type="hidden" name="title" value="New Contact Inquiry from Adarsh Dham Website" />
 
                     <div>
-                        <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
+                        <label htmlFor="name" className="block text-sm font-medium text-gray-700">{t.contact.form.name}</label>
                         <input 
                             type="text" 
                             id="name" 
@@ -129,12 +131,12 @@ const Contact = () => {
                             value={formData.name}
                             onChange={handleChange}
                             className="mt-1 block w-full px-4 py-2 border border-background rounded-lg shadow-sm focus:ring-primary focus:border-primary transition-colors" 
-                            placeholder="Your Full Name" 
+                            placeholder={t.contact.form.placeholderName} 
                             required 
                         />
                     </div>
                     <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+                        <label htmlFor="email" className="block text-sm font-medium text-gray-700">{t.contact.form.email}</label>
                         <input 
                             type="email" 
                             id="email" 
@@ -142,12 +144,12 @@ const Contact = () => {
                             value={formData.email}
                             onChange={handleChange}
                             className="mt-1 block w-full px-4 py-2 border border-background rounded-lg shadow-sm focus:ring-primary focus:border-primary transition-colors" 
-                            placeholder="your.email@example.com" 
+                            placeholder={t.contact.form.placeholderEmail} 
                             required 
                         />
                     </div>
                     <div>
-                        <label htmlFor="message" className="block text-sm font-medium text-gray-700">Message</label>
+                        <label htmlFor="message" className="block text-sm font-medium text-gray-700">{t.contact.form.message}</label>
                         <textarea 
                             id="message" 
                             name="message" 
@@ -155,7 +157,7 @@ const Contact = () => {
                             value={formData.message}
                             onChange={handleChange}
                             className="mt-1 block w-full px-4 py-2 border border-background rounded-lg shadow-sm focus:ring-primary focus:border-primary transition-colors" 
-                            placeholder="How can we help you?" 
+                            placeholder={t.contact.form.placeholderMessage} 
                             required
                         ></textarea>
                     </div>
@@ -168,12 +170,12 @@ const Contact = () => {
                                 : 'bg-highlight hover:bg-primaryDark' // Enabled state
                             }`}
                     >
-                        {loading ? <FaSpinner className="animate-spin mr-2" /> : 'Send Message'}
+                        {loading ? <FaSpinner className="animate-spin mr-2" /> : t.contact.form.send}
                     </button>
                 </form>
 
                 <div className="border-b pb-8 border-background">
-                    <h3 className="text-2xl font-bold font-heading text-primaryDark mb-4 text-center">Find Us</h3>
+                    <h3 className="text-2xl font-bold font-heading text-primaryDark mb-4 text-center">{t.contact.map.title}</h3>
                     <div className="aspect-w-16 aspect-h-9 rounded-2xl overflow-hidden shadow-soft border border-background">
                         <iframe 
                             src="https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d3480.356567685083!2d78.99835587552448!3d29.2718581753217!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zMjnCsDE2JzE4LjciTiA3OcKwMDAnMDMuNCJF!5e0!3m2!1sen!2sin!4v1759582987964!5m2!1sen!2sin" 

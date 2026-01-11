@@ -1,14 +1,16 @@
 import React from 'react';
 import { FaYoutube, FaMapMarkerAlt, FaEnvelope, FaPhone } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const Footer = () => {
+    const t = useTranslation();
+
     // Contact and Navigation data
     const contactInfo = [
-        // FIX: Removed the invalid inline rotation from the array definition.
         { icon: FaPhone, text: '+91 98370 50318', href: 'tel:+919837050318' },
         { icon: FaEnvelope, text: 'ssdn.kashipur@gmail.com', href: 'mailto:ssdn.kashipur@gmail.com' },
-        { icon: FaMapMarkerAlt, text: 'View Location on Map', href: 'https://maps.app.goo.gl/6PoBTt7PZsXmXT5n8?g_st=awb', target: '_blank' },
+        { icon: FaMapMarkerAlt, text: t.home.footer.viewMap, href: 'https://maps.app.goo.gl/6PoBTt7PZsXmXT5n8?g_st=awb', target: '_blank' },
     ];
 
     const socialLinks = [
@@ -16,10 +18,10 @@ const Footer = () => {
     ];
 
     const mainNavLinks = [
-        { text: 'Home', to: '/' },
-        { text: 'Calendar', to: '/calendar' },
-        { text: 'Events List', to: '/events' },
-        { text: 'Contact Us', to: '/contact' },
+        { text: t.nav.home, to: '/' },
+        { text: t.nav.calendar, to: '/calendar' },
+        { text: t.nav.eventList, to: '/events' },
+        { text: t.nav.contact, to: '/contact' },
     ];
 
     return (
@@ -33,13 +35,13 @@ const Footer = () => {
                     <div className="col-span-2 md:col-span-1">
                         <h3 className="text-2xl font-bold font-heading text-white mb-4">Adarsh Dham</h3>
                         <p className="text-sm text-neutral/80">
-                            Dedicated to spiritual guidance and community welfare in Uttarakhand.
+                            {t.home.footer.desc}
                         </p>
                     </div>
 
                     {/* Column 2: Quick Links */}
                     <div>
-                        <h4 className="text-lg font-semibold text-white mb-4 uppercase tracking-wider">Quick Links</h4>
+                        <h4 className="text-lg font-semibold text-white mb-4 uppercase tracking-wider">{t.home.quickLinks.title}</h4>
                         <ul className="space-y-2">
                             {mainNavLinks.map((link, index) => (
                                 <li key={index}>
@@ -56,7 +58,7 @@ const Footer = () => {
 
                     {/* Column 3: Contact Information */}
                     <div>
-                        <h4 className="text-lg font-semibold text-white mb-4 uppercase tracking-wider">Get in Touch</h4>
+                        <h4 className="text-lg font-semibold text-white mb-4 uppercase tracking-wider">{t.home.footer.getInTouch}</h4>
                         <ul className="space-y-3">
                             {contactInfo.map((item, index) => {
                                 // Determine additional classes for the icon (only rotation for FaPhone)
@@ -64,7 +66,6 @@ const Footer = () => {
                                 
                                 return (
                                     <li key={index} className="flex items-start text-sm">
-                                        {/* FIX: Apply rotation class directly here, using item.icon as the component reference */}
                                         <item.icon className={`w-4 h-4 mr-3 mt-1 flex-shrink-0 text-accent ${iconClasses}`} />
                                         <a 
                                             href={item.href} 
@@ -82,7 +83,7 @@ const Footer = () => {
                     
                     {/* Column 4: Social Media & Connect */}
                     <div>
-                        <h4 className="text-lg font-semibold text-white mb-4 uppercase tracking-wider">Connect</h4>
+                        <h4 className="text-lg font-semibold text-white mb-4 uppercase tracking-wider">{t.home.footer.connect}</h4>
                         
                         <div className="flex space-x-4 mb-6">
                             {socialLinks.map((link, index) => (
@@ -108,7 +109,7 @@ const Footer = () => {
                 {/* Copyright */}
                 <div className="text-center">
                     <p className="text-sm font-light text-neutral/60">
-                        &copy; {new Date().getFullYear()} Adarsh Dham. All rights reserved.
+                        &copy; {new Date().getFullYear()} Adarsh Dham. {t.home.footer.rights}
                     </p>
                 </div>
             </div>

@@ -4,9 +4,10 @@ import api from '../../api/api';
 import { motion } from 'framer-motion';
 import { FaLock, FaPhoneAlt, FaUser, FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const RegisterForm = () => {
-    // Consolidated form data into a single state object
+    const t = useTranslation();
     const [formData, setFormData] = useState({
         name: '',
         phone: '',
@@ -14,7 +15,6 @@ const RegisterForm = () => {
         confirmPassword: '',
     });
     
-    // Changed error state to an object for field-specific messages
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
@@ -22,12 +22,10 @@ const RegisterForm = () => {
     
     const navigate = useNavigate();
 
-    // --- NEW: Unified handleChange with input restrictions ---
     const handleChange = (e) => {
         const { name, value } = e.target;
 
         if (name === 'phone') {
-            // Remove non-digits and limit to 10 characters
             const sanitizedValue = value.replace(/\D/g, '');
             const truncatedValue = sanitizedValue.slice(0, 10);
             setFormData({ ...formData, [name]: truncatedValue });
@@ -35,26 +33,24 @@ const RegisterForm = () => {
             setFormData({ ...formData, [name]: value });
         }
 
-        // Clear the error for the field being edited
         if (errors[name]) {
             setErrors({ ...errors, [name]: null });
         }
     };
 
-    // --- NEW: Comprehensive validation logic ---
     const validateForm = () => {
         const newErrors = {};
         if (!formData.name.trim()) {
-            newErrors.name = 'Full name is required.';
+            newErrors.name = t.register.error.nameRequired;
         }
         if (!/^\d{10}$/.test(formData.phone)) {
-            newErrors.phone = 'Phone number must be exactly 10 digits.';
+            newErrors.phone = t.register.error.phoneLength;
         }
         if (formData.password.length < 6) {
-            newErrors.password = 'Password must be at least 6 characters long.';
+            newErrors.password = t.register.error.passwordLength;
         }
         if (formData.password !== formData.confirmPassword) {
-            newErrors.confirmPassword = 'Passwords do not match.';
+            newErrors.confirmPassword = t.register.error.passwordMatch;
         }
         return newErrors;
     };
@@ -72,12 +68,12 @@ const RegisterForm = () => {
         try {
             const { name, phone, password } = formData;
             await api.post('/auth/register', { name, phone, password });
-            toast.success('Registration successful! Redirecting to login...');
+            toast.success(t.register.error.success);
             setTimeout(() => {
                 navigate('/login');
             }, 2000);
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Registration failed. Please try again.');
+            toast.error(err.response?.data?.message || t.register.error.generic);
         } finally {
             setLoading(false);
         }
@@ -88,12 +84,12 @@ const RegisterForm = () => {
     return (
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="p-4 md:p-8 flex items-center justify-center bg-neutral font-body">
             <div className="bg-card rounded-2xl shadow-soft max-w-md w-full p-6 md:p-8 border border-background">
-                <h2 className="text-3xl font-bold font-heading mb-6 text-center text-primaryDark">Create Account</h2>
+                <h2 className="text-3xl font-bold font-heading mb-6 text-center text-primaryDark">{t.register.title}</h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     
                     {/* Full Name Field */}
                     <div>
-                        <label htmlFor="name" className="block text-sm font-medium text-gray-700">Full Name</label>
+                        <label htmlFor="name" className="block text-sm font-medium text-gray-700">{t.register.nameLabel}</label>
                         <div className="relative mt-1">
                             <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-accent" />
                             <input
@@ -111,7 +107,7 @@ const RegisterForm = () => {
 
                     {/* Phone Number Field */}
                     <div>
-                        <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone Number</label>
+                        <label htmlFor="phone" className="block text-sm font-medium text-gray-700">{t.register.phoneLabel}</label>
                         <div className="relative mt-1">
                             <FaPhoneAlt className="absolute left-3 top-1/2 transform -translate-y-1/2 text-accent" />
                             <input
@@ -122,7 +118,7 @@ const RegisterForm = () => {
                                 value={formData.phone}
                                 onChange={handleChange}
                                 className={`block w-full pl-10 pr-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-shadow ${errors.phone ? 'border-red-500' : 'border-background'}`}
-                                placeholder="10-digit mobile number"
+                                placeholder={t.register.phonePlaceholder}
                                 required
                             />
                         </div>
@@ -131,7 +127,7 @@ const RegisterForm = () => {
 
                     {/* Password Field */}
                     <div>
-                        <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+                        <label htmlFor="password" className="block text-sm font-medium text-gray-700">{t.register.passwordLabel}</label>
                         <div className="relative mt-1">
                             <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-accent" />
                             <input
@@ -155,7 +151,7 @@ const RegisterForm = () => {
 
                     {/* Confirm Password Field */}
                     <div>
-                        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">Confirm Password</label>
+                        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">{t.register.confirmPasswordLabel}</label>
                         <div className="relative mt-1">
                             <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-accent" />
                             <input
@@ -185,18 +181,18 @@ const RegisterForm = () => {
                         >
                             {loading ? (
                                 <>
-                                    <FaSpinner className="animate-spin mr-2 h-5 w-5" /> Registering...
+                                    <FaSpinner className="animate-spin mr-2 h-5 w-5" /> {t.register.registering}
                                 </>
                             ) : (
-                                'Register'
+                                t.register.button
                             )}
                         </button>
                     </div>
                     
                     <p className="text-center text-sm text-gray-700 pt-2">
-                        Already have an account? 
+                        {t.register.alreadyAccount}{' '}
                         <Link to="/login" className="text-highlight hover:underline font-semibold ml-1 transition-colors">
-                            Login here
+                            {t.register.loginHere}
                         </Link>
                     </p>
                 </form>
