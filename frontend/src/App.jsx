@@ -28,6 +28,8 @@ import Footer from './components/common/Footer.jsx';
 import ProtectedRoute from './components/common/ProtectedRoute.jsx';
 import ScrollToTopButton from './components/common/ScrollToTopButton.jsx'; 
 import ScrollToTopOnMount from './components/common/ScrollToTopOnMount.jsx';
+import NetworkStatusModal from './components/common/NetworkStatusModal.jsx';
+import InstallPWAPrompt from './components/common/InstallPWAPrompt.jsx';
 
 const PageTransition = ({ children }) => {
     const location = useLocation();
@@ -103,7 +105,8 @@ function App() {
     return (
         <Router>
             <ScrollToTopOnMount /> 
-            
+            <NetworkStatusModal />
+            <InstallPWAPrompt />
             <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} />            
             <AppLayout />
             

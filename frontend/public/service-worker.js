@@ -26,3 +26,8 @@ self.addEventListener('notificationclick', event => {
         clients.openWindow(event.notification.data.url)
     );
 });
+
+// PWA Requirement: Functional fetch handler
+self.addEventListener('fetch', (event) => {
+    event.respondWith(fetch(event.request));
+});

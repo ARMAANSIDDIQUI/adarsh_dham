@@ -123,7 +123,7 @@ const RulesSection = () => {
   return (
     <div className="flex justify-center my-12">
       <motion.div
-        className="relative w-full max-w-7xl bg-card rounded-2xl shadow-soft cursor-default text-gray-700 border border-gray-100 grid" // Removed cursor-pointer and hover effect
+        className="relative w-full max-w-7xl bg-card rounded-2xl shadow-soft hover:shadow-accent transform hover:-translate-y-1 transition-all duration-300 text-gray-700 grid"
         initial={{ opacity: 0, y: 50 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}

@@ -29,6 +29,64 @@
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
+    <div id="root">
+      <style>
+        body { margin: 0; padding: 0; background-color: #F5F5DC; }
+        .app-loading {
+          position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+          display: flex; flex-direction: column; align-items: center; justify-content: center;
+          background-color: #F5F5DC; z-index: 9999;
+          font-family: 'Times New Roman', serif;
+        }
+        .app-loading-logo-container {
+          position: relative; width: 128px; height: 128px; margin-bottom: 24px;
+        }
+        .app-loading-logo-bg {
+          position: absolute; inset: 0; background-color: rgba(226, 156, 156, 0.2); border-radius: 50%;
+          animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+        .app-loading-logo-inner {
+          position: absolute; inset: 8px; background-color: #EEDAC5; border-radius: 50%;
+          display: flex; align-items: center; justify-content: center;
+          border: 4px solid #E29C9C; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .app-loading-logo-img { width: 80px; height: 80px; object-fit: contain; }
+        .app-loading-title {
+          font-size: 32px; font-weight: bold; color: #f6339a; margin-bottom: 8px; letter-spacing: 0.05em;
+        }
+        .app-loading-subtitle {
+          color: #D4A373; font-size: 14px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.15em; font-family: sans-serif;
+        }
+        .app-loading-dots { display: flex; gap: 8px; margin-top: 32px; }
+        .app-loading-dot {
+          width: 12px; height: 12px; border-radius: 50%; animation: bounce 1s infinite;
+        }
+        .dot-1 { background-color: #E29C9C; animation-delay: 0s; }
+        .dot-2 { background-color: #f6339a; animation-delay: 0.2s; }
+        .dot-3 { background-color: #D4A373; animation-delay: 0.4s; }
+        @keyframes ping {
+          75%, 100% { transform: scale(2); opacity: 0; }
+        }
+        @keyframes bounce {
+          0%, 100% { transform: translateY(-25%); animation-timing-function: cubic-bezier(0.8,0,1,1); }
+          50% { transform: translateY(0); animation-timing-function: cubic-bezier(0,0,0.2,1); }
+        }
+      </style>
+      <div class="app-loading">
+        <div class="app-loading-logo-container">
+          <div class="app-loading-logo-bg"></div>
+          <div class="app-loading-logo-inner">
+            <img src="/VM401196.png" alt="Adarsh Dham" class="app-loading-logo-img" />
+          </div>
+        </div>
+        <h1 class="app-loading-title">Adarsh Dham</h1>
+        <p class="app-loading-subtitle">Spiritual Sanctuary</p>
+        <div class="app-loading-dots">
+          <div class="app-loading-dot dot-1"></div>
+          <div class="app-loading-dot dot-2"></div>
+          <div class="app-loading-dot dot-3"></div>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

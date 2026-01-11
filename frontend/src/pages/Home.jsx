@@ -267,7 +267,9 @@ const Home = () => {
 
         if (upcoming.length > 0) {
           setUpcomingEvent(upcoming[0]);
-          setIsModalOpen(true);
+          setTimeout(() => {
+            setIsModalOpen(true);
+          }, 2000);
         }
 
       } catch (error) {

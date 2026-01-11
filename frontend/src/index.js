@@ -6,6 +6,7 @@ import { PersistGate } from 'redux-persist/integration/react';
 import 'react-toastify/dist/ReactToastify.css';
 import './styles/index.css';
 import App from './App';
+import Loading from './components/common/Loading';
 
 // This tells the browser to install and run your /public/service-worker.js file.
 if ('serviceWorker' in navigator) {
@@ -24,7 +25,7 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}> 
+      <PersistGate loading={<Loading />} persistor={persistor}> 
         <App />
       </PersistGate>
     </Provider>
