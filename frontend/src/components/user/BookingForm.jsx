@@ -509,8 +509,33 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
           <div className="pt-4">
             <Button
               type="submit"
-              className="w-full text-lg py-3 shadow-soft bg-highlight hover:bg-primaryDark"
-              disabled={loading}
+              className={`w-full text-lg py-3 shadow-soft transition-all duration-300 transform ${
+                !formData.stayFrom ||
+                !formData.stayTo ||
+                !formData.ashramName.trim() ||
+                !formData.baijiMahatmaJi.trim() ||
+                formData.baijiContact.length !== 10 ||
+                formData.contactNumber.length !== 10 ||
+                !formData.address.trim() ||
+                !formData.city.trim() ||
+                (formData.numMales + formData.numFemales + formData.numBoys + formData.numGirls === 0) ||
+                !formData.people.every(p => p.name.trim() && p.age) || loading
+                  ? "bg-gray-400 cursor-not-allowed opacity-70"
+                  : "bg-primaryDark hover:bg-highlight hover:scale-[1.02] active:scale-[0.98] text-white"
+              }`}
+              disabled={
+                !formData.stayFrom ||
+                !formData.stayTo ||
+                !formData.ashramName.trim() ||
+                !formData.baijiMahatmaJi.trim() ||
+                formData.baijiContact.length !== 10 ||
+                formData.contactNumber.length !== 10 ||
+                !formData.address.trim() ||
+                !formData.city.trim() ||
+                (formData.numMales + formData.numFemales + formData.numBoys + formData.numGirls === 0) ||
+                !formData.people.every(p => p.name.trim() && p.age) ||
+                loading
+              }
             >
               {loading ? "Submitting..." : isEditing ? "Update Booking" : "Submit Request"}
             </Button>
