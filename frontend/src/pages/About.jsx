@@ -11,41 +11,41 @@ const containerAnimation = {
 };
 
 const RULES_HINDI = [
-  { title: "1. दैनिक दिनचर्या", content: "प्रातःकाल उठकर शौचादि से निवृत्त होने के उपरान्त भजनाभ्यास, आरती-पूजा नित्य नियमपूर्वक करना, तत्पश्चात् अपने सम्बन्धित सेवा कार्य में लगे रहना।" },
-  { title: "2. आध्यात्मिक सहभागिता", content: "दोनों समय की आरती-पूजा में उपस्थित होना एवं प्रतिदिन 2 घंटे का भजनाभ्यास अनिवार्य एवं आवश्यक है।" },
-  { title: "3. जीवनशैली", content: "अपनी इच्छाओं को नियन्त्रित रखना, सादा व शाकाहारी भोजन करना और सादा वस्त्र पहनना।" },
-  { title: "4. संयम", content: "ब्रह्मचर्य पालन सबके लिए अनिवार्य है।" },
-  { title: "5. आंतरिक व्यवहार", content: "अपने चित्त में किसी के प्रति वैर-विरोध अथवा द्वेष को स्थान न देना, सद्भावना एवं नम्रतापूर्वक सबके साथ स्नेहपूर्ण व्यवहार करना।" },
-  { title: "6. समय का सदुपयोग", content: "वाद-विवाद तथा व्यर्थ बातों में समय नष्ट करने से परहेज करना, अवकाश के क्षणों में सन्तों की वाणियों का स्वाध्याय करना तथा सत्संग में व्यतीत करना।" },
-  { title: "7. चरित्र की पवित्रता", content: "अपने आचरण को पवित्र एवं शुद्ध रखना। असत्य-भाषण तथा अन्यान्य बुराइयों से दूर रहना।" },
-  { title: "8. सामाजिक व्यवहार", content: "प्रत्येक के साथ प्रेम और सभ्यता से व्यवहार करना।" },
-  { title: "9. कर्म और भक्ति", content: "समय का पूरा पूरा लाभ उठाना। सेवा, भजन-बन्दगी और सत्संग में दिल लगाना।" },
-  { title: "10. सद्गुण", content: "सच्चाई, सहनशीलता, सन्तुष्टि आदि गुणों को अपने अन्दर समाहित करने का प्रयत्न करना।" },
-  { title: "11. आत्म-सुधार", content: "दूसरों के अवगुणों पर दृष्टि न रखते हुए अपने अवगुणों का सुधार करना।" },
-  { title: "12. भक्ति के सिद्धांत", content: "भक्ति के नियमों व सिद्धान्तों को अपनाना तथा श्री आज्ञा में सदा तत्पर रहना।" },
-  { title: "13. गुरु-निष्ठा", content: "श्री सद्गुरुदेव जी महाराज के श्री चरणों में अटल श्रद्धा, भक्ति और विश्वास रखते हुए सदैव सद्गुरु की पवित्र आज्ञा व श्री मौज में प्रसन्न रहना।" },
-  { title: "14. जीवन का लक्ष्य", content: "अपने लक्ष्य अर्थात् ‘जीवात्मा के कल्याण’ को हर समय याद रखना तथा क्रियात्मक जीवन बनाना।" },
-  { title: "15. सकारात्मक दृष्टिकोण", content: "हर समय प्रसन्नचित्त रहना, क्योंकि प्रसन्नचित्त व्यक्ति ही प्रत्येक कार्य में सफलता प्राप्त कर सकता है। यह प्रसन्नता तथा शान्ति केवल सच्चे नाम से तथा उपरलिखित नियमों का पालन करने से ही प्राप्त हो सकती है।" },
-  { title: "16. प्रशासन एवं अनुशासन", content: "श्री दरबार के नियमों पर चल कर श्री दरबार की प्रबन्धक-समिति के निर्देश का पालन करना।" }
+  { title: "1.) प्रातःकािीन नदनचया:", content: "नदन की र्ुरुआत ननयनमत अनुर्ासन के साथ भजन-अभ्यास और आरती-पूजा सेकरं।तत्पश्चात प्रेमपूवशक अपनेसम्बनधधत सेवा कायशमं िग जाएं।" },
+  { title: "2.) आध्यानत्मक भागीदारी:", content: "आश्रम की पनवत्रता बनाए रखनेके निए, दोनं समय (सुबह और र्ाम) आरती-पूजा मं र्ानमि होना और प्रनतनदन कम सेकम 2 घंटेभजन-अभ्यास के निए समनपशत करना अननवायशहै।" },
+  { title: "3.) सरि और र्ुद्ध जीवन:", content: "आत्म-संयम का अभ्यास करं, सानत्वक र्ाकाहारी भोजन ग्रहण करंऔर सादगीपूणशएवं र्ािीन वस्त्र चुनं, नजससेआंतररक और बाहरी पनवत्रता बनी रहे।" },
+  { title: "4.) ब्रह्मचय:श", content: "ब्रह्मचयशका पािन सभी के निए अननवायशहैऔर इसेआध्यानत्मक नवकास मं सहायक एक पनवत्र अनुर्ासन माना जाता है; इसका पूरी ननष्ठा और सम्मान के साथ अनुसरण करं।" },
+  { title: "5.) नेक आचरण नवकनसत करना:", content: "क्रोध या द्वेर् की भावनाओं सेबचं और सभी के साथ दया, नवनम्रता, स्नेह और सद्भावना का व्यवहार करं।" },
+  { title: "6.) समय का साथशक उपयोग:", content: "वाद-नववाद या व्यथश की बातं मं र्ानमि होनेके बजाय, अपना समय स्वाध्याय (आध्यानत्मक नर्क्षाओं का अध्ययन) और सत्संग मं व्यतीत करं।" },
+  { title: "7.) चररत्र की पनवत्रता:", content: "आश्रम वातावरण की पनवत्रता बनाए रखनेके निए मन, वचन और कमश मं ईमानदारी, सत्यननष्ठा और नैनतक स्वच्छता बनाए रखं।" },
+  { title: "8.) सामंजस्यपूणशसामानजक जीवन:", content: "सभी व्यवहार नर्ष्टाचार, सम्मान और प्रेम सेप्रेररत हं, नजससेसद्भाव और आपसी समझ का वातावरण बने।" },
+  { title: "9.) समनपशत जीवन:", content: "प्रत्येक नदन का अनधकतम िाभ उठातेहुए अपनेहृदय और प्रयासं को सेवा, भजन-बंदगी और सत्संग मं समनपशत करं।" },
+  { title: "10.) आंतररक गुणं का पोर्ण:", content: "सचेत अभ्यास के माध्यम सेसत्य, सहनर्ीिता, धैय,श संतोर् और करुणा जैसेगुणं को नवकनसत करं।" },
+  { title: "11.) आत्म-सुधार:", content: "दूसरं की कनमयं पर ध्यान कंनित करनेके बजाय, अपनी स्वयं की कनमयं को सुधारनेपर ध्यान दं।" },
+  { title: "12. भनतत के नसद्धंत:", content: "भनतत के नसद्धंतं को अपनाएं और खुिेमन सेश्री आज्ञा का पािन करनेके निए तत्पर रहं।" },
+  { title: "13.) गुरु-ननष्ठा:", content: "श्री सद्गुरुदेव जी महाराज के श्री चरणं मं अटि श्रद्धा, भनतत और नवश्वास रखते हुए सदैव सद्गुरु की पनवत्र आज्ञा व श्री मौज मं प्रसन्न रहं।" },
+  { title: "14.) जीवन का िक्ष्य:", content: "हमेर्ा अपनेअंनतम िक्ष्य— \"आत्मा का कल्याण\" —को याद रखं और एक व्यावहारिक एवं उद्देश्यपूणशजीवन नजएं।" },
+  { title: "15.) सकारात्मक दनष्टकोण ृ :", content: "प्रसन्ननचत्त रहं, तयंनक प्रसन्ननचत्त व्यनतत ही प्रत्येक कायशमं सफिता प्राप्त कर सकता है।यह प्रसन्नता तथा र्ानधत केवि सच्चेनाम सेतथा उपरनिनखत ननयमं का पािन करनेसेही प्राप्त हो सकती है।" },
+  { title: "16.) अनुर्ासन:", content: "सभी भततं और आगंतुकं सेनवनम्र अनुरोध हैनक वेश्री दरबार के ननयमं और नदर्ा-ननदेर्ं का सम्मान करंऔर प्रबंधन सनमनत के मागदर्शन मं सहयोग कर श ं।" }
 ];
 
 const RULES_ENGLISH = [
-  { title: "1. Morning Routine:", content: "After waking up and finishing morning ablutions, perform Bhajan-Abhyas and Aarti-Puja with regular discipline. Thereafter, engage yourself in your respective Seva (service) tasks." },
-  { title: "2. Spiritual Participation:", content: "Attending Aarti-Puja at both times (morning and evening) and dedicating at least 2 hours daily to Bhajan-Abhyas is mandatory and essential." },
-  { title: "3. Lifestyle:", content: "Keep your desires under control, consume simple vegetarian food, and wear simple, modest clothing." },
-  { title: "4. Celibacy:", content: "Observance of Brahmacharya (celibacy) is compulsory for everyone." },
-  { title: "5. Inner Conduct:", content: "Do not harbor animosity, opposition, or malice towards anyone. Behave with everyone with goodwill, humility, and affection." },
-  { title: "6. Use of Time:", content: "Refrain from wasting time in arguments or vain talk. Spend your leisure hours studying the teachings of Saints (Swadhyaya) and participating in Satsang." },
-  { title: "7. Purity of Character:", content: "Maintain a pure and clean character. Stay away from untruthfulness and other vices." },
-  { title: "8. Social Behavior:", content: "Treat everyone with love, civility, and politeness." },
-  { title: "9. Productivity:", content: "Make the best use of your time. Devote your heart to Seva (service), Bhajan-Bandagi (worship), and Satsang." },
-  { title: "10. Virtues:", content: "Strive to cultivate virtues like truthfulness, tolerance, and contentment within yourself." },
+  { title: "1. Morning Routine:", content: "Begin the day with Bhajan-Abhyas and Aarti-Puja with regular discipline. Thereafter lovingly engage in your assigned Seva (service)." },
+  { title: "2. Spiritual Participation:", content: "To maintain the sanctity of the Ashram, attending Aarti-Puja at both times (morning and evening), and dedicating at least 2 hours daily to Bhajan-Abhyas, is mandatory." },
+  { title: "3. Simple and Pure Living:", content: "Practice self-restraint, partake in simple vegetarian meals, and choose modest, simple attire, fostering inner and outer purity." },
+  { title: "4. Brahmacharya:", content: "The observance of Brahmacharya is compulsory for everyone and is regarded as a sacred discipline to support spiritual growth. Follow it with full dedication and respect." },
+  { title: "5. Cultivating Noble Conduct:", content: "Avoid feelings of resentment or ill-will and interact with all beings with kindness, humility, affection, and goodwill." },
+  { title: "6. Meaningful Use of Time:", content: "Instead of engaging in arguments or idle conversations, spend time in Swadhyaya (study of spiritual teachings) and participation in Satsang." },
+  { title: "7. Purity of Character:", content: "Maintain honesty, integrity, and moral cleanliness in thought, word, and deed to preserve the sanctity of the Ashram environment." },
+  { title: "8. Harmonious Social Life:", content: "Let all interactions be guided by courtesy, respect, and love, creating an atmosphere of harmony and mutual understanding." },
+  { title: "9. Dedicated Living:", content: "Make the most of each day by dedicating your heart and efforts to Seva (service), Bhajan-Bandagi (worship), and Satsang." },
+  { title: "10. Nurturing Inner Virtues:", content: "Through mindful practice, cultivate virtues such as truthfulness, tolerance, patience, contentment, and compassion." },
   { title: "11. Self-Improvement:", content: "Instead of focusing on the flaws of others, focus on improving your own shortcomings." },
-  { title: "12. Devotional Principles:", content: "Adopt the rules and principles of Bhakti and always remain ready to follow the \"Shri Agya\" (Divine Commands)." },
-  { title: "13. Faith in Guru:", content: "Maintain unwavering faith, devotion, and trust in the holy feet of Shri Sadgurudev Ji Maharaj, always remaining happy in his sacred commands and \"Shri Mauj\" (Divine Will)." },
-  { title: "14. Life Goal:", content: "Always remember your ultimate goal—the ‘welfare of the soul’—and lead a practical, purposeful life." },
-  { title: "15. Positive Mindset:", content: "Always remain cheerful, as only a cheerful person can achieve success in every task. This happiness and peace can only be attained through the \"True Name\" and by following the above-mentioned rules." },
-  { title: "16. Administration:", content: "Follow the rules of the \"Shri Darbar\" and comply with the instructions of the Management Committee of Shri Darbar." }
+  { title: "12. Path of Devotion:", content: "Embrace the principles of Bhakti and remain open-hearted and ready to follow the sacred Shri Agya (Divine Guidance)." },
+  { title: "13. Faith in the Guru:", content: "Maintain unwavering faith, devotion, trust and remain joyfully align with the holy guidance of Shri Sadgurudev Ji Maharaj, accepting His divine will (Shri Mauj) with gratitude." },
+  { title: "14. Remember Life’s Goal:", content: "Always remember your ultimate goal — the “welfare and awakening of the soul” — and lead a practical, purposeful life." },
+  { title: "15. A Cheerful and Peaceful Spirit:", content: "Nurture cheerfulness and inner peace, as these are the foundations of true success and are attained through the True Name and the observance of these gentle disciplines." },
+  { title: "16. Respecting the Ashram’s Order:", content: "All devotees and visitors are kindly requested to honor the traditions and guidelines of Shri Darbar and to cooperate with the guidance of the Management Committee, so that the sacred atmosphere of the Ashram may be preserved for all." }
 ];
 
 const RulesSection = () => {
@@ -54,25 +54,25 @@ const RulesSection = () => {
   return (
     <div className="flex justify-center my-12" style={{ perspective: "1500px" }}>
       <motion.div
-        className="relative w-full max-w-7xl bg-card rounded-2xl shadow-soft cursor-pointer text-gray-700 border border-gray-100"
+        className="relative w-full max-w-7xl bg-card rounded-2xl shadow-soft cursor-pointer text-gray-700 border border-gray-100 grid"
         onClick={() => setIsFlipped(!isFlipped)}
         initial={false}
         animate={{ rotateY: isFlipped ? 180 : 0 }}
         transition={{ duration: 0.8, ease: "easeInOut" }}
-        style={{ transformStyle: "preserve-3d", height: "1200px" }}
+        style={{ transformStyle: "preserve-3d" }}
       >
         {/* Front (English - Default) */}
         <div 
-          className="absolute inset-0 p-8 md:p-12 flex flex-col" 
+          className="col-start-1 row-start-1 p-8 md:p-12 flex flex-col" 
           style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
         >
             <h2 className="text-2xl md:text-4xl font-bold font-heading text-primaryDark mb-6 text-center leading-tight">
-              Rules for the Devotees and Visitors of Shri Anandpur Satsang Ashram
+              Guidelines & Rules for Devotees and Visitors of Shri Anandpur Satsang Ashram (Shri Adarsh Dham)
             </h2>
             <p className="mb-6 text-center font-medium text-lg text-primaryDark max-w-4xl mx-auto">
-              It is essential and mandatory for every man and woman, whether a permanent resident or a visitor at Shri Anandpur Satsang Ashram, to adhere to the following rules:
+              To preserve the divine tranquility and sacred vibration of the Ashram, we humbly request all our permanent residents and visitors to gracefully embrace the following guidelines:
             </p>
-            <div className="space-y-6 overflow-y-auto flex-grow pr-4 custom-scrollbar">
+            <div className="space-y-6">
               {RULES_ENGLISH.map((rule, index) => (
                 <div key={index} className="flex flex-col gap-1 pb-2 border-b border-gray-300/30 last:border-0">
                    <h3 className="text-xl font-bold text-highlight tracking-wide">{rule.title}</h3>
@@ -82,7 +82,7 @@ const RulesSection = () => {
             </div>
             <div className="mt-6 pt-4 border-t border-gray-200 text-center flex justify-center">
                 <button 
-                  className="text-base text-highlight font-bold uppercase tracking-wider flex items-center justify-center gap-2 border-2 border-highlight rounded-full px-8 py-3 transition-all duration-300 hover:bg-highlight hover:text-white hover:shadow-lg transform hover:-translate-y-1"
+                  className="text-base text-highlight font-bold uppercase tracking-wider flex items-center justify-center gap-2 border-2 border-highlight rounded-full px-8 py-3 transition-all duration-300 hover:bg-highlight hover:text-white hover:shadow-lg transform hover:-translate-y-1 bg-white"
                   onClick={(e) => {
                     e.stopPropagation(); 
                     setIsFlipped(true);
@@ -94,24 +94,24 @@ const RulesSection = () => {
         </div>
 
         {/* Back (Hindi) */}
-        <div className="absolute inset-0 p-8 md:p-12 flex flex-col" style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: "rotateY(180deg)" }}>
+        <div className="col-start-1 row-start-1 p-8 md:p-12 flex flex-col" style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: "rotateY(180deg)" }}>
             <h2 className="text-2xl md:text-4xl font-bold font-heading text-primaryDark mb-6 text-center leading-tight">
-              श्री आनन्दपुर सत्संग आश्रम के शरणागत स्थायी निवासियों व प्रवासियों के लिए नियम
+              श्री आनंदपुर सत्संग आश्रम (श्री आदर्श धाम) के शरणागत स्थायी निवासियों और आगंतुकों के लिए दिशा-निर्देश एवं नियम
             </h2>
-            <p className="mb-6 text-center font-medium text-lg text-primaryDark max-w-4xl mx-auto">
-              प्रत्येक स्त्री-पुरुष के लिए जो श्री आनन्दपुर सत्संग आश्रम में स्थायी निवासी व प्रवासी हैं, निम्नलिखित नियमों का पालन आवश्यक एवं अनिवार्य है—
+            <p className="mb-6 text-center font-medium text-lg text-primaryDark max-w-4xl mx-auto" style={{ fontFamily: 'serif' }}>
+              आश्रम की दिव्य शांति और पवित्र स्पंदन को बनाए रखने के लिए, हम अपने सभी स्थायी निवासियों और आगंतुकों से विनम्रतापूर्वक निम्नलिखित दिशा-निर्देशों को सहर्ष अपनाने का अनुरोध करते हैं:
             </p>
-            <div className="space-y-6 overflow-y-auto flex-grow pr-4 custom-scrollbar">
+            <div className="space-y-6">
               {RULES_HINDI.map((rule, index) => (
                 <div key={index} className="flex flex-col gap-1 pb-2 border-b border-gray-300/30 last:border-0">
-                   <h3 className="text-xl font-bold text-highlight tracking-wide" style={{ fontFamily: 'Poppins, sans-serif' }}>{rule.title}</h3>
-                   <p className="text-lg leading-loose text-gray-800">{rule.content}</p>
+                   <h3 className="text-xl font-bold text-highlight tracking-wide" style={{ fontFamily: 'serif' }}>{rule.title}</h3>
+                   <p className="text-lg leading-loose text-gray-800" style={{ fontFamily: 'serif' }}>{rule.content}</p>
                 </div>
               ))}
             </div>
             <div className="mt-6 pt-4 border-t border-gray-200 text-center flex justify-center">
                 <button 
-                  className="text-base text-highlight font-bold uppercase tracking-wider flex items-center justify-center gap-2 border-2 border-highlight rounded-full px-8 py-3 transition-all duration-300 hover:bg-highlight hover:text-white hover:shadow-lg transform hover:-translate-y-1"
+                  className="text-base text-highlight font-bold uppercase tracking-wider flex items-center justify-center gap-2 border-2 border-highlight rounded-full px-8 py-3 transition-all duration-300 hover:bg-highlight hover:text-white hover:shadow-lg transform hover:-translate-y-1 bg-white"
                   onClick={(e) => {
                     e.stopPropagation(); 
                     setIsFlipped(false);

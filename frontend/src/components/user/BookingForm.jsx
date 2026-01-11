@@ -521,7 +521,7 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
                 (formData.numMales + formData.numFemales + formData.numBoys + formData.numGirls === 0) ||
                 !formData.people.every(p => p.name.trim() && p.age) || loading
                   ? "bg-gray-400 cursor-not-allowed opacity-70"
-                  : "bg-primaryDark hover:bg-highlight hover:scale-[1.02] active:scale-[0.98] text-white"
+                  : "bg-highlight hover:bg-primaryDark hover:scale-[1.02] active:scale-[0.98] text-white"
               }`}
               disabled={
                 !formData.stayFrom ||

@@ -306,7 +306,8 @@ const getUnifiedNotificationQuery = (userId, userRoles) => {
  * Send or schedule a notification (Admin action)
  */
 exports.sendNotification = async (req, res) => {
-  const { message, userId, phones, targetGroup, ttlMinutes = 1440, sendAt } = req.body;
+  // Extract all possible targeting parameters
+  const { message, userId, phones, roles, targetGroup, ttlMinutes = 1440, sendAt } = req.body;
 
   try {
     if (!message) {
@@ -320,44 +321,72 @@ exports.sendNotification = async (req, res) => {
 
     const isScheduled = sendAt && sendDate > new Date();
     
-    let targetUsers = [];
-    let effectiveTargetGroup = targetGroup;
+    // --- DEDUPLICATION MAP ---
+    // Key: User ID (string), Value: User Object
+    const uniqueUsersMap = new Map();
 
-    // 1. Find users
+    // 1. Find by Specific User ID
     if (userId) {
       const user = await User.findById(userId);
-      if (user) targetUsers.push(user);
-      effectiveTargetGroup = 'user'; 
-    } else if (phones && phones.length > 0) {
+      if (user) uniqueUsersMap.set(user._id.toString(), user);
+    }
+
+    // 2. Find by Phone Numbers
+    if (phones && phones.length > 0) {
       const phoneList = Array.isArray(phones) ? phones : [phones];
       const trimmedPhoneList = phoneList.map(p => typeof p === 'string' ? p.trim() : p).filter(p => p); 
       
       if (trimmedPhoneList.length > 0) {
-        targetUsers = await User.find({ phone: { $in: trimmedPhoneList } });
+        const usersByPhone = await User.find({ phone: { $in: trimmedPhoneList } });
+        usersByPhone.forEach(u => uniqueUsersMap.set(u._id.toString(), u));
       }
-      effectiveTargetGroup = 'user'; 
-    } else if (targetGroup && targetGroup !== 'all' && targetGroup !== 'roles') { 
-      targetUsers = await User.find({ roles: targetGroup });
-    } else if (targetGroup === 'all') {
-      targetUsers = await User.find({});
-      effectiveTargetGroup = 'all';
-    } else {
-      // Default: send to admins if all else is blank
-      targetUsers = await User.find({ roles: { $in: ['admin', 'super-admin'] } });
-      effectiveTargetGroup = 'admin';
     }
 
-    if (targetUsers.length === 0) {
-      console.warn(`[sendNotification] No target users were found. Data:`, { userId, phones, targetGroup });
+    // 3. Find by Roles
+    if (roles && roles.length > 0) {
+        // The frontend sends an array of roles. We want users who have ANY of these roles.
+        const usersByRole = await User.find({ roles: { $in: roles } });
+        usersByRole.forEach(u => uniqueUsersMap.set(u._id.toString(), u));
+    } 
+    // Fallback legacy "targetGroup" handling if "roles" array is not provided but "targetGroup" is a specific role
+    else if (targetGroup && targetGroup !== 'all' && targetGroup !== 'phones' && targetGroup !== 'user' && targetGroup !== 'allAdmins') {
+       // If targetGroup is something like 'operator' (single string role)
+       const usersByGroup = await User.find({ roles: targetGroup });
+       usersByGroup.forEach(u => uniqueUsersMap.set(u._id.toString(), u));
+    }
+
+    // 4. Find All Users
+    if (targetGroup === 'all') {
+      const allUsers = await User.find({});
+      allUsers.forEach(u => uniqueUsersMap.set(u._id.toString(), u));
+    }
+
+    // 5. Default: All Admins (if no other criteria matched and targetGroup suggests admins)
+    // If the map is empty AND we haven't explicitly asked for something that yielded 0 results (like a specific ID that doesn't exist),
+    // we default to admins. However, let's be strict: only default if NO targeting criteria were provided.
+    const isExplicitTargeting = userId || (phones && phones.length > 0) || (roles && roles.length > 0) || targetGroup;
+    
+    if (!isExplicitTargeting || targetGroup === 'allAdmins') {
+       const admins = await User.find({ roles: { $in: ['admin', 'super-admin'] } });
+       admins.forEach(u => uniqueUsersMap.set(String(u._id), u));
+    }
+
+    // Convert Map values to Array - This ensures each user is listed only ONCE
+    const uniqueTargetUsers = Array.from(uniqueUsersMap.values());
+
+    if (uniqueTargetUsers.length === 0) {
+      console.warn(`[sendNotification] No target users found. Inputs:`, { userId, phones, roles, targetGroup });
       return res.status(404).json({ message: 'No target users were found for the specified criteria.' });
     }
 
-    // 2. Create a notification document *for each user*
-    const notificationsToSave = targetUsers.map(user => ({
+    // 6. Create Notifications (One per Unique User)
+    // We set 'target' to 'user' so it matches the simple { userId: currentUserId } query in getUnifiedNotificationQuery.
+    // This prevents any role-based query overlapping for users with multiple roles.
+    const notificationsToSave = uniqueTargetUsers.map(user => ({
       message,
       userId: user._id,
       read: false,
-      target: effectiveTargetGroup, 
+      target: 'user', 
       ttl: new Date(sendDate.getTime() + ttlMinutes * 60 * 1000),
       sendAt: isScheduled ? sendDate : null,
       status: isScheduled ? 'scheduled' : 'sent',
@@ -366,12 +395,12 @@ exports.sendNotification = async (req, res) => {
     await Notification.insertMany(notificationsToSave);
 
     const successMessage = isScheduled
-      ? `Notification scheduled for ${targetUsers.length} user(s).`
-      : `Notification sent immediately to ${targetUsers.length} user(s).`;
+      ? `Notification scheduled for ${uniqueTargetUsers.length} unique user(s).`
+      : `Notification sent immediately to ${uniqueTargetUsers.length} unique user(s).`;
 
-    // 3. Send Web Push if not scheduled
+    // 7. Send Web Push (One per Unique User)
     if (!isScheduled) {
-      const pushSubscriptions = targetUsers
+      const pushSubscriptions = uniqueTargetUsers
         .filter(user => user.pushSubscription)
         .map(user => user.pushSubscription);
 
@@ -379,10 +408,16 @@ exports.sendNotification = async (req, res) => {
         const payload = JSON.stringify({
           title: 'Adarsh Dham: New Update',
           body: message,
+          icon: '/VM401196.png',
+          url: '/notifications'
         });
+        
         const sendPromises = pushSubscriptions.map(sub =>
           webpush.sendNotification(sub, payload).catch(err => {
-            console.error(`Push notification failed: ${err.message}`);
+            // Suppress 410 Gone errors (expired subscriptions) to keep logs clean
+            if (err.statusCode !== 410) {
+                 console.error(`Push notification failed: ${err.message}`);
+            }
           })
         );
         await Promise.all(sendPromises);
