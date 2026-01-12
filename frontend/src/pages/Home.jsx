@@ -52,7 +52,7 @@ const Footer = () => {
         <div className="grid grid-cols-2 md:grid-cols-3 gap-8 border-b border-white/20 pb-8 mb-8 text-left">
           <div className="col-span-2 md:col-span-1">
             <h3 className="text-2xl font-bold font-heading text-white mb-4">
-              Adarsh Dham
+              Shri Adarsh Dham
             </h3>
             <p className="text-sm text-neutral/80">
               {t.home.footer.desc}
@@ -96,7 +96,7 @@ const Footer = () => {
                   href={link.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label={`Link to Adarsh Dham ${link.text}`}
+                  aria-label={`Link to Shri Adarsh Dham ${link.text}`}
                   className="text-white hover:text-accent transition-colors duration-200 p-2 rounded-full border border-white/50 hover:border-accent"
                 >
                   <link.icon className="w-5 h-5" />
@@ -108,7 +108,7 @@ const Footer = () => {
 
         <div className="text-center">
           <p className="text-sm font-light text-neutral/60">
-            &copy; {new Date().getFullYear()} Adarsh Dham. {t.home.footer.rights}
+            &copy; {new Date().getFullYear()} Shri Adarsh Dham. {t.home.footer.rights}
           </p>
         </div>
       </div>

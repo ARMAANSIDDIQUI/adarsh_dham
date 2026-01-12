@@ -16,14 +16,14 @@ const Loading = () => {
                     <div className="absolute inset-2 bg-card rounded-full shadow-soft flex items-center justify-center border-4 border-primary">
                         <img 
                             src="/VM401196.png" 
-                            alt="Adarsh Dham Logo" 
+                            alt="Shri Adarsh Dham Logo" 
                             className="w-20 h-20 object-contain"
                         />
                     </div>
                 </div>
                 
                 <h1 className="text-3xl md:text-4xl font-heading font-bold text-primaryDark mb-2 tracking-wide">
-                    Adarsh Dham
+                    Shri Adarsh Dham
                 </h1>
                 <p className="text-accent font-medium text-sm tracking-widest uppercase">
                     Spiritual Sanctuary

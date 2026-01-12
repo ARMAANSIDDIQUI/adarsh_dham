@@ -105,7 +105,7 @@ const Header = () => {
             <header className="bg-background shadow-soft sticky top-0 z-[999] font-body border-b border-card transition-colors duration-300">
                 <nav className="flex items-center justify-between px-4 py-3">
                     <Link to="/" className="text-2xl font-bold mr-5 text-primaryDark hover:text-opacity-80 transition-colors duration-200 flex items-center gap-x-1 font-heading">
-                        <span className="whitespace-nowrap">Adarsh Dham</span>
+                        <span className="whitespace-nowrap">Shri Adarsh Dham</span>
                     </Link>
 
                     {!isMobile && (

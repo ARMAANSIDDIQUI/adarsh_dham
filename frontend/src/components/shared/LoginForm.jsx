@@ -85,7 +85,7 @@ const LoginForm = () => {
         >
             <div className="text-center mb-8">
                 <h2 className="text-xl font-bold text-gray-700 font-heading">Welcome to</h2>
-                <h1 className="text-3xl font-extrabold text-primaryDark font-heading">Adarsh Dham</h1>
+                <h1 className="text-3xl font-extrabold text-primaryDark font-heading">Shri Adarsh Dham</h1>
             </div>
             
             <form onSubmit={handleSubmit} className="space-y-6">

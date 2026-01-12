@@ -45,7 +45,7 @@ export const translations = {
       carousel: {
         slide1: {
           title: "Discover Spiritual Serenity",
-          subtitle: "Experience the divine architecture and peaceful environment of Adarsh Dham."
+          subtitle: "Experience the divine architecture and peaceful environment of Shri Adarsh Dham."
         },
         slide2: {
           title: "Join Our Vibrant Celebrations",
@@ -421,7 +421,7 @@ export const translations = {
       carousel: {
         slide1: {
           title: "आध्यात्मिक शांति की खोज करें",
-          subtitle: "आदर्श धाम की दिव्य वास्तुकला और शांतिपूर्ण वातावरण का अनुभव करें।"
+          subtitle: "श्री आदर्श धाम की दिव्य वास्तुकला और शांतिपूर्ण वातावरण का अनुभव करें।"
         },
         slide2: {
           title: "हमारे जीवंत उत्सवों में शामिल हों",

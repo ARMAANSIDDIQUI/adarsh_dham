@@ -120,7 +120,7 @@ const Contact = () => {
                     <h3 className="text-2xl font-bold font-heading text-primaryDark mb-4 text-center">{t.contact.form.title}</h3>
                     
                     {/* HIDDEN INPUT FOR TEMPLATE SUBJECT/TITLE */}
-                    <input type="hidden" name="title" value="New Contact Inquiry from Adarsh Dham Website" />
+                    <input type="hidden" name="title" value="New Contact Inquiry from Shri Adarsh Dham Website" />
 
                     <div>
                         <label htmlFor="name" className="block text-sm font-medium text-gray-700">{t.contact.form.name}</label>
@@ -185,7 +185,7 @@ const Contact = () => {
                             allowFullScreen="" 
                             loading="lazy" 
                             referrerPolicy="no-referrer-when-downgrade"
-                            title="Adarsh Dham Location Map"
+                            title="Shri Adarsh Dham Location Map"
                         ></iframe>
                     </div>
                 </div>

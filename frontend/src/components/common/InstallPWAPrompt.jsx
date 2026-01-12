@@ -97,7 +97,7 @@ const InstallPWAPrompt = () => {
                         </div>
                         
                         <p className="text-sm text-gray-700 mb-4">
-                            Install Adarsh Dham on your device for quick access and a smoother experience.
+                            Install Shri Adarsh Dham on your device for quick access and a smoother experience.
                         </p>
 
                         <button
