@@ -98,6 +98,7 @@ const Login = () => {
                                 value={formData.phone} 
                                 onChange={handleChange} 
                                 required 
+                                autoComplete="username"
                                 className={`w-full pl-10 pr-3 py-2 border rounded-md focus:ring-primary focus:border-primary ${errors.phone ? 'border-red-500' : 'border-background'}`} 
                                 placeholder={t.login.phonePlaceholder} 
                             />
@@ -115,6 +116,7 @@ const Login = () => {
                                 value={formData.password}
                                 onChange={handleChange}
                                 required
+                                autoComplete="current-password"
                                 className={`w-full pl-10 pr-10 py-2 border rounded-md focus:ring-primary focus:border-primary ${errors.password ? 'border-red-500' : 'border-background'}`}
                                 placeholder={t.login.passwordPlaceholder}
                             />

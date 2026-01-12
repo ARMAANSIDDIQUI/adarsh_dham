@@ -13,10 +13,13 @@ const InstallPWAPrompt = () => {
             return; // Stop here, do not listen for events
         }
 
-        // 2. Check if the user has previously dismissed this prompt
-        const isDismissed = localStorage.getItem('pwa_prompt_dismissed');
-        if (isDismissed) {
-            return; // Stop here, respect the user's choice
+        // 2. Check frequency (Once a day)
+        const lastShown = localStorage.getItem('pwa_prompt_last_shown');
+        const lastShownTime = lastShown ? parseInt(lastShown, 10) : 0;
+        const oneDay = 24 * 60 * 60 * 1000;
+
+        if (Date.now() - lastShownTime < oneDay) {
+            return; // Shown within the last 24 hours
         }
 
         const handler = (e) => {
@@ -28,6 +31,7 @@ const InstallPWAPrompt = () => {
             // We add a small delay so it doesn't pop up immediately on load
             setTimeout(() => {
                 setShowPrompt(true);
+                localStorage.setItem('pwa_prompt_last_shown', Date.now().toString());
             }, 3000);
         };
 
@@ -59,8 +63,7 @@ const InstallPWAPrompt = () => {
     };
 
     const handleClose = () => {
-        // 3. Save the user's preference to NOT see this again
-        localStorage.setItem('pwa_prompt_dismissed', 'true');
+        // 3. Just close it, don't set permanent dismissal
         setShowPrompt(false);
     };
 

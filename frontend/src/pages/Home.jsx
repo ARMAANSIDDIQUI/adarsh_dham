@@ -266,10 +266,17 @@ const Home = () => {
           .sort((a, b) => new Date(a.startDate) - new Date(b.startDate)); // Sort by nearest start date
 
         if (upcoming.length > 0) {
-          setUpcomingEvent(upcoming[0]);
-          setTimeout(() => {
-            setIsModalOpen(true);
-          }, 2000);
+          const lastShown = localStorage.getItem('event_popup_last_shown');
+          const lastShownTime = lastShown ? parseInt(lastShown, 10) : 0;
+          const oneDay = 24 * 60 * 60 * 1000;
+
+          if (Date.now() - lastShownTime > oneDay) {
+            setUpcomingEvent(upcoming[0]);
+            setTimeout(() => {
+              setIsModalOpen(true);
+              localStorage.setItem('event_popup_last_shown', Date.now().toString());
+            }, 2000);
+          }
         }
 
       } catch (error) {
