@@ -184,6 +184,35 @@ const UpcomingEventModal = ({ isOpen, onClose, event }) => {
   );
 };
 
+// --- Welcome Modal ---
+const WelcomeModal = ({ isOpen, onClose }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/80 z-[10000] flex items-center justify-center p-4 backdrop-blur-sm" onClick={onClose}>
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.8 }}
+        className="relative max-w-4xl w-full max-h-[90vh] flex items-center justify-center"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button 
+          onClick={onClose}
+          className="absolute -top-10 right-0 text-white hover:text-red-500 transition-colors bg-black/50 rounded-full p-2"
+        >
+          <FaTimes size={24} />
+        </button>
+        <img 
+          src="/welcome.jpg" 
+          alt="Welcome to Shri Adarsh Dham" 
+          className="max-w-full max-h-[85vh] rounded-lg shadow-2xl object-contain"
+        />
+      </motion.div>
+    </div>
+  );
+};
+
 const Home = () => {
   const { isAuthenticated } = useSelector((state) => state.auth);
   const t = useTranslation();
@@ -195,6 +224,9 @@ const Home = () => {
   // Modal state
   const [upcomingEvent, setUpcomingEvent] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // Welcome Modal state
+  const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
 
   // Carousel state
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -237,9 +269,26 @@ const Home = () => {
 
     const loadAllImages = async () => {
       try {
+        // Load carousel images
         const promises = carouselImages.map((image) => loadImage(image.src));
         await Promise.all(promises);
         setImagesLoaded(true);
+
+        // Load Welcome Image and check logic
+        try {
+            await loadImage("/welcome.jpg");
+            const lastShown = localStorage.getItem('welcome_modal_last_shown');
+            const lastShownTime = lastShown ? parseInt(lastShown, 10) : 0;
+            const oneDay = 24 * 60 * 60 * 1000;
+
+            if (Date.now() - lastShownTime > oneDay) {
+                setIsWelcomeModalOpen(true);
+                localStorage.setItem('welcome_modal_last_shown', Date.now().toString());
+            }
+        } catch (err) {
+            console.error("Failed to load welcome image", err);
+        }
+
       } catch (error) {
         console.error("Failed to load carousel images:", error);
         setImagesLoaded(true);
@@ -424,6 +473,13 @@ const Home = () => {
     >
       <LiveMarquee links={liveLinks} />
 
+      {/* Welcome Modal */}
+      <AnimatePresence>
+        {isWelcomeModalOpen && (
+          <WelcomeModal isOpen={isWelcomeModalOpen} onClose={() => setIsWelcomeModalOpen(false)} />
+        )}
+      </AnimatePresence>
+
       {/* Render the Modal if an event exists and modal is open */}
       <AnimatePresence>
         {isModalOpen && upcomingEvent && (
@@ -449,11 +505,11 @@ const Home = () => {
           >
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent"></div>
             <div className="absolute inset-0 flex items-center justify-center z-20 text-center p-4 w-full mx-auto text-white">
-              <div className="drop-shadow-lg -translate-y-24 md:-translate-y-36">
-                <h1 className="text-lg md:text-5xl font-extrabold font-heading leading-none mb-1 whitespace-nowrap">
+              <div className="drop-shadow-lg -translate-y-28 md:-translate-y-40">
+                <h1 className="text-xl md:text-6xl font-extrabold font-heading leading-none mb-2 whitespace-nowrap">
                   {carouselImages[currentSlide].title}
                 </h1>
-                <p className="text-sm md:text-xl text-neutral mb-4 leading-none md:leading-normal">
+                <p className="text-base md:text-2xl text-neutral mb-4 leading-none md:leading-normal">
                   {carouselImages[currentSlide].subtitle}
                 </p>
               </div>

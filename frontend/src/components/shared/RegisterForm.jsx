@@ -109,7 +109,7 @@ const RegisterForm = () => {
                     <div>
                         <label htmlFor="phone" className="block text-sm font-medium text-gray-700">{t.register.phoneLabel}</label>
                         <div className="relative mt-1">
-                            <FaPhoneAlt className="absolute left-3 top-1/2 transform -translate-y-1/2 text-accent rotate-90" />
+                            <FaPhoneAlt className="absolute left-3 top-1/2 transform -translate-y-1/2 text-accent rotate-90 -scale-x-100" />
                             <input
                                 type="tel"
                                 id="phone"
@@ -120,6 +120,7 @@ const RegisterForm = () => {
                                 className={`block w-full pl-10 pr-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-shadow ${errors.phone ? 'border-red-500' : 'border-background'}`}
                                 placeholder={t.register.phonePlaceholder}
                                 required
+                                autoComplete="tel"
                             />
                         </div>
                         {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
@@ -138,6 +139,7 @@ const RegisterForm = () => {
                                 onChange={handleChange}
                                 className={`block w-full pl-10 pr-10 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-shadow ${errors.password ? 'border-red-500' : 'border-background'}`}
                                 required
+                                autoComplete="new-password"
                             />
                             <span
                                 className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-400 hover:text-gray-600"
@@ -162,6 +164,7 @@ const RegisterForm = () => {
                                 onChange={handleChange}
                                 className={`block w-full pl-10 pr-10 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-shadow ${errors.confirmPassword ? 'border-red-500' : 'border-background'}`}
                                 required
+                                autoComplete="new-password"
                             />
                             <span
                                 className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-400 hover:text-gray-600"

@@ -47,7 +47,7 @@ const NavLink = ({ to, icon, text, onClick, end = false }) => (
         onClick={onClick}
         end={end}
         className={({ isActive }) =>
-            `flex items-center whitespace-nowrap space-x-2 px-3 py-2 transition-colors duration-300 rounded-md text-base font-medium ` +
+            `flex items-center whitespace-nowrap space-x-2 px-2 py-2 transition-colors duration-300 rounded-md text-base font-medium ` +
             (isActive
                 ? 'bg-primary/20 text-primaryDark'
                 : 'text-gray-700 hover:bg-card hover:text-primaryDark')
@@ -109,7 +109,7 @@ const Header = () => {
                     </Link>
 
                     {!isMobile && (
-                        <div className="flex-1 flex items-center justify-end gap-x-3">
+                        <div className="flex-1 flex items-center justify-end gap-x-1">
                             <NavLink to="/" icon={<FaHome />} text={t.nav.home} end />
                             <NavLink to="/about" icon={<FaInfoCircle />} text={t.nav.about} />
                             <NavLink to="/events" icon={<FaClipboardList />} text={t.nav.eventList} />
@@ -142,7 +142,7 @@ const Header = () => {
                     )}
 
                     {!isMobile && !isAuthenticated && (
-                        <div className="flex items-center gap-x-3 ml-2">
+                        <div className="flex items-center gap-x-1 ml-2">
                             <NavLink to="/login" icon={<FaSignInAlt />} text={t.nav.login} />
                             <NavLink to="/register" icon={<FaUser />} text={t.nav.register} />
                             {/* Language Toggle (Desktop - Logged Out) */}

@@ -60,7 +60,7 @@ const UpdateProfileForm = () => {
                 name="phone" 
                 value={user?.phone || ''} 
                 disabled 
-                icon={<FaPhoneAlt className="transform rotate-90" />}
+                icon={<FaPhoneAlt className="transform rotate-90 -scale-x-100" />}
             />
             <p className="text-xs text-gray-700 -mt-2">{t.profile.updateForm.phoneNotice}</p>
             

@@ -89,7 +89,7 @@ const Login = () => {
                     <div>
                         <label htmlFor="phone-login" className="block text-sm font-medium text-gray-700 mb-1">{t.login.phoneLabel}</label>
                         <div className="mt-1 relative">
-                            <FaPhoneAlt className="absolute left-3 top-1/2 transform -translate-y-1/2 text-accent rotate-90" />
+                            <FaPhoneAlt className="absolute left-3 top-1/2 transform -translate-y-1/2 text-accent rotate-90 -scale-x-100" />
                             <input 
                                 id="phone-login" 
                                 name="phone" 
@@ -98,7 +98,7 @@ const Login = () => {
                                 value={formData.phone} 
                                 onChange={handleChange} 
                                 required 
-                                autoComplete="username"
+                                autoComplete="tel"
                                 className={`w-full pl-10 pr-3 py-2 border rounded-md focus:ring-primary focus:border-primary ${errors.phone ? 'border-red-500' : 'border-background'}`} 
                                 placeholder={t.login.phonePlaceholder} 
                             />
