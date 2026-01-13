@@ -445,12 +445,12 @@ const Home = () => {
             style={{ backgroundImage: `url(${carouselImages[currentSlide].src})` }}
           >
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent"></div>
-            <div className="absolute inset-0 flex items-center justify-center z-20 text-center p-4 max-w-2xl mx-auto text-white">
-              <div className="drop-shadow-lg">
-                <h1 className="text-4xl md:text-6xl font-extrabold font-heading leading-tight mb-4">
+            <div className="absolute inset-0 flex items-center justify-center z-20 text-center p-4 w-full mx-auto text-white">
+              <div className="drop-shadow-lg -translate-y-24 md:-translate-y-36">
+                <h1 className="text-lg md:text-5xl font-extrabold font-heading leading-none mb-1 whitespace-nowrap">
                   {carouselImages[currentSlide].title}
                 </h1>
-                <p className="text-lg md:text-xl text-neutral mb-8">
+                <p className="text-sm md:text-xl text-neutral mb-4 leading-none md:leading-normal">
                   {carouselImages[currentSlide].subtitle}
                 </p>
               </div>
