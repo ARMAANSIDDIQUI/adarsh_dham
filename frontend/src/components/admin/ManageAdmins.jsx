@@ -23,6 +23,11 @@ const AdminModal = ({ user, modalOpen, setModalOpen, fetchUsers, setError }) => 
 
   const handleUpdateDetails = async (e) => {
     e.preventDefault();
+    if (updateForm.phone.length !== 10) {
+        toast.error('Phone number must be exactly 10 digits.');
+        setError('Phone number must be exactly 10 digits.');
+        return;
+    }
     try {
       await api.put(`/admin/update-details/${user._id}`, updateForm);
       fetchUsers();
@@ -116,7 +121,17 @@ const AdminModal = ({ user, modalOpen, setModalOpen, fetchUsers, setError }) => 
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Phone Number</label>
-                <input type="text" name="phone" value={updateForm.phone} onChange={(e) => setUpdateForm({...updateForm, phone: e.target.value})} className="mt-1 block w-full px-3 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary transition-colors" />
+                <input 
+                    type="text" 
+                    name="phone" 
+                    value={updateForm.phone} 
+                    onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                        setUpdateForm({...updateForm, phone: val});
+                    }} 
+                    className="mt-1 block w-full px-3 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary transition-colors" 
+                    maxLength="10"
+                />
               </div>
               <Button type="submit" className="w-full bg-primaryDark hover:bg-highlight text-white font-medium rounded-lg flex items-center justify-center">
                 Save Changes
@@ -208,7 +223,12 @@ const ManageAdmins = () => {
 
   const handleNewAdminChange = (e) => {
     const { name, value } = e.target;
-    setNewAdminForm({ ...newAdminForm, [name]: value });
+    if (name === 'phone') {
+        const val = value.replace(/\D/g, '').slice(0, 10);
+        setNewAdminForm({ ...newAdminForm, [name]: val });
+    } else {
+        setNewAdminForm({ ...newAdminForm, [name]: value });
+    }
   };
 
   const handleNewAdminRoleChange = (role) => {
@@ -222,6 +242,11 @@ const ManageAdmins = () => {
 
   const handleAddAdmin = async (e) => {
     e.preventDefault();
+    if (newAdminForm.phone.length !== 10) {
+        toast.error('Phone number must be exactly 10 digits.');
+        setError('Phone number must be exactly 10 digits.');
+        return;
+    }
     try {
       await api.post('/admin/add-admin', newAdminForm);
       setNewAdminForm({ name: '', phone: '', password: '', roles: [] });
@@ -264,7 +289,7 @@ const ManageAdmins = () => {
         <form onSubmit={handleAddAdmin} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <input type="text" name="name" value={newAdminForm.name} onChange={handleNewAdminChange} placeholder="Full Name" className="w-full px-4 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary transition-colors" required />
-            <input type="text" name="phone" value={newAdminForm.phone} onChange={handleNewAdminChange} placeholder="Phone Number" className="w-full px-4 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary transition-colors" required />
+            <input type="text" name="phone" value={newAdminForm.phone} onChange={handleNewAdminChange} placeholder="Phone Number" className="w-full px-4 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary transition-colors" required maxLength="10" />
             
             {/* Temporary Password Input with Toggle */}
             <div className="relative">

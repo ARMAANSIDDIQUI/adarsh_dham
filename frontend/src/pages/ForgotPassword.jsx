@@ -11,8 +11,19 @@ const ForgotPassword = () => {
     const [reason, setReason] = useState('');
     const [loading, setLoading] = useState(false);
 
+    const handlePhoneChange = (e) => {
+        const sanitized = e.target.value.replace(/\D/g, '').slice(0, 10);
+        setPhone(sanitized);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        if (phone.length !== 10) {
+            toast.error('Phone number must be exactly 10 digits.');
+            return;
+        }
+
         setLoading(true);
         try {
             const { data } = await api.post('/password-requests', { phone, reason });
@@ -46,10 +57,13 @@ const ForgotPassword = () => {
                                 id="phone"
                                 type="tel"
                                 value={phone}
-                                onChange={(e) => setPhone(e.target.value)}
+                                onChange={handlePhoneChange}
                                 required
                                 className="w-full pl-10 pr-3 py-2 border border-background rounded-md focus:ring-primary focus:border-primary"
                                 placeholder="Your registered phone number"
+                                pattern="\d{10}"
+                                maxLength="10"
+                                title="Please enter exactly 10 digits"
                             />
                         </div>
                     </div>

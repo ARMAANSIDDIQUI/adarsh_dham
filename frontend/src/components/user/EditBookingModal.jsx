@@ -6,7 +6,7 @@ import api from '../../api/api.js';
 import { toast } from 'react-toastify';
 import { useTranslation } from '../../hooks/useTranslation';
 
-const ThemedInput = ({ label, name, value, onChange, required, type = "text", icon, min, max, colSpan = "" }) => (
+const ThemedInput = ({ label, name, value, onChange, required, type = "text", icon, min, max, colSpan = "", maxLength }) => (
   <div className={colSpan}>
     <label className="text-sm font-medium text-gray-700 flex items-center mb-1">
       {icon && <span className="mr-2 text-primary">{icon}</span>}
@@ -22,6 +22,7 @@ const ThemedInput = ({ label, name, value, onChange, required, type = "text", ic
       required={required}
       min={min}
       max={max}
+      maxLength={maxLength}
     />
   </div>
 );
@@ -107,7 +108,13 @@ const EditBookingModal = ({ booking, onClose, onUpdate }) => {
 
   const handleChange = e => {
     const { name, value, type, checked } = e.target;
-    const newFormData = { ...formData, [name]: type === 'checkbox' ? checked : value };
+    let newValue = type === 'checkbox' ? checked : value;
+
+    if (name === 'contactNumber' || name === 'baijiContact') {
+        newValue = value.replace(/\D/g, '').slice(0, 10);
+    }
+
+    const newFormData = { ...formData, [name]: newValue };
     if (name === 'stayFrom') {
       if (!newFormData.stayTo || new Date(value) > new Date(newFormData.stayTo)) {
         newFormData.stayTo = value;
@@ -146,6 +153,20 @@ const EditBookingModal = ({ booking, onClose, onUpdate }) => {
       setValidationError(msg);
       toast.error(msg);
       return;
+    }
+
+    if (formData.contactNumber && formData.contactNumber.length !== 10) {
+      const msg = "Contact number must be exactly 10 digits.";
+      setValidationError(msg);
+      toast.error(msg);
+      return;
+    }
+    
+    if (formData.baijiContact && formData.baijiContact.length !== 10) {
+        const msg = "Baiji/MahatmaJi contact number must be exactly 10 digits.";
+        setValidationError(msg);
+        toast.error(msg);
+        return;
     }
 
     setSubmitLoading(true);
@@ -215,7 +236,7 @@ const EditBookingModal = ({ booking, onClose, onUpdate }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <ThemedInput label={t.booking.fields.ashramName} name="ashramName" value={formData.ashramName} onChange={handleChange} required icon={<FaUniversity />} colSpan="md:col-span-2" />
                 <ThemedInput label={t.booking.fields.baijiName} name="baijiMahatmaJi" value={formData.baijiMahatmaJi} onChange={handleChange} />
-                <ThemedInput label={t.booking.fields.baijiContact} name="baijiContact" value={formData.baijiContact} onChange={handleChange} />
+                <ThemedInput label={t.booking.fields.baijiContact} name="baijiContact" value={formData.baijiContact} onChange={handleChange} maxLength="10" />
               </div>
             </div>
 
@@ -223,7 +244,7 @@ const EditBookingModal = ({ booking, onClose, onUpdate }) => {
               <h3 className="text-xl font-semibold font-heading text-primaryDark mb-4 border-b border-background pb-2">{t.booking.sections.personal}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <ThemedInput label={t.booking.fields.email} name="email" type="email" value={formData.email} onChange={handleChange} icon={<FaEnvelope />} />
-                <ThemedInput label={t.booking.fields.contact} name="contactNumber" value={formData.contactNumber} onChange={handleChange} required icon={<FaPhoneAlt />} />
+                <ThemedInput label={t.booking.fields.contact} name="contactNumber" value={formData.contactNumber} onChange={handleChange} required icon={<FaPhoneAlt />} maxLength="10" />
                 <ThemedInput label={t.booking.fields.address} name="address" value={formData.address} onChange={handleChange} required icon={<FaMapMarkerAlt />} colSpan="md:col-span-2" />
                 <ThemedInput label={t.booking.fields.city} name="city" value={formData.city} onChange={handleChange} required icon={<FaMapMarkerAlt />} colSpan="md:col-span-2" />
               </div>

@@ -28,6 +28,11 @@ const LoginForm = () => {
         setShowPassword(prev => !prev);
     };
 
+    const handlePhoneChange = (e) => {
+        const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+        setPhone(value);
+    };
+
     // This function handles the push notification subscription process
     const subscribeToPushNotifications = async () => {
         if (!('serviceWorker' in navigator && 'PushManager' in window)) {
@@ -65,6 +70,10 @@ const LoginForm = () => {
             setError('Phone and password are required.');
             return;
         }
+        if (phone.length !== 10) {
+            setError('Phone number must be exactly 10 digits.');
+            return;
+        }
         setLoading(true);
         try {
             await dispatch(login({ phone, password })).unwrap();
@@ -99,10 +108,13 @@ const LoginForm = () => {
                             name="phone"
                             autoComplete="username"
                             value={phone}
-                            onChange={(e) => setPhone(e.target.value)}
+                            onChange={handlePhoneChange}
                             className="block w-full pl-10 pr-4 py-2 border border-background rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                             placeholder="10-digit mobile number"
                             required
+                            pattern="\d{10}"
+                            maxLength="10"
+                            title="Please enter exactly 10 digits"
                         />
                     </div>
                 </div>
