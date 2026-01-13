@@ -87,7 +87,7 @@ const PasswordModal = ({
                                 </Button>
                                 <Button 
                                     type="submit" 
-                                    className="bg-highlight hover:bg-primaryDark text-white"
+                                    className="bg-primaryDark hover:bg-highlight text-white"
                                     disabled={loading}
                                 >
                                     {loading ? <FaSpinner className="animate-spin inline-block mr-2" /> : <><FaKey className="inline-block mr-2"/> Set New Password</>}
@@ -228,7 +228,7 @@ const AdminUserManagement = () => {
                                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                                     <Button 
                                         onClick={() => handleOpenModal(user)}
-                                        className="text-sm bg-highlight hover:bg-primaryDark text-white py-2 px-3"
+                                        className="text-sm bg-primaryDark hover:bg-highlight text-white py-2 px-3"
                                     >
                                         <FaLock className="inline-block mr-2" />Reset Password
                                     </Button>

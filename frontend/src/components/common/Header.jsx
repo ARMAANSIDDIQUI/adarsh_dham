@@ -220,7 +220,7 @@ const Header = () => {
                                             />
                                             {isAdmin && <NavLink to="/admin" icon={<FaUserShield/>} text={t.nav.adminPanel} onClick={handleMenuToggle} />}
                                             <div className="mt-4">
-                                                <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-2 text-lg text-highlight bg-highlight/10 rounded-lg">
+                                                <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-2 text-lg text-white bg-primaryDark hover:bg-highlight rounded-lg transition-colors">
                                                     <FaSignOutAlt /> {t.nav.logout}
                                                 </button>
                                             </div>

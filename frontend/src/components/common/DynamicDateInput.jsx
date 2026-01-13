@@ -89,7 +89,7 @@ const DynamicDateInput = ({
   if (max) maxYear = new Date(max).getFullYear();
 
   const years = [];
-  for (let y = minYear; y <= maxYear; y++) {
+  for (let y = maxYear; y >= minYear; y--) {
     years.push(y);
   }
   // Sort years? Ascending or Descending? Usually Ascending for future dates, Descending for DOB.
@@ -110,11 +110,30 @@ const DynamicDateInput = ({
     { value: 12, label: "December" },
   ];
 
+  const minDate = min ? new Date(min) : null;
+  const maxDate = max ? new Date(max) : null;
+
+  // Filter Months based on Year selection
+  const availableMonths = months.filter(m => {
+    if (!year) return true;
+    if (minDate && year === minDate.getFullYear() && m.value < minDate.getMonth() + 1) return false;
+    if (maxDate && year === maxDate.getFullYear() && m.value > maxDate.getMonth() + 1) return false;
+    return true;
+  });
+
   const daysInMonth = month && year ? getDaysInMonth(month, year) : 31;
   const days = [];
   for (let d = 1; d <= daysInMonth; d++) {
     days.push(d);
   }
+
+  // Filter Days based on Year and Month selection
+  const availableDays = days.filter(d => {
+      if (!year || !month) return true;
+      if (minDate && year === minDate.getFullYear() && month === minDate.getMonth() + 1 && d < minDate.getDate()) return false;
+      if (maxDate && year === maxDate.getFullYear() && month === maxDate.getMonth() + 1 && d > maxDate.getDate()) return false;
+      return true;
+  });
 
   return (
     <div className={className}>
@@ -131,7 +150,7 @@ const DynamicDateInput = ({
           required={required}
         >
           <option value="">Day</option>
-          {days.map((d) => (
+          {availableDays.map((d) => (
             <option key={d} value={d}>
               {d}
             </option>
@@ -144,7 +163,7 @@ const DynamicDateInput = ({
           required={required}
         >
           <option value="">Month</option>
-          {months.map((m) => (
+          {availableMonths.map((m) => (
             <option key={m.value} value={m.value}>
               {m.label}
             </option>

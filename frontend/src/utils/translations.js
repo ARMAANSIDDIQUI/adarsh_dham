@@ -261,7 +261,7 @@ export const translations = {
         no: "No"
       },
       errors: {
-        loadingEvent: "Loading event details...",
+        loadingEvent: "Loading...",
         eventNotFound: "Event not found. Please try again later.",
         addPerson: "You must add at least one person.",
         ageLimit: "Age for {name} ({gender}) is over 16.",
@@ -632,7 +632,7 @@ export const translations = {
         no: "नहीं"
       },
       errors: {
-        loadingEvent: "कार्यक्रम विवरण लोड हो रहा है...",
+        loadingEvent: "लोड हो रहा है...",
         eventNotFound: "कार्यक्रम नहीं मिला। कृपया बाद में पुनः प्रयास करें।",
         addPerson: "आपको कम से कम एक व्यक्ति को जोड़ना होगा।",
         ageLimit: "{name} ({gender}) की उम्र 16 से अधिक है।",

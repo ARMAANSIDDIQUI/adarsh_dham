@@ -109,7 +109,7 @@ const RegisterForm = () => {
                     <div>
                         <label htmlFor="phone" className="block text-sm font-medium text-gray-700">{t.register.phoneLabel}</label>
                         <div className="relative mt-1">
-                            <FaPhoneAlt className="absolute left-3 top-1/2 transform -translate-y-1/2 text-accent" />
+                            <FaPhoneAlt className="absolute left-3 top-1/2 transform -translate-y-1/2 text-accent rotate-90" />
                             <input
                                 type="tel"
                                 id="phone"
@@ -177,7 +177,7 @@ const RegisterForm = () => {
                          <button 
                             type="submit" 
                             disabled={loading || isFormIncomplete} 
-                            className={`w-full inline-flex justify-center items-center px-4 py-3 text-white text-lg font-semibold rounded-lg shadow-soft transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-primary/50 bg-highlight hover:bg-primaryDark disabled:opacity-50 disabled:cursor-not-allowed`}
+                            className={`w-full inline-flex justify-center items-center px-4 py-3 text-white text-lg font-semibold rounded-lg shadow-soft transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-primary/50 bg-primaryDark hover:bg-highlight disabled:bg-gray-400 disabled:cursor-not-allowed`}
                         >
                             {loading ? (
                                 <>

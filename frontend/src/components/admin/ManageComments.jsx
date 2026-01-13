@@ -205,8 +205,8 @@ const ManageComments = () => {
                                     <div className="flex space-x-2 self-end sm:self-center sm:ml-4">
                                         {comment.status === 'pending' ? (
                                             <>
-                                                <Button onClick={() => handleAction(comment._id, 'approve')} className="bg-primary hover:bg-primaryDark text-white text-xs px-3 py-1 rounded-lg"><FaCheck className="inline mr-1" /> Approve</Button>
-                                                <Button onClick={() => handleAction(comment._id, 'reject')} className="bg-highlight hover:bg-primaryDark text-white text-xs px-3 py-1 rounded-lg"><FaTimes className="inline mr-1" /> Reject</Button>
+                                                <Button onClick={() => handleAction(comment._id, 'approve')} className="bg-primaryDark hover:bg-highlight text-white text-xs px-3 py-1 rounded-lg"><FaCheck className="inline mr-1" /> Approve</Button>
+                                                <Button onClick={() => handleAction(comment._id, 'reject')} className="bg-primaryDark hover:bg-highlight text-white text-xs px-3 py-1 rounded-lg"><FaTimes className="inline mr-1" /> Reject</Button>
                                             </>
                                         ) : (
                                             <Button onClick={() => handleReconsider(comment._id)} className="bg-yellow-500 hover:bg-yellow-600 text-white text-xs px-3 py-1 rounded-lg"><FaUndo className="inline mr-1" /> Reconsider</Button>

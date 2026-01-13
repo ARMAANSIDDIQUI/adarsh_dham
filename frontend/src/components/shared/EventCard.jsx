@@ -59,7 +59,7 @@ const EventCard = ({ event }) => {
   const baseButtonClasses = "w-full py-3 text-white font-semibold rounded-lg shadow-soft transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-primary/50";
 
   // Dynamic classes based on booking status
-  const activeClasses = "bg-highlight hover:bg-primaryDark";
+  const activeClasses = "bg-primaryDark hover:bg-highlight";
   const inactiveClasses = "bg-gray-400 hover:bg-gray-500 cursor-not-allowed"; // Changed to use gray colors for 'dull' look
 
   return (

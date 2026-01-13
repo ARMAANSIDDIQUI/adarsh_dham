@@ -283,7 +283,7 @@ const EditBookingModal = ({ booking, onClose, onUpdate }) => {
             {error && <p className="text-highlight bg-highlight/10 border border-highlight/20 p-3 rounded-lg text-sm text-center font-medium">{error}</p>}
 
             <div className="pt-4">
-              <Button type="submit" className="w-full text-lg py-3 shadow-soft bg-highlight hover:bg-primaryDark" disabled={submitLoading}>
+              <Button type="submit" className="w-full text-lg py-3 shadow-soft bg-primaryDark hover:bg-highlight text-white disabled:bg-gray-400 disabled:cursor-not-allowed" disabled={submitLoading}>
                 {submitLoading ? <FaSpinner className="inline mr-2 animate-spin" /> : t.booking.updateButton}
               </Button>
             </div>

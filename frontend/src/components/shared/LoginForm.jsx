@@ -140,7 +140,7 @@ const LoginForm = () => {
                 
                 {error && <p className="text-highlight text-sm text-center bg-highlight/10 p-3 rounded-lg border border-highlight/20">{error}</p>}
                 
-                <Button type="submit" className="w-full text-lg py-2.5 bg-highlight hover:bg-primaryDark" disabled={loading}>
+                <Button type="submit" className="w-full text-lg py-2.5 bg-primaryDark hover:bg-highlight text-white disabled:bg-gray-400 disabled:cursor-not-allowed" disabled={loading}>
                     {loading ? 'Logging in...' : 'Login'}
                 </Button>
             </form>

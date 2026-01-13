@@ -14,7 +14,7 @@ const DeleteConfirmationModal = ({ item, type, isOpen, onClose, onDelete }) => {
                 <h3 className="text-2xl font-bold font-heading mb-4 text-highlight border-b border-background pb-2">Confirm Deletion</h3>
                 <p className="text-gray-700 mb-6">Are you sure you want to permanently delete the {type} <strong>{item?.name}</strong>? This action cannot be undone.</p>
                 <div className="flex space-x-3">
-                    <Button onClick={onDelete} className="flex-1 bg-highlight hover:bg-primaryDark text-white font-medium rounded-lg"><FaTrashAlt className="mr-2" /> Yes, Delete</Button>
+                    <Button onClick={onDelete} className="flex-1 bg-primaryDark hover:bg-highlight text-white font-medium rounded-lg"><FaTrashAlt className="mr-2" /> Yes, Delete</Button>
                     <Button onClick={onClose} className="flex-1 bg-background hover:bg-opacity-80 text-primaryDark font-medium rounded-lg">Cancel</Button>
                 </div>
             </div>
@@ -111,7 +111,7 @@ const EditBedModal = ({ isOpen, onClose, bed, onBedUpdated, rooms, buildings }) 
                     {error && <div className="text-highlight text-sm">{error}</div>}
                     <div className="flex justify-end space-x-3 mt-6">
                         <Button type="button" onClick={onClose} className="bg-background hover:bg-opacity-80 text-primaryDark font-medium rounded-lg">Cancel</Button>
-                        <Button type="submit" className="bg-primary hover:bg-primaryDark text-white font-semibold py-2 px-6 rounded-lg shadow-soft" disabled={loading}>
+                        <Button type="submit" className="bg-primaryDark hover:bg-highlight text-white font-semibold py-2 px-6 rounded-lg shadow-soft" disabled={loading}>
                             {loading ? <FaSpinner className="animate-spin" /> : <><FaSave className="inline mr-2" /> Save Changes</>}
                         </Button>
                     </div>
@@ -395,7 +395,7 @@ const ManageBeds = () => {
                         </select>
                     </div>
                     <div className="sm:col-span-2 md:col-span-4 flex justify-end pt-2">
-                        <Button type="submit" className="bg-highlight hover:bg-primaryDark text-white font-semibold py-2 px-6 rounded-lg shadow-soft"><FaPlus className="inline mr-2" /> Add Bed</Button>
+                        <Button type="submit" className="bg-primaryDark hover:bg-highlight text-white font-semibold py-2 px-6 rounded-lg shadow-soft"><FaPlus className="inline mr-2" /> Add Bed</Button>
                     </div>
                 </form>
             </div>

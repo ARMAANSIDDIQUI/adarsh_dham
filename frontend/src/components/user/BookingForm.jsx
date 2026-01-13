@@ -322,7 +322,6 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
                   min={minStayDate.toISOString().split("T")[0]}
                   max={maxStayDate.toISOString().split("T")[0]}
                 />
-                <p className="text-sm text-gray-500 mt-1">{t.booking.notices.stayFrom}</p>
               </div>
               <div>
                 <DynamicDateInput
@@ -335,7 +334,6 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
                   min={formData.stayFrom || minStayDate.toISOString().split("T")[0]}
                   max={maxStayDate.toISOString().split("T")[0]}
                 />
-                <p className="text-sm text-gray-500 mt-1">{t.booking.notices.stayTo}</p>
               </div>
             </div>
           </div>

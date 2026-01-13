@@ -102,7 +102,7 @@ const InstallPWAPrompt = () => {
 
                         <button
                             onClick={handleInstallClick}
-                            className="w-full py-2 bg-highlight hover:bg-primaryDark text-white font-semibold rounded-xl shadow-md transition-colors flex items-center justify-center space-x-2"
+                            className="w-full py-2 bg-primaryDark hover:bg-highlight text-white font-semibold rounded-xl shadow-md transition-colors flex items-center justify-center space-x-2"
                         >
                             <FaDownload className="text-sm" />
                             <span>Install Now</span>

@@ -92,7 +92,7 @@ const AdminModal = ({ user, modalOpen, setModalOpen, fetchUsers, setError }) => 
             <div className="flex space-x-3">
               <Button 
                 onClick={handleDeleteUser} 
-                className="flex-1 bg-highlight hover:bg-primaryDark text-white font-medium rounded-lg flex items-center justify-center" 
+                className="flex-1 bg-primaryDark hover:bg-highlight text-white font-medium rounded-lg flex items-center justify-center" 
               >
                 <FaTrashAlt className="mr-2" /> Yes, Delete
               </Button>
@@ -118,7 +118,7 @@ const AdminModal = ({ user, modalOpen, setModalOpen, fetchUsers, setError }) => 
                 <label className="block text-sm font-medium text-gray-700">Phone Number</label>
                 <input type="text" name="phone" value={updateForm.phone} onChange={(e) => setUpdateForm({...updateForm, phone: e.target.value})} className="mt-1 block w-full px-3 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary transition-colors" />
               </div>
-              <Button type="submit" className="w-full bg-highlight hover:bg-primaryDark text-white font-medium rounded-lg flex items-center justify-center">
+              <Button type="submit" className="w-full bg-primaryDark hover:bg-highlight text-white font-medium rounded-lg flex items-center justify-center">
                 Save Changes
               </Button>
             </form>
@@ -147,7 +147,7 @@ const AdminModal = ({ user, modalOpen, setModalOpen, fetchUsers, setError }) => 
                   </span>
                 </div>
               </div>
-              <Button type="submit" className="w-full bg-highlight hover:bg-primaryDark text-white font-medium rounded-lg flex items-center justify-center">
+              <Button type="submit" className="w-full bg-primaryDark hover:bg-highlight text-white font-medium rounded-lg flex items-center justify-center">
                 <FaKey className="mr-2" /> Set New Password
               </Button>
             </form>
@@ -155,7 +155,7 @@ const AdminModal = ({ user, modalOpen, setModalOpen, fetchUsers, setError }) => 
             <div className="pt-4">
               <Button 
                 onClick={() => setDeleteStep(true)} 
-                className="w-full bg-highlight hover:bg-primaryDark text-white font-medium rounded-lg flex items-center justify-center"
+                className="w-full bg-primaryDark hover:bg-highlight text-white font-medium rounded-lg flex items-center justify-center"
               >
                 <FaTrashAlt className="mr-2" /> Delete Admin
               </Button>
@@ -302,7 +302,7 @@ const ManageAdmins = () => {
               ))}
             </div>
           </div>
-          <Button type="submit" className="w-full md:w-auto bg-highlight hover:bg-primaryDark text-white font-semibold py-2 px-6 rounded-lg shadow-soft flex items-center justify-center">
+          <Button type="submit" className="w-full md:w-auto bg-primaryDark hover:bg-highlight text-white font-semibold py-2 px-6 rounded-lg shadow-soft flex items-center justify-center">
             <FaPlusCircle className="inline mr-2" /> Create Admin
           </Button>
         </form>

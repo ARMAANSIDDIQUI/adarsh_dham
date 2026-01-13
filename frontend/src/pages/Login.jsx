@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { motion } from 'framer-motion';
-import { FaUser, FaLock, FaSignInAlt, FaSpinner, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaUser, FaPhoneAlt, FaLock, FaSignInAlt, FaSpinner, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { login } from '../redux/slices/authSlice';
 import { toast } from 'react-toastify';
 import { useTranslation } from '../hooks/useTranslation';
@@ -89,7 +89,7 @@ const Login = () => {
                     <div>
                         <label htmlFor="phone-login" className="block text-sm font-medium text-gray-700 mb-1">{t.login.phoneLabel}</label>
                         <div className="mt-1 relative">
-                            <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-accent" />
+                            <FaPhoneAlt className="absolute left-3 top-1/2 transform -translate-y-1/2 text-accent rotate-90" />
                             <input 
                                 id="phone-login" 
                                 name="phone" 
@@ -138,7 +138,7 @@ const Login = () => {
                         <button 
                             type="submit" 
                             disabled={loading || isFormIncomplete} 
-                            className={`w-full inline-flex justify-center items-center px-4 py-3 text-white font-semibold rounded-lg shadow-soft transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-primary/50 bg-highlight hover:bg-primaryDark disabled:opacity-50 disabled:cursor-not-allowed`}
+                            className={`w-full inline-flex justify-center items-center px-4 py-3 text-white font-semibold rounded-lg shadow-soft transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-primary/50 bg-primaryDark hover:bg-highlight disabled:bg-gray-400 disabled:cursor-not-allowed`}
                         >
                             {loading ? <FaSpinner className="animate-spin mr-2" /> : <FaSignInAlt className="mr-2" />}
                             {loading ? t.login.loggingIn : t.login.button}

@@ -127,7 +127,7 @@ const ChangePasswordForm = () => {
                         className={`w-full text-lg py-3 inline-flex justify-center items-center text-white font-semibold rounded-lg shadow-soft transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-primary/50 
                             ${isButtonDisabled 
                                 ? 'bg-gray-400 cursor-not-allowed opacity-70' // Disabled/Dull state
-                                : 'bg-highlight hover:bg-primaryDark' // Enabled state
+                                : 'bg-primaryDark hover:bg-highlight' // Enabled state
                             }`}
                     >
                         {loading ? (

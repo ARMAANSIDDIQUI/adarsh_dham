@@ -171,7 +171,7 @@ const UpcomingEventModal = ({ isOpen, onClose, event }) => {
 
           <button 
             onClick={handleBookNow}
-            className="w-full bg-highlight hover:bg-primaryDark text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 group"
+            className="w-full bg-primaryDark hover:bg-highlight text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 group"
           >
             <span>{t.events?.card?.requestBooking || "Book Now"}</span>
             <FaArrowRight className="group-hover:translate-x-1 transition-transform" />

@@ -21,7 +21,7 @@ const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel }) => {
                     <Button onClick={onCancel} className="bg-background hover:bg-opacity-80 text-primaryDark text-sm">
                         Cancel
                     </Button>
-                    <Button onClick={onConfirm} className="bg-highlight hover:bg-primaryDark text-sm text-white">
+                    <Button onClick={onConfirm} className="bg-primaryDark hover:bg-highlight text-sm text-white">
                         <FaTrashAlt className="inline mr-1" /> Confirm Delete
                     </Button>
                 </div>
@@ -130,7 +130,7 @@ const BookingStatus = ({ bookings, onDelete }) => {
                                 <FaFilePdf className="inline mr-1" /> Download Pass
                             </Button>
                         )}
-                        <Button onClick={() => handleDeleteClick(booking._id)} className="w-full sm:w-auto bg-highlight hover:bg-primaryDark text-white text-sm py-2">
+                        <Button onClick={() => handleDeleteClick(booking._id)} className="w-full sm:w-auto bg-primaryDark hover:bg-highlight text-white text-sm py-2">
                             <FaTrashAlt className="inline mr-1" /> Delete Booking
                         </Button>
                     </div>

@@ -7,7 +7,7 @@ function generateBookingPdf(booking) {
             margin: 40,
             info: {
                 Title: `Booking Pass - ${booking.bookingNumber}`,
-                Author: 'Adarsh Dham',
+                Author: 'Shri Adarsh Dham',
             }
         });
 
@@ -24,7 +24,7 @@ function generateBookingPdf(booking) {
         const lightGray = '#E2E8F0';
 
         // Header
-        doc.fillColor(primaryColor).fontSize(24).font('Helvetica-Bold').text('Adarsh Dham', { align: 'center' });
+        doc.fillColor(primaryColor).fontSize(24).font('Helvetica-Bold').text('Shri Adarsh Dham', { align: 'center' });
         doc.fontSize(16).font('Helvetica').text('Accommodation Pass', { align: 'center' });
         doc.moveDown(2);
 

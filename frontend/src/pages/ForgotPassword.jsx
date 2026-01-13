@@ -69,7 +69,7 @@ const ForgotPassword = () => {
                         </div>
                     </div>
                     <div>
-                        <Button type="submit" disabled={loading} className="w-full inline-flex justify-center items-center bg-highlight hover:bg-primaryDark text-white">
+                        <Button type="submit" disabled={loading} className="w-full inline-flex justify-center items-center bg-primaryDark hover:bg-highlight text-white disabled:bg-gray-400 disabled:cursor-not-allowed">
                             {loading ? <FaSpinner className="animate-spin mr-2" /> : <FaPaperPlane className="mr-2" />}
                             {loading ? 'Sending Request...' : 'Send Request'}
                         </Button>

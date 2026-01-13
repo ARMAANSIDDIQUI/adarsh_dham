@@ -110,7 +110,7 @@ const AdminLayout = ({ children }) => {
                     </ul>
                 </nav>
                 <div className="mt-4 pt-4 border-t border-primary/30">
-                    <button onClick={handleLogout} className="flex items-center justify-center space-x-2 w-full py-2 px-4 rounded-lg bg-highlight hover:bg-opacity-80 text-white transition-colors duration-200 font-medium">
+                    <button onClick={handleLogout} className="flex items-center justify-center space-x-2 w-full py-2 px-4 rounded-lg bg-primaryDark hover:bg-highlight text-white transition-colors duration-200 font-medium">
                         <FaSignOutAlt />
                         <span>Logout</span>
                     </button>
