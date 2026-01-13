@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { store, persistor } from './redux/store';
 import { PersistGate } from 'redux-persist/integration/react';
+import { PWAProvider } from './context/PWAContext';
 import 'react-toastify/dist/ReactToastify.css';
 import './styles/index.css';
 import App from './App';
@@ -26,7 +27,9 @@ root.render(
   <React.StrictMode>
     <Provider store={store}>
       <PersistGate loading={<Loading />} persistor={persistor}> 
-        <App />
+        <PWAProvider>
+          <App />
+        </PWAProvider>
       </PersistGate>
     </Provider>
   </React.StrictMode>

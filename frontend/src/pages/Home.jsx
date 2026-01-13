@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import axios from "axios";
 import { useTranslation } from "../hooks/useTranslation";
+import { usePWA } from "../context/PWAContext";
 import {
   FaCalendarAlt,
   FaBuilding,
@@ -15,7 +16,8 @@ import {
   FaEnvelope,
   FaPhone,
   FaTimes,
-  FaArrowRight
+  FaArrowRight,
+  FaDownload
 } from "react-icons/fa";
 
 // --- Internal Footer Component ---
@@ -185,6 +187,7 @@ const UpcomingEventModal = ({ isOpen, onClose, event }) => {
 const Home = () => {
   const { isAuthenticated } = useSelector((state) => state.auth);
   const t = useTranslation();
+  const { isInstallable, installPWA } = usePWA();
   const [liveLinks, setLiveLinks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [imagesLoaded, setImagesLoaded] = useState(false);
@@ -607,6 +610,23 @@ const Home = () => {
                 </h3>
               </motion.div>
             </Link>
+
+            {isInstallable && (
+              <div className="md:col-span-3 flex justify-center w-full">
+                <motion.div
+                  onClick={installPWA}
+                  whileHover={{ scale: 1.03 }}
+                  className="bg-card p-8 rounded-2xl shadow-soft hover:shadow-accent transition-all duration-300 transform border-t-4 border-primary flex flex-col items-center cursor-pointer w-full max-w-sm"
+                >
+                  <div className="bg-background p-4 rounded-full mb-4">
+                    <FaDownload className="text-4xl text-primary" />
+                  </div>
+                  <h3 className="text-xl font-semibold font-heading text-primaryDark">
+                    Install App
+                  </h3>
+                </motion.div>
+              </div>
+            )}
           </div>
         </section>
       </main>

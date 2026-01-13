@@ -1,19 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaDownload, FaTimes } from 'react-icons/fa';
+import { usePWA } from '../../context/PWAContext';
 
 const InstallPWAPrompt = () => {
-    const [deferredPrompt, setDeferredPrompt] = useState(null);
+    const { isInstallable, installPWA } = usePWA();
     const [showPrompt, setShowPrompt] = useState(false);
 
     useEffect(() => {
-        // 1. Check if the app is already running in "standalone" (installed) mode
-        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-        if (isStandalone) {
-            return; // Stop here, do not listen for events
-        }
+        // If not installable (already installed or event not fired), don't do anything
+        if (!isInstallable) return;
 
-        // 2. Check frequency (Once a day)
+        // Check frequency (Once a day)
         const lastShown = localStorage.getItem('pwa_prompt_last_shown');
         const lastShownTime = lastShown ? parseInt(lastShown, 10) : 0;
         const oneDay = 24 * 60 * 60 * 1000;
@@ -22,48 +20,21 @@ const InstallPWAPrompt = () => {
             return; // Shown within the last 24 hours
         }
 
-        const handler = (e) => {
-            // Prevent the mini-infobar from appearing on mobile
-            e.preventDefault();
-            // Stash the event so it can be triggered later.
-            setDeferredPrompt(e);
-            // Update UI notify the user they can install the PWA
-            // We add a small delay so it doesn't pop up immediately on load
-            setTimeout(() => {
-                setShowPrompt(true);
-                localStorage.setItem('pwa_prompt_last_shown', Date.now().toString());
-            }, 3000);
-        };
+        // Delay showing the prompt
+        const timer = setTimeout(() => {
+            setShowPrompt(true);
+            localStorage.setItem('pwa_prompt_last_shown', Date.now().toString());
+        }, 3000);
 
-        window.addEventListener('beforeinstallprompt', handler);
+        return () => clearTimeout(timer);
+    }, [isInstallable]);
 
-        return () => window.removeEventListener('beforeinstallprompt', handler);
-    }, []);
-
-    const handleInstallClick = async () => {
-        if (!deferredPrompt) return;
-
-        // Show the install prompt
-        deferredPrompt.prompt();
-
-        // Wait for the user to respond to the prompt
-        const { outcome } = await deferredPrompt.userChoice;
-        
-        if (outcome === 'accepted') {
-            console.log('User accepted the install prompt');
-            setShowPrompt(false);
-        } else {
-            console.log('User dismissed the install prompt');
-            // Optional: If they cancel the native prompt, you might want to treat it as a dismissal too
-            // localStorage.setItem('pwa_prompt_dismissed', 'true'); 
-        }
-        
-        // We've used the prompt, and can't use it again, throw it away
-        setDeferredPrompt(null);
+    const handleInstallClick = () => {
+        installPWA();
+        setShowPrompt(false);
     };
 
     const handleClose = () => {
-        // 3. Just close it, don't set permanent dismissal
         setShowPrompt(false);
     };
 
@@ -88,7 +59,12 @@ const InstallPWAPrompt = () => {
                         
                         <div className="flex items-center space-x-4 mb-3">
                             <div className="bg-primary/20 p-3 rounded-full">
-                                <img src="/VM401196.png" alt="App Icon" className="w-10 h-10 object-contain" />
+                                <img 
+                                    src="VM401196.png" 
+                                    onError={(e) => { e.target.onerror = null; e.target.src = "VM401196.JPG"; }}
+                                    alt="App Icon" 
+                                    className="w-10 h-10 object-contain" 
+                                />
                             </div>
                             <div>
                                 <h3 className="text-lg font-bold font-heading text-primaryDark">Install App</h3>
