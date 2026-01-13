@@ -37,6 +37,8 @@ const ForgotPassword = () => {
         }
     };
 
+    const isFormValid = phone.length === 10 && reason.trim().length > 0;
+
     return (
         <div className="min-h-screen bg-neutral flex items-center justify-center p-4 font-body">
             <motion.div
@@ -83,7 +85,15 @@ const ForgotPassword = () => {
                         </div>
                     </div>
                     <div>
-                        <Button type="submit" disabled={loading} className="w-full inline-flex justify-center items-center bg-primaryDark hover:bg-highlight text-white disabled:bg-gray-400 disabled:cursor-not-allowed">
+                        <Button 
+                            type="submit" 
+                            disabled={loading || !isFormValid} 
+                            className={`w-full inline-flex justify-center items-center text-white transition-colors duration-200 
+                                ${loading || !isFormValid 
+                                    ? 'bg-gray-400 cursor-not-allowed' 
+                                    : 'bg-primaryDark hover:bg-highlight'
+                                }`}
+                        >
                             {loading ? <FaSpinner className="animate-spin mr-2" /> : <FaPaperPlane className="mr-2" />}
                             {loading ? 'Sending Request...' : 'Send Request'}
                         </Button>

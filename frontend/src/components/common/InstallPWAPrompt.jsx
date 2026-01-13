@@ -14,17 +14,17 @@ const InstallPWAPrompt = () => {
         // Check frequency (Once a day)
         const lastShown = localStorage.getItem('pwa_prompt_last_shown');
         const lastShownTime = lastShown ? parseInt(lastShown, 10) : 0;
-        const oneDay = 24 * 60 * 60 * 1000;
+        const twoHours = 2 * 60 * 60 * 1000;
 
-        if (Date.now() - lastShownTime < oneDay) {
-            return; // Shown within the last 24 hours
+        if (Date.now() - lastShownTime < twoHours) {
+            return; // Shown within the last 2 hours
         }
 
         // Delay showing the prompt
         const timer = setTimeout(() => {
             setShowPrompt(true);
             localStorage.setItem('pwa_prompt_last_shown', Date.now().toString());
-        }, 3000);
+        }, 12000);
 
         return () => clearTimeout(timer);
     }, [isInstallable]);

@@ -186,6 +186,15 @@ const UpcomingEventModal = ({ isOpen, onClose, event }) => {
 
 // --- Welcome Modal ---
 const WelcomeModal = ({ isOpen, onClose }) => {
+  useEffect(() => {
+    if (isOpen) {
+      const timer = setTimeout(() => {
+        onClose();
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
@@ -227,6 +236,7 @@ const Home = () => {
   
   // Welcome Modal state
   const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
+  const [welcomeProcessed, setWelcomeProcessed] = useState(false);
 
   // Carousel state
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -279,24 +289,39 @@ const Home = () => {
             await loadImage("/welcome.jpg");
             const lastShown = localStorage.getItem('welcome_modal_last_shown');
             const lastShownTime = lastShown ? parseInt(lastShown, 10) : 0;
-            const oneDay = 24 * 60 * 60 * 1000;
+            const twoHours = 2 * 60 * 60 * 1000;
 
-            if (Date.now() - lastShownTime > oneDay) {
+            if (Date.now() - lastShownTime > twoHours) {
                 setIsWelcomeModalOpen(true);
                 localStorage.setItem('welcome_modal_last_shown', Date.now().toString());
+            } else {
+                setWelcomeProcessed(true);
             }
         } catch (err) {
             console.error("Failed to load welcome image", err);
+            setWelcomeProcessed(true);
         }
 
       } catch (error) {
         console.error("Failed to load carousel images:", error);
         setImagesLoaded(true);
+        setWelcomeProcessed(true);
       }
     };
 
     loadAllImages();
   }, []);
+
+  // Handle Event Modal Opening after Welcome is done
+  useEffect(() => {
+    if (welcomeProcessed && upcomingEvent) {
+         const timer = setTimeout(() => {
+             setIsModalOpen(true);
+             localStorage.setItem('event_popup_last_shown', Date.now().toString());
+         }, 500);
+         return () => clearTimeout(timer);
+    }
+  }, [welcomeProcessed, upcomingEvent]);
 
   // Fetch live links AND Upcoming Event
   useEffect(() => {
@@ -320,14 +345,10 @@ const Home = () => {
         if (upcoming.length > 0) {
           const lastShown = localStorage.getItem('event_popup_last_shown');
           const lastShownTime = lastShown ? parseInt(lastShown, 10) : 0;
-          const oneDay = 24 * 60 * 60 * 1000;
+          const twoHours = 2 * 60 * 60 * 1000;
 
-          if (Date.now() - lastShownTime > oneDay) {
+          if (Date.now() - lastShownTime > twoHours) {
             setUpcomingEvent(upcoming[0]);
-            setTimeout(() => {
-              setIsModalOpen(true);
-              localStorage.setItem('event_popup_last_shown', Date.now().toString());
-            }, 2000);
           }
         }
 
@@ -476,7 +497,7 @@ const Home = () => {
       {/* Welcome Modal */}
       <AnimatePresence>
         {isWelcomeModalOpen && (
-          <WelcomeModal isOpen={isWelcomeModalOpen} onClose={() => setIsWelcomeModalOpen(false)} />
+          <WelcomeModal isOpen={isWelcomeModalOpen} onClose={() => { setIsWelcomeModalOpen(false); setWelcomeProcessed(true); }} />
         )}
       </AnimatePresence>
 
@@ -505,11 +526,11 @@ const Home = () => {
           >
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent"></div>
             <div className="absolute inset-0 flex items-center justify-center z-20 text-center p-4 w-full mx-auto text-white">
-              <div className="drop-shadow-lg -translate-y-28 md:-translate-y-40">
-                <h1 className="text-xl md:text-6xl font-extrabold font-heading leading-none mb-2 whitespace-nowrap">
+              <div className="drop-shadow-lg -translate-y-20 md:-translate-y-32">
+                <h1 className="text-xl md:text-5xl font-extrabold font-heading leading-none mb-2 whitespace-nowrap">
                   {carouselImages[currentSlide].title}
                 </h1>
-                <p className="text-base md:text-2xl text-neutral mb-4 leading-none md:leading-normal">
+                <p className="text-base md:text-xl text-neutral mb-4 leading-none md:leading-normal">
                   {carouselImages[currentSlide].subtitle}
                 </p>
               </div>
