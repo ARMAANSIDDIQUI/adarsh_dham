@@ -5,7 +5,7 @@ import Button from '../common/Button.jsx';
 import { FaUsers, FaEdit, FaTrashAlt, FaKey, FaTimes, FaPlusCircle, FaEye, FaEyeSlash } from 'react-icons/fa';
 import api from '../../api/api.js';
 import { toast } from 'react-toastify';
-import PhoneInput from '../common/PhoneInput.jsx';
+import PhoneInput, { validatePhoneNumber } from '../common/PhoneInput.jsx';
 
 const roles = ['admin', 'super-operator', 'operator', 'satsang-operator'];
 
@@ -24,8 +24,7 @@ const AdminModal = ({ user, modalOpen, setModalOpen, fetchUsers, setError }) => 
 
   const handleUpdateDetails = async (e) => {
     e.preventDefault();
-    const digits = updateForm.phone.replace(/\D/g, '');
-    if (digits.length < 10) {
+    if (!validatePhoneNumber(updateForm.phone)) {
         toast.error('Please enter a valid phone number.');
         setError('Please enter a valid phone number.');
         return;
@@ -237,8 +236,7 @@ const ManageAdmins = () => {
 
   const handleAddAdmin = async (e) => {
     e.preventDefault();
-    const digits = newAdminForm.phone.replace(/\D/g, '');
-    if (digits.length < 10) {
+    if (!validatePhoneNumber(newAdminForm.phone)) {
         toast.error('Please enter a valid phone number.');
         setError('Please enter a valid phone number.');
         return;

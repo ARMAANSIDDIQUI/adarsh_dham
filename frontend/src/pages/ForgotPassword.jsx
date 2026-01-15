@@ -5,7 +5,7 @@ import { FaCommentAlt, FaPaperPlane, FaSpinner } from 'react-icons/fa';
 import api from '../api/api';
 import Button from '../components/common/Button';
 import { toast } from 'react-toastify';
-import PhoneInput from '../components/common/PhoneInput';
+import PhoneInput, { validatePhoneNumber } from '../components/common/PhoneInput';
 
 const ForgotPassword = () => {
     const [phone, setPhone] = useState('');
@@ -19,9 +19,7 @@ const ForgotPassword = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         
-        // Basic length check for international
-        const digits = phone.replace(/\D/g, '');
-        if (digits.length < 8) {
+        if (!validatePhoneNumber(phone)) {
             toast.error('Please enter a valid phone number.');
             return;
         }
@@ -39,7 +37,7 @@ const ForgotPassword = () => {
         }
     };
 
-    const isFormValid = phone.replace(/\D/g, '').length >= 8 && reason.trim().length > 0;
+    const isFormValid = validatePhoneNumber(phone) && reason.trim().length > 0;
 
     return (
         <div className="min-h-screen bg-neutral flex items-center justify-center p-4 font-body">

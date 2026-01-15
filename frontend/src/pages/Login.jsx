@@ -6,7 +6,7 @@ import { FaUser, FaLock, FaSignInAlt, FaSpinner, FaEye, FaEyeSlash } from 'react
 import { login } from '../redux/slices/authSlice';
 import { toast } from 'react-toastify';
 import { useTranslation } from '../hooks/useTranslation';
-import PhoneInput from '../components/common/PhoneInput';
+import PhoneInput, { validatePhoneNumber } from '../components/common/PhoneInput';
 
 const Login = () => {
     const { isAuthenticated } = useSelector((state) => state.auth);
@@ -46,9 +46,8 @@ const Login = () => {
         e.preventDefault();
 
         const newErrors = {};
-        // Basic length check for international numbers
-        const digits = formData.phone.replace(/\D/g, '');
-        if (digits.length < 8) {
+        
+        if (!validatePhoneNumber(formData.phone)) {
             newErrors.phone = t.login.error.phoneLength || 'Invalid phone number';
         }
         if (!formData.password) {

@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { FaLock, FaUser, FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { useTranslation } from '../../hooks/useTranslation';
-import PhoneInput from '../common/PhoneInput';
+import PhoneInput, { validatePhoneNumber } from '../common/PhoneInput';
 
 const RegisterForm = () => {
     const t = useTranslation();
@@ -44,15 +44,11 @@ const RegisterForm = () => {
         if (!formData.name.trim()) {
             newErrors.name = t.register.error.nameRequired;
         }
-        // Basic validation: Check if it has at least 8 digits (ignoring the + and country code part roughly)
-        // A better check: strip non-digits, length should be >= 10 (including country code digits)
-        const digitsOnly = formData.phone.replace(/\D/g, '');
-        if (digitsOnly.length < 10) { 
-             // Assuming minimum valid phone number length globally (including country code) is around 10-11. 
-             // +91 9999999999 is 12 digits. +1 2125551234 is 11.
-             // If user enters just number 9999999999 (legacy), it's 10.
-            newErrors.phone = t.register.error.phoneLength;
+        
+        if (!validatePhoneNumber(formData.phone)) {
+            newErrors.phone = t.register.error.phoneLength || "Invalid phone number";
         }
+
         if (formData.password.length < 6) {
             newErrors.password = t.register.error.passwordLength;
         }

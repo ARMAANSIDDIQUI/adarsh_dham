@@ -1,16 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { FaChevronDown } from 'react-icons/fa';
 
-const COUNTRY_CODES = [
-    { code: '+91', country: 'IN', flag: '🇮🇳' },
-    { code: '+1', country: 'US', flag: '🇺🇸' },
-    { code: '+44', country: 'UK', flag: '🇬🇧' },
-    { code: '+971', country: 'AE', flag: '🇦🇪' },
-    { code: '+61', country: 'AU', flag: '🇦🇺' },
-    { code: '+1', country: 'CA', flag: '🇨🇦' },
-    { code: '+65', country: 'SG', flag: '🇸🇬' },
-    // Add more as needed
+export const COUNTRY_CODES = [
+    { code: '+91', country: 'IN', flag: '🇮🇳', digits: 10 },
+    { code: '+1', country: 'US', flag: '🇺🇸', digits: 10 },
+    { code: '+44', country: 'UK', flag: '🇬🇧', digits: 10 },
+    { code: '+971', country: 'AE', flag: '🇦🇪', digits: 9 },
+    { code: '+61', country: 'AU', flag: '🇦🇺', digits: 9 },
+    { code: '+1', country: 'CA', flag: '🇨🇦', digits: 10 },
+    { code: '+65', country: 'SG', flag: '🇸🇬', digits: 8 },
 ];
+
+export const validatePhoneNumber = (fullNumber) => {
+    if (!fullNumber) return false;
+    
+    // Sort by length desc to match longest prefix first
+    const sortedCodes = [...COUNTRY_CODES].sort((a, b) => b.code.length - a.code.length);
+    const matched = sortedCodes.find(c => fullNumber.startsWith(c.code));
+
+    if (matched) {
+        const numberPart = fullNumber.slice(matched.code.length).replace(/\D/g, '');
+        return numberPart.length === matched.digits;
+    }
+    
+    // Fallback if no code matches (shouldn't happen if using the input correctly)
+    const digits = fullNumber.replace(/\D/g, '');
+    return digits.length >= 8 && digits.length <= 15;
+};
 
 const PhoneInput = ({ value, onChange, error, label = "Phone Number", required = false, disabled = false, placeholder = "Enter mobile number", icon = null }) => {
     const [selectedCode, setSelectedCode] = useState('+91');
@@ -69,12 +85,12 @@ const PhoneInput = ({ value, onChange, error, label = "Phone Number", required =
                     {required && <span className="ml-1 text-highlight">*</span>}
                 </label>
             )}
-            <div className="relative flex items-center rounded-lg shadow-sm mt-1">
+            <div className="relative flex rounded-lg shadow-sm mt-1">
                 {/* Country Code Dropdown */}
                 <div className="relative">
                     <button
                         type="button"
-                        className={`flex items-center justify-between space-x-1 pl-3 pr-2 py-2 border border-r-0 rounded-l-lg bg-gray-50 hover:bg-gray-100 transition-colors ${error ? 'border-red-500' : 'border-background'} ${disabled ? 'opacity-70 cursor-not-allowed' : ''}`}
+                        className={`flex items-center justify-between space-x-1 pl-3 pr-2 py-2 h-full border border-r-0 rounded-l-lg bg-gray-50 hover:bg-gray-100 transition-colors ${error ? 'border-red-500' : 'border-background'} ${disabled ? 'opacity-70 cursor-not-allowed' : ''}`}
                         onClick={() => !disabled && setIsDropdownOpen(!isDropdownOpen)}
                         disabled={disabled}
                     >

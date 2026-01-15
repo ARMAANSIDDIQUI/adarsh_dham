@@ -16,7 +16,7 @@ import {
 import { useParams } from "react-router-dom";
 import { toast } from 'react-toastify';
 import { useTranslation } from "../../hooks/useTranslation";
-import PhoneInput from "../common/PhoneInput.jsx";
+import PhoneInput, { validatePhoneNumber } from "../common/PhoneInput.jsx";
 
 const ThemedInput = ({
   label,
@@ -250,14 +250,14 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
       toast.error(msg);
       return;
     }
-    if (formData.contactNumber.replace(/\D/g, '').length < 10) {
-      const msg = t.booking.errors.contactLength;
+    if (!validatePhoneNumber(formData.contactNumber)) {
+      const msg = t.booking.errors.contactLength || "Invalid contact number";
       setValidationError(msg);
       toast.error(msg);
       return;
     }
-    if (formData.baijiContact.replace(/\D/g, '').length < 10) {
-      const msg = t.booking.errors.baijiContactLength;
+    if (!validatePhoneNumber(formData.baijiContact)) {
+      const msg = t.booking.errors.baijiContactLength || "Invalid Baiji/MahatmaJi contact number";
       setValidationError(msg);
       toast.error(msg);
       return;
@@ -301,7 +301,7 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="p-6 md:p-8 bg-card rounded-2xl shadow-soft max-w-2xl w-full mx-auto"
+        className="p-6 md:p-8 bg-card rounded-2xl shadow-soft max-w-4xl w-full mx-auto"
       >
         <h2 className="text-3xl font-bold font-heading mb-8 text-center text-primaryDark border-b-2 border-background pb-3">
           {isEditing ? t.booking.editTitle : `${t.booking.title} ${event.name}`}

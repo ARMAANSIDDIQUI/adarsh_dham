@@ -181,7 +181,8 @@ import { DateTime } from 'luxon';
 import api from '../../api/api.js';
 import Button from '../common/Button.jsx';
 import { FaPaperPlane, FaClock, FaExclamationCircle, FaCalendarAlt } from 'react-icons/fa';
-import PhoneInput from '../common/PhoneInput.jsx';
+import PhoneInput, { validatePhoneNumber } from '../common/PhoneInput.jsx';
+
 const SendNotification = () => {
     const [message, setMessage] = useState('');
     const [target, setTarget] = useState({ userId: '', phones: [''], roles: [] });
@@ -242,11 +243,10 @@ const SendNotification = () => {
         setLoading(true);
         setStatus(null);
 
-        // Filter out empty phones. Basic validation: check if it has at least some digits.
-        const validPhones = target.phones.filter(p => p && p.replace(/\D/g, '').length >= 8);
+        // Filter out empty phones.
+        const validPhones = target.phones.filter(p => p && validatePhoneNumber(p));
         
-        if (target.phones.some(p => p.trim() && p.replace(/\D/g, '').length < 8)) {
-             // Assuming a minimal valid phone length
+        if (target.phones.some(p => p.trim() && !validatePhoneNumber(p))) {
             setStatus({ type: 'error', message: 'Please enter valid phone numbers.' });
             setLoading(false);
             return;

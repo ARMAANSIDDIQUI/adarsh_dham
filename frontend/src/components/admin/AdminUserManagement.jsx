@@ -4,7 +4,7 @@ import Button from '../common/Button.jsx';
 import { FaSpinner, FaLock, FaUser, FaCheck, FaTimes, FaKey, FaSearch, FaEye, FaEyeSlash, FaEdit, FaSave } from 'react-icons/fa'; // Added FaEdit, FaSave
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-toastify';
-import PhoneInput from '../common/PhoneInput.jsx';
+import PhoneInput, { validatePhoneNumber } from '../common/PhoneInput.jsx';
 
 const UserDetailsModal = ({
     isOpen,
@@ -235,9 +235,8 @@ const AdminUserManagement = () => {
     
     const handleUpdateUser = async (e) => {
         e.preventDefault();
-        // Basic phone validation (at least 8 digits)
-        const digits = editFormData.phone.replace(/\D/g, '');
-        if (digits.length < 8) {
+        
+        if (!validatePhoneNumber(editFormData.phone)) {
              setModalError('Please enter a valid phone number.');
              return;
         }
