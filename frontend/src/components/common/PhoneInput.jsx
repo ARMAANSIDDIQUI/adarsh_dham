@@ -85,16 +85,16 @@ const PhoneInput = ({ value, onChange, error, label = "Phone Number", required =
                     {required && <span className="ml-1 text-highlight">*</span>}
                 </label>
             )}
-            <div className="relative flex rounded-lg shadow-sm mt-1">
+            <div className="relative flex items-stretch flex-nowrap rounded-lg shadow-sm mt-1 h-12">
                 {/* Country Code Dropdown */}
                 <div className="relative">
                     <button
                         type="button"
-                        className={`flex items-center justify-between space-x-1 pl-3 pr-2 py-2 h-full border border-r-0 rounded-l-lg bg-gray-50 hover:bg-gray-100 transition-colors ${error ? 'border-red-500' : 'border-background'} ${disabled ? 'opacity-70 cursor-not-allowed' : ''}`}
+                        className={`flex items-center justify-between space-x-1 pl-3 pr-2 h-full border border-r-0 rounded-l-lg bg-gray-50 hover:bg-gray-100 transition-colors ${error ? 'border-red-500' : 'border-background'} ${disabled ? 'opacity-70 cursor-not-allowed' : ''}`}
                         onClick={() => !disabled && setIsDropdownOpen(!isDropdownOpen)}
                         disabled={disabled}
                     >
-                        <span>{COUNTRY_CODES.find(c => c.code === selectedCode)?.flag} {selectedCode}</span>
+                        <span className="flex items-center h-full">{COUNTRY_CODES.find(c => c.code === selectedCode)?.flag} {selectedCode}</span>
                         <FaChevronDown className="text-gray-400 text-xs ml-1" />
                     </button>
                     
@@ -117,14 +117,14 @@ const PhoneInput = ({ value, onChange, error, label = "Phone Number", required =
                 </div>
 
                 {/* Phone Number Input */}
-                <div className="relative flex-grow">
+                <div className="relative flex-grow h-full">
                      {/* We remove the absolute icon because it might clash with the prefix style, or we can keep it inside the input padding */}
                     <input
                         type="tel"
                         value={phoneNumber}
                         onChange={handleNumberChange}
                         disabled={disabled}
-                        className={`block w-full pl-4 pr-4 py-2 border rounded-r-lg rounded-l-none shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-shadow placeholder-gray-500 ${error ? 'border-red-500' : 'border-background'}`}
+                        className={`block w-full pl-4 pr-4 h-full border rounded-r-lg rounded-l-none shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-shadow placeholder-gray-500 ${error ? 'border-red-500' : 'border-background'}`}
                         placeholder={placeholder}
                         inputMode="numeric"
                     />
