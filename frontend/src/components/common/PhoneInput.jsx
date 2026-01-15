@@ -67,7 +67,7 @@ const PhoneInput = ({ value, onChange, error, label = "Phone Number", required =
                     {label} {required && <span className="text-red-500">*</span>}
                 </label>
             )}
-            <div className="relative flex rounded-lg shadow-sm">
+            <div className="relative flex rounded-lg shadow-sm mt-1">
                 {/* Country Code Dropdown */}
                 <div className="relative">
                     <button
@@ -106,7 +106,7 @@ const PhoneInput = ({ value, onChange, error, label = "Phone Number", required =
                         value={phoneNumber}
                         onChange={handleNumberChange}
                         disabled={disabled}
-                        className={`block w-full pl-4 pr-4 py-2 border rounded-r-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-shadow ${error ? 'border-red-500' : 'border-background'}`}
+                        className={`block w-full pl-4 pr-4 py-2 border rounded-r-lg rounded-l-none shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-shadow ${error ? 'border-red-500' : 'border-background'}`}
                         placeholder={placeholder}
                         inputMode="numeric"
                     />
