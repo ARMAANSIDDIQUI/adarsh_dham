@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../../api/api';
 import { motion } from 'framer-motion';
-import { FaLock, FaPhoneAlt, FaUser, FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa';
+import { FaLock, FaUser, FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { useTranslation } from '../../hooks/useTranslation';
+import PhoneInput from '../common/PhoneInput';
 
 const RegisterForm = () => {
     const t = useTranslation();
@@ -24,17 +25,17 @@ const RegisterForm = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-
-        if (name === 'phone') {
-            const sanitizedValue = value.replace(/\D/g, '');
-            const truncatedValue = sanitizedValue.slice(0, 10);
-            setFormData({ ...formData, [name]: truncatedValue });
-        } else {
-            setFormData({ ...formData, [name]: value });
-        }
+        setFormData({ ...formData, [name]: value });
 
         if (errors[name]) {
             setErrors({ ...errors, [name]: null });
+        }
+    };
+
+    const handlePhoneChange = (newPhone) => {
+        setFormData({ ...formData, phone: newPhone });
+        if (errors.phone) {
+            setErrors({ ...errors, phone: null });
         }
     };
 
@@ -43,7 +44,13 @@ const RegisterForm = () => {
         if (!formData.name.trim()) {
             newErrors.name = t.register.error.nameRequired;
         }
-        if (!/^\d{10}$/.test(formData.phone)) {
+        // Basic validation: Check if it has at least 8 digits (ignoring the + and country code part roughly)
+        // A better check: strip non-digits, length should be >= 10 (including country code digits)
+        const digitsOnly = formData.phone.replace(/\D/g, '');
+        if (digitsOnly.length < 10) { 
+             // Assuming minimum valid phone number length globally (including country code) is around 10-11. 
+             // +91 9999999999 is 12 digits. +1 2125551234 is 11.
+             // If user enters just number 9999999999 (legacy), it's 10.
             newErrors.phone = t.register.error.phoneLength;
         }
         if (formData.password.length < 6) {
@@ -107,23 +114,14 @@ const RegisterForm = () => {
 
                     {/* Phone Number Field */}
                     <div>
-                        <label htmlFor="phone" className="block text-sm font-medium text-gray-700">{t.register.phoneLabel}</label>
-                        <div className="relative mt-1">
-                            <FaPhoneAlt className="absolute left-3 top-1/2 transform -translate-y-1/2 text-accent rotate-90 -scale-x-100" />
-                            <input
-                                type="tel"
-                                id="phone"
-                                name="phone"
-                                inputMode="numeric"
-                                value={formData.phone}
-                                onChange={handleChange}
-                                className={`block w-full pl-10 pr-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-shadow ${errors.phone ? 'border-red-500' : 'border-background'}`}
-                                placeholder={t.register.phonePlaceholder}
-                                required
-                                autoComplete="tel"
-                            />
-                        </div>
-                        {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
+                        <PhoneInput 
+                            label={t.register.phoneLabel}
+                            value={formData.phone}
+                            onChange={handlePhoneChange}
+                            error={errors.phone}
+                            placeholder={t.register.phonePlaceholder}
+                            required
+                        />
                     </div>
 
                     {/* Password Field */}

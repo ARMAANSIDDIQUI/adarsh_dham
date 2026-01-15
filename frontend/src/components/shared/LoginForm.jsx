@@ -4,9 +4,10 @@ import { useDispatch } from 'react-redux';
 import { login } from '../../redux/slices/authSlice';
 import Button from '../common/Button';
 import { motion } from 'framer-motion';
-import { FaLock, FaPhoneAlt, FaEye, FaEyeSlash } from 'react-icons/fa'; // FaEye and FaEyeSlash imported
+import { FaLock, FaEye, FaEyeSlash } from 'react-icons/fa'; // FaEye and FaEyeSlash imported
 import api from '../../api/api';
 import { urlBase64ToUint8Array } from '../../utils/helpers';
+import PhoneInput from '../common/PhoneInput';
 
 // Your VAPID Public Key for Web Push notifications
 const VAPID_PUBLIC_KEY = "BBtSN3ZjmBjiT-jODQkhdTKl2Sb9F-4F13B1ibE2ENbRIm6_UPgF8r-X-pUN7Hs_F2Bg_cGdCm4pDDmcgktH_Jg";
@@ -28,41 +29,6 @@ const LoginForm = () => {
         setShowPassword(prev => !prev);
     };
 
-    const handlePhoneChange = (e) => {
-        const value = e.target.value.replace(/\D/g, '').slice(0, 10);
-        setPhone(value);
-    };
-
-    // This function handles the push notification subscription process
-    const subscribeToPushNotifications = async () => {
-        if (!('serviceWorker' in navigator && 'PushManager' in window)) {
-            console.log('Push notifications are not supported by this browser.');
-            return;
-        }
-        try {
-            const registration = await navigator.serviceWorker.ready;
-            const existingSubscription = await registration.pushManager.getSubscription();
-
-            if (!existingSubscription) {
-                const applicationServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
-                const subscription = await registration.pushManager.subscribe({
-                    userVisibleOnly: true,
-                    applicationServerKey: applicationServerKey,
-                });
-                await api.post('/notifications/subscribe', subscription);
-                console.log('User subscribed to push notifications.');
-            } else {
-                console.log('User is already subscribed.');
-            }
-        } catch (err) {
-            if (Notification.permission === 'denied') {
-                console.warn('Notification permission was denied by the user.');
-            } else {
-                console.error('Failed to subscribe to push notifications:', err);
-            }
-        }
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
@@ -70,8 +36,10 @@ const LoginForm = () => {
             setError('Phone and password are required.');
             return;
         }
-        if (phone.length !== 10) {
-            setError('Phone number must be exactly 10 digits.');
+        // Basic check for length (including country code)
+        const digits = phone.replace(/\D/g, '');
+        if (digits.length < 10) {
+            setError('Please enter a valid phone number.');
             return;
         }
         setLoading(true);
@@ -99,24 +67,13 @@ const LoginForm = () => {
             
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                    <div className="relative">
-                        <FaPhoneAlt className="absolute left-3 top-1/2 transform -translate-y-1/2 text-accent" />
-                        <input
-                            type="tel"
-                            id="phone"
-                            name="phone"
-                            autoComplete="username"
-                            value={phone}
-                            onChange={handlePhoneChange}
-                            className="block w-full pl-10 pr-4 py-2 border border-background rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                            placeholder="10-digit mobile number"
-                            required
-                            pattern="\d{10}"
-                            maxLength="10"
-                            title="Please enter exactly 10 digits"
-                        />
-                    </div>
+                    <PhoneInput
+                        label="Phone Number"
+                        value={phone}
+                        onChange={setPhone}
+                        required
+                        placeholder="10-digit mobile number"
+                    />
                 </div>
                 <div>
                     <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>

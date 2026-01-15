@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Button from '../common/Button.jsx';
-import { FaUserPlus, FaMapMarkerAlt, FaPhoneAlt, FaCalendarAlt, FaEnvelope, FaUniversity, FaUsers, FaPen, FaTimesCircle, FaSpinner } from 'react-icons/fa';
+import { FaUserPlus, FaMapMarkerAlt, FaCalendarAlt, FaEnvelope, FaUniversity, FaUsers, FaPen, FaTimesCircle, FaSpinner } from 'react-icons/fa';
 import api from '../../api/api.js';
 import { toast } from 'react-toastify';
 import { useTranslation } from '../../hooks/useTranslation';
+import PhoneInput from '../common/PhoneInput.jsx';
 
 const ThemedInput = ({ label, name, value, onChange, required, type = "text", icon, min, max, colSpan = "", maxLength }) => (
   <div className={colSpan}>
@@ -110,10 +111,6 @@ const EditBookingModal = ({ booking, onClose, onUpdate }) => {
     const { name, value, type, checked } = e.target;
     let newValue = type === 'checkbox' ? checked : value;
 
-    if (name === 'contactNumber' || name === 'baijiContact') {
-        newValue = value.replace(/\D/g, '').slice(0, 10);
-    }
-
     const newFormData = { ...formData, [name]: newValue };
     if (name === 'stayFrom') {
       if (!newFormData.stayTo || new Date(value) > new Date(newFormData.stayTo)) {
@@ -121,6 +118,10 @@ const EditBookingModal = ({ booking, onClose, onUpdate }) => {
       }
     }
     setFormData(newFormData);
+  };
+
+  const handlePhoneChange = (name, value) => {
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleRadioChange = e => setFormData(prev => ({ ...prev, fillingForOthers: e.target.value === 'true' }));
@@ -155,15 +156,15 @@ const EditBookingModal = ({ booking, onClose, onUpdate }) => {
       return;
     }
 
-    if (formData.contactNumber && formData.contactNumber.length !== 10) {
-      const msg = "Contact number must be exactly 10 digits.";
+    if (formData.contactNumber && formData.contactNumber.replace(/\D/g, '').length < 8) {
+      const msg = "Please enter a valid contact number.";
       setValidationError(msg);
       toast.error(msg);
       return;
     }
     
-    if (formData.baijiContact && formData.baijiContact.length !== 10) {
-        const msg = "Baiji/MahatmaJi contact number must be exactly 10 digits.";
+    if (formData.baijiContact && formData.baijiContact.replace(/\D/g, '').length < 8) {
+        const msg = "Please enter a valid Baiji/MahatmaJi contact number.";
         setValidationError(msg);
         toast.error(msg);
         return;
@@ -236,7 +237,13 @@ const EditBookingModal = ({ booking, onClose, onUpdate }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <ThemedInput label={t.booking.fields.ashramName} name="ashramName" value={formData.ashramName} onChange={handleChange} required icon={<FaUniversity />} colSpan="md:col-span-2" />
                 <ThemedInput label={t.booking.fields.baijiName} name="baijiMahatmaJi" value={formData.baijiMahatmaJi} onChange={handleChange} />
-                <ThemedInput label={t.booking.fields.baijiContact} name="baijiContact" value={formData.baijiContact} onChange={handleChange} maxLength="10" />
+                <div>
+                   <PhoneInput 
+                        label={t.booking.fields.baijiContact} 
+                        value={formData.baijiContact} 
+                        onChange={(val) => handlePhoneChange('baijiContact', val)} 
+                   />
+                </div>
               </div>
             </div>
 
@@ -244,7 +251,14 @@ const EditBookingModal = ({ booking, onClose, onUpdate }) => {
               <h3 className="text-xl font-semibold font-heading text-primaryDark mb-4 border-b border-background pb-2">{t.booking.sections.personal}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <ThemedInput label={t.booking.fields.email} name="email" type="email" value={formData.email} onChange={handleChange} icon={<FaEnvelope />} />
-                <ThemedInput label={t.booking.fields.contact} name="contactNumber" value={formData.contactNumber} onChange={handleChange} required icon={<FaPhoneAlt />} maxLength="10" />
+                <div>
+                   <PhoneInput 
+                        label={t.booking.fields.contact} 
+                        value={formData.contactNumber} 
+                        onChange={(val) => handlePhoneChange('contactNumber', val)} 
+                        required 
+                   />
+                </div>
                 <ThemedInput label={t.booking.fields.address} name="address" value={formData.address} onChange={handleChange} required icon={<FaMapMarkerAlt />} colSpan="md:col-span-2" />
                 <ThemedInput label={t.booking.fields.city} name="city" value={formData.city} onChange={handleChange} required icon={<FaMapMarkerAlt />} colSpan="md:col-span-2" />
               </div>

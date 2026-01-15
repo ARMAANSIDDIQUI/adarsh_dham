@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { motion } from 'framer-motion';
-import { FaUser, FaPhoneAlt, FaLock, FaSignInAlt, FaSpinner, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaUser, FaLock, FaSignInAlt, FaSpinner, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { login } from '../redux/slices/authSlice';
 import { toast } from 'react-toastify';
 import { useTranslation } from '../hooks/useTranslation';
+import PhoneInput from '../components/common/PhoneInput';
 
 const Login = () => {
     const { isAuthenticated } = useSelector((state) => state.auth);
@@ -27,18 +28,17 @@ const Login = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-
-        if (name === 'phone') {
-            const sanitizedValue = value.replace(/\D/g, '');
-            const truncatedValue = sanitizedValue.slice(0, 10);
-            
-            setFormData({ ...formData, [name]: truncatedValue });
-        } else {
-            setFormData({ ...formData, [name]: value });
-        }
+        setFormData({ ...formData, [name]: value });
 
         if (errors[name]) {
             setErrors({ ...errors, [name]: null });
+        }
+    };
+
+    const handlePhoneChange = (value) => {
+        setFormData({ ...formData, phone: value });
+        if (errors.phone) {
+            setErrors({ ...errors, phone: null });
         }
     };
 
@@ -46,8 +46,10 @@ const Login = () => {
         e.preventDefault();
 
         const newErrors = {};
-        if (!/^\d{10}$/.test(formData.phone)) {
-            newErrors.phone = t.login.error.phoneLength;
+        // Basic length check for international numbers
+        const digits = formData.phone.replace(/\D/g, '');
+        if (digits.length < 8) {
+            newErrors.phone = t.login.error.phoneLength || 'Invalid phone number';
         }
         if (!formData.password) {
             newErrors.password = t.login.error.required;
@@ -87,23 +89,14 @@ const Login = () => {
                 </div>
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
-                        <label htmlFor="phone-login" className="block text-sm font-medium text-gray-700 mb-1">{t.login.phoneLabel}</label>
-                        <div className="mt-1 relative">
-                            <FaPhoneAlt className="absolute left-3 top-1/2 transform -translate-y-1/2 text-accent rotate-90 -scale-x-100" />
-                            <input 
-                                id="phone-login" 
-                                name="phone" 
-                                type="tel" 
-                                inputMode="numeric" 
-                                value={formData.phone} 
-                                onChange={handleChange} 
-                                required 
-                                autoComplete="tel"
-                                className={`w-full pl-10 pr-3 py-2 border rounded-md focus:ring-primary focus:border-primary ${errors.phone ? 'border-red-500' : 'border-background'}`} 
-                                placeholder={t.login.phonePlaceholder} 
-                            />
-                        </div>
-                        {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
+                        <PhoneInput
+                            label={t.login.phoneLabel}
+                            value={formData.phone}
+                            onChange={handlePhoneChange}
+                            error={errors.phone}
+                            placeholder={t.login.phonePlaceholder}
+                            required
+                        />
                     </div>
                     <div>
                         <label htmlFor="password-login" className="block text-sm font-medium text-gray-700 mb-1">{t.login.passwordLabel}</label>

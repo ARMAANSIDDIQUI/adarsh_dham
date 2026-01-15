@@ -5,7 +5,6 @@ import DynamicDateInput from "../common/DynamicDateInput.jsx";
 import {
   FaUserPlus,
   FaMapMarkerAlt,
-  FaPhoneAlt,
   FaCalendarAlt,
   FaEnvelope,
   FaUniversity,
@@ -15,6 +14,7 @@ import {
 import { useParams } from "react-router-dom";
 import { toast } from 'react-toastify';
 import { useTranslation } from "../../hooks/useTranslation";
+import PhoneInput from "../common/PhoneInput.jsx";
 
 const ThemedInput = ({
   label,
@@ -177,11 +177,11 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
         newFormData.stayTo = value;
       }
     }
-    if (name === "contactNumber" || name === "baijiContact") {
-      const numericValue = value.replace(/[^0-9]/g, "");
-      newFormData[name] = numericValue;
-    }
     setFormData(newFormData);
+  };
+
+  const handlePhoneChange = (name, value) => {
+      setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleRadioChange = e => {
@@ -248,13 +248,13 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
       toast.error(msg);
       return;
     }
-    if (formData.contactNumber.length !== 10) {
+    if (formData.contactNumber.replace(/\D/g, '').length < 10) {
       const msg = t.booking.errors.contactLength;
       setValidationError(msg);
       toast.error(msg);
       return;
     }
-    if (formData.baijiContact.length !== 10) {
+    if (formData.baijiContact.replace(/\D/g, '').length < 10) {
       const msg = t.booking.errors.baijiContactLength;
       setValidationError(msg);
       toast.error(msg);
@@ -359,17 +359,14 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
                 onChange={handleChange}
                 required
               />
-              <ThemedInput
-                label={t.booking.fields.baijiContact}
-                name="baijiContact"
-                value={formData.baijiContact}
-                onChange={handleChange}
-                required
-                type="tel"
-                pattern="[0-9]{10}"
-                title="Please enter a 10-digit mobile number."
-                maxLength="10"
-              />
+              <div>
+                <PhoneInput
+                    label={t.booking.fields.baijiContact}
+                    value={formData.baijiContact}
+                    onChange={(val) => handlePhoneChange('baijiContact', val)}
+                    required
+                />
+              </div>
             </div>
           </div>
 
@@ -386,18 +383,14 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
                 onChange={handleChange}
                 icon={<FaEnvelope />}
               />
-              <ThemedInput
-                label={t.booking.fields.contact}
-                name="contactNumber"
-                type="tel"
-                value={formData.contactNumber}
-                onChange={handleChange}
-                required
-                icon={<FaPhoneAlt />}
-                pattern="[0-9]{10}"
-                title="Please enter a 10-digit mobile number."
-                maxLength="10"
-              />
+              <div>
+                <PhoneInput
+                    label={t.booking.fields.contact}
+                    value={formData.contactNumber}
+                    onChange={(val) => handlePhoneChange('contactNumber', val)}
+                    required
+                />
+              </div>
               <ThemedInput
                 label={t.booking.fields.address}
                 name="address"
@@ -512,8 +505,8 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
                 !formData.stayTo ||
                 !formData.ashramName.trim() ||
                 !formData.baijiMahatmaJi.trim() ||
-                formData.baijiContact.length !== 10 ||
-                formData.contactNumber.length !== 10 ||
+                formData.baijiContact.replace(/\D/g, '').length < 10 ||
+                formData.contactNumber.replace(/\D/g, '').length < 10 ||
                 !formData.address.trim() ||
                 !formData.city.trim() ||
                 (formData.numMales + formData.numFemales + formData.numBoys + formData.numGirls === 0) ||
@@ -526,8 +519,8 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
                 !formData.stayTo ||
                 !formData.ashramName.trim() ||
                 !formData.baijiMahatmaJi.trim() ||
-                formData.baijiContact.length !== 10 ||
-                formData.contactNumber.length !== 10 ||
+                formData.baijiContact.replace(/\D/g, '').length < 10 ||
+                formData.contactNumber.replace(/\D/g, '').length < 10 ||
                 !formData.address.trim() ||
                 !formData.city.trim() ||
                 (formData.numMales + formData.numFemales + formData.numBoys + formData.numGirls === 0) ||

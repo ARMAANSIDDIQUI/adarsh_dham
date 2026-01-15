@@ -3,9 +3,10 @@ import { useSelector, useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 import api from '../../api/api.js';
 import { updateUser } from '../../redux/slices/authSlice.js';
-import { FaUser, FaPhoneAlt, FaSpinner } from 'react-icons/fa';
+import { FaUser, FaSpinner } from 'react-icons/fa';
 import ThemedInput from '../common/ThemedInput.jsx'; 
 import { useTranslation } from '../../hooks/useTranslation';
+import PhoneInput from '../common/PhoneInput.jsx';
 
 const UpdateProfileForm = () => {
     const dispatch = useDispatch();
@@ -55,13 +56,13 @@ const UpdateProfileForm = () => {
                 required 
                 icon={<FaUser />}
             />
-            <ThemedInput 
-                label={t.profile.updateForm.phone} 
-                name="phone" 
-                value={user?.phone || ''} 
-                disabled 
-                icon={<FaPhoneAlt className="transform rotate-90 -scale-x-100" />}
-            />
+            <div>
+                <PhoneInput 
+                    label={t.profile.updateForm.phone} 
+                    value={user?.phone || ''} 
+                    disabled 
+                />
+            </div>
             <p className="text-xs text-gray-700 -mt-2">{t.profile.updateForm.phoneNotice}</p>
             
             <div className="pt-2">

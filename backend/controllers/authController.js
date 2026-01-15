@@ -5,7 +5,24 @@ const jwt = require('jsonwebtoken');
 exports.register = async (req, res) => {
   const { name, phone, password } = req.body;
   try {
-    const existingUser = await User.findOne({ phone });
+    // Normalization logic for backward compatibility
+    // If phone starts with +91, we also check if the number exists without it
+    let query = { phone };
+    if (phone.startsWith('+91')) {
+        const phoneWithoutPrefix = phone.slice(3);
+        query = { $or: [{ phone: phone }, { phone: phoneWithoutPrefix }] };
+    } else {
+        // Also check if the number provided without prefix exists with prefix in DB (unlikely for new reg but good safety)
+        // Or if simple number provided, check if +91 version exists?
+        // Let's stick to preventing duplicates: 
+        // If incoming is +91999, check 999.
+        // If incoming is 999 (legacy API usage?), check +91999.
+        if (/^\d{10}$/.test(phone)) {
+             query = { $or: [{ phone: phone }, { phone: '+91' + phone }] };
+        }
+    }
+
+    const existingUser = await User.findOne(query);
     if (existingUser) {
       return res.status(400).json({ message: 'User with this phone number already exists' });
     }
@@ -15,7 +32,7 @@ exports.register = async (req, res) => {
 
     const newUser = new User({
       name,
-      phone,
+      phone, // We save the full format provided by frontend
       passwordHash,
       roles: ['user']
     });
@@ -30,7 +47,17 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   const { phone, password } = req.body;
   try {
-    const user = await User.findOne({ phone });
+    // Normalization logic for backward compatibility
+    let query = { phone };
+    if (phone && phone.startsWith('+91')) {
+        const phoneWithoutPrefix = phone.slice(3);
+        query = { $or: [{ phone: phone }, { phone: phoneWithoutPrefix }] };
+    } else if (phone && /^\d{10}$/.test(phone)) {
+        // If user somehow sends raw 10 digit (legacy app), check for +91 version too
+        query = { $or: [{ phone: phone }, { phone: '+91' + phone }] };
+    }
+
+    const user = await User.findOne(query);
     if (!user) {
       return res.status(400).json({ message: 'Invalid phone or password' });
     }

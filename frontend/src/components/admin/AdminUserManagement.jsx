@@ -1,9 +1,86 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../api/api.js';
 import Button from '../common/Button.jsx';
-import { FaSpinner, FaLock, FaUser, FaCheck, FaTimes, FaKey, FaSearch, FaEye, FaEyeSlash } from 'react-icons/fa'; // FaEye and FaEyeSlash are now correctly imported
+import { FaSpinner, FaLock, FaUser, FaCheck, FaTimes, FaKey, FaSearch, FaEye, FaEyeSlash, FaEdit, FaSave } from 'react-icons/fa'; // Added FaEdit, FaSave
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-toastify';
+import PhoneInput from '../common/PhoneInput.jsx';
+
+const UserDetailsModal = ({
+    isOpen,
+    user,
+    loading,
+    error,
+    onClose,
+    onSubmit,
+    formData,
+    onFormChange
+}) => {
+    return (
+        <AnimatePresence>
+            {isOpen && user && (
+                <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4 font-body">
+                    <motion.div
+                        key={user._id}
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.8, opacity: 0 }}
+                        className="bg-card p-6 md:p-8 rounded-2xl shadow-soft w-full max-w-md"
+                    >
+                        <h3 className="text-2xl font-bold text-primaryDark font-heading mb-6 flex items-center">
+                            <FaEdit className="mr-3 text-primary" /> Edit User Details
+                        </h3>
+
+                        <form onSubmit={onSubmit}>
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                                <input
+                                    type="text"
+                                    name="name"
+                                    value={formData.name}
+                                    onChange={(e) => onFormChange('name', e.target.value)}
+                                    className="w-full px-4 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary transition-colors"
+                                    required
+                                />
+                            </div>
+                            
+                            <div className="mb-6">
+                                <PhoneInput
+                                    label="Phone Number"
+                                    value={formData.phone}
+                                    onChange={(val) => onFormChange('phone', val)}
+                                    required
+                                />
+                            </div>
+
+                            {error && (
+                                <p className="text-highlight text-sm mb-4 text-center">{error}</p>
+                            )}
+
+                            <div className="flex justify-end space-x-3">
+                                <Button 
+                                    type="button" 
+                                    onClick={onClose}
+                                    className="bg-background hover:bg-opacity-80 text-primaryDark"
+                                    disabled={loading}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button 
+                                    type="submit" 
+                                    className="bg-primaryDark hover:bg-highlight text-white"
+                                    disabled={loading}
+                                >
+                                    {loading ? <FaSpinner className="animate-spin inline-block mr-2" /> : <><FaSave className="inline-block mr-2"/> Save Changes</>}
+                                </Button>
+                            </div>
+                        </form>
+                    </motion.div>
+                </div>
+            )}
+        </AnimatePresence>
+    );
+};
 
 const PasswordModal = ({
     isOpen,
@@ -107,11 +184,13 @@ const AdminUserManagement = () => {
     const [loading, setLoading] = useState(true);
     const [globalError, setGlobalError] = useState(null);
     const [globalMessage, setGlobalMessage] = useState(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [currentUser, setCurrentUser] = useState(null);
     const [isModalLoading, setIsModalLoading] = useState(false);
     const [modalError, setModalError] = useState(null);
     const [passwordInput, setPasswordInput] = useState('');
+    const [editFormData, setEditFormData] = useState({ name: '', phone: '' });
     const [searchTerm, setSearchTerm] = useState('');
 
     const fetchUsers = async () => {
@@ -132,19 +211,59 @@ const AdminUserManagement = () => {
         fetchUsers();
     }, []);
 
-    const handleOpenModal = (user) => {
+    const handleOpenPasswordModal = (user) => {
         setCurrentUser(user);
         setPasswordInput('');
         setModalError(null);
         setIsModalLoading(false);
-        setIsModalOpen(true);
+        setIsPasswordModalOpen(true);
     };
 
-    const handleCloseModal = () => {
-        setIsModalOpen(false);
+    const handleOpenEditModal = (user) => {
+        setCurrentUser(user);
+        setEditFormData({ name: user.name, phone: user.phone });
+        setModalError(null);
+        setIsModalLoading(false);
+        setIsEditModalOpen(true);
+    };
+
+    const handleCloseModals = () => {
+        setIsPasswordModalOpen(false);
+        setIsEditModalOpen(false);
         setTimeout(() => setCurrentUser(null), 300);
     };
     
+    const handleUpdateUser = async (e) => {
+        e.preventDefault();
+        // Basic phone validation (at least 8 digits)
+        const digits = editFormData.phone.replace(/\D/g, '');
+        if (digits.length < 8) {
+             setModalError('Please enter a valid phone number.');
+             return;
+        }
+
+        setIsModalLoading(true);
+        setModalError(null);
+        setGlobalMessage(null);
+
+        try {
+            await api.put(`/admin/update-user-details/${currentUser._id}`, editFormData);
+            
+            // Optimistic UI update or refetch
+            setUsers(users.map(u => u._id === currentUser._id ? { ...u, ...editFormData } : u));
+            
+            setGlobalMessage(`User details updated for ${editFormData.name}.`);
+            toast.success(`User details updated successfully.`);
+            handleCloseModals();
+        } catch (err) {
+            const msg = err.response?.data?.message || 'Failed to update user details.';
+            setModalError(msg);
+            toast.error(msg);
+        } finally {
+            setIsModalLoading(false);
+        }
+    };
+
     const handleChangePassword = async (e) => {
         e.preventDefault();
         if (passwordInput.length < 6) {
@@ -164,7 +283,7 @@ const AdminUserManagement = () => {
 
             setGlobalMessage(`Password successfully changed for ${currentUser.name}.`);
             toast.success(`Password successfully changed for ${currentUser.name}.`);
-            handleCloseModal();
+            handleCloseModals();
         
         } catch (err) {
             const msg = err.response?.data?.message || 'Failed to change password on server.';
@@ -225,12 +344,20 @@ const AdminUserManagement = () => {
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-700">{user.name}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.phone}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm capitalize text-gray-700">{user.roles.join(', ')}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm flex space-x-2">
                                     <Button 
-                                        onClick={() => handleOpenModal(user)}
-                                        className="text-sm bg-primaryDark hover:bg-highlight text-white py-2 px-3"
+                                        onClick={() => handleOpenEditModal(user)}
+                                        className="text-sm bg-accent hover:bg-highlight text-white py-2 px-3"
+                                        title="Edit Details"
                                     >
-                                        <FaLock className="inline-block mr-2" />Reset Password
+                                        <FaEdit />
+                                    </Button>
+                                    <Button 
+                                        onClick={() => handleOpenPasswordModal(user)}
+                                        className="text-sm bg-primaryDark hover:bg-highlight text-white py-2 px-3"
+                                        title="Reset Password"
+                                    >
+                                        <FaLock />
                                     </Button>
                                 </td>
                             </tr>
@@ -245,12 +372,26 @@ const AdminUserManagement = () => {
                 </table>
             </div>
 
-            <PasswordModal
-                isOpen={isModalOpen}
+            <UserDetailsModal
+                isOpen={isEditModalOpen}
                 user={currentUser}
                 loading={isModalLoading}
                 error={modalError}
-                onClose={handleCloseModal}
+                onClose={handleCloseModals}
+                onSubmit={handleUpdateUser}
+                formData={editFormData}
+                onFormChange={(field, value) => {
+                    setEditFormData(prev => ({ ...prev, [field]: value }));
+                    if (modalError) setModalError(null);
+                }}
+            />
+
+            <PasswordModal
+                isOpen={isPasswordModalOpen}
+                user={currentUser}
+                loading={isModalLoading}
+                error={modalError}
+                onClose={handleCloseModals}
                 onSubmit={handleChangePassword}
                 passwordInput={passwordInput}
                 onPasswordChange={(e) => {

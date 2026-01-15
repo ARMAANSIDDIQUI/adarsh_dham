@@ -1,26 +1,28 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FaPhone, FaCommentAlt, FaPaperPlane, FaSpinner } from 'react-icons/fa';
+import { FaCommentAlt, FaPaperPlane, FaSpinner } from 'react-icons/fa';
 import api from '../api/api';
 import Button from '../components/common/Button';
 import { toast } from 'react-toastify';
+import PhoneInput from '../components/common/PhoneInput';
 
 const ForgotPassword = () => {
     const [phone, setPhone] = useState('');
     const [reason, setReason] = useState('');
     const [loading, setLoading] = useState(false);
 
-    const handlePhoneChange = (e) => {
-        const sanitized = e.target.value.replace(/\D/g, '').slice(0, 10);
-        setPhone(sanitized);
+    const handlePhoneChange = (value) => {
+        setPhone(value);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         
-        if (phone.length !== 10) {
-            toast.error('Phone number must be exactly 10 digits.');
+        // Basic length check for international
+        const digits = phone.replace(/\D/g, '');
+        if (digits.length < 8) {
+            toast.error('Please enter a valid phone number.');
             return;
         }
 
@@ -37,7 +39,7 @@ const ForgotPassword = () => {
         }
     };
 
-    const isFormValid = phone.length === 10 && reason.trim().length > 0;
+    const isFormValid = phone.replace(/\D/g, '').length >= 8 && reason.trim().length > 0;
 
     return (
         <div className="min-h-screen bg-neutral flex items-center justify-center p-4 font-body">
@@ -52,22 +54,13 @@ const ForgotPassword = () => {
                 </div>
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
-                        <label htmlFor="phone" className="text-sm font-medium text-gray-700">Phone Number</label>
-                        <div className="mt-1 relative">
-                            <FaPhone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-accent" />
-                            <input
-                                id="phone"
-                                type="tel"
-                                value={phone}
-                                onChange={handlePhoneChange}
-                                required
-                                className="w-full pl-10 pr-3 py-2 border border-background rounded-md focus:ring-primary focus:border-primary"
-                                placeholder="Your registered phone number"
-                                pattern="\d{10}"
-                                maxLength="10"
-                                title="Please enter exactly 10 digits"
-                            />
-                        </div>
+                        <PhoneInput
+                            label="Phone Number"
+                            value={phone}
+                            onChange={handlePhoneChange}
+                            required
+                            placeholder="Your registered phone number"
+                        />
                     </div>
                     <div>
                         <label htmlFor="reason" className="text-sm font-medium text-gray-700">Reason / Explanation</label>

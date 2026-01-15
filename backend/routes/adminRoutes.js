@@ -4,6 +4,13 @@ const authMiddleware = require('../middlewares/authMiddleware');
 const roleMiddleware = require('../middlewares/roleMiddleware');
 const adminController = require('../controllers/adminController');
 
+router.put(
+    '/update-user-details/:userId',
+    authMiddleware,
+    roleMiddleware(['admin', 'super-admin']),
+    adminController.updateUserDetails
+);
+
 router.get(
     '/all-users',
     authMiddleware,

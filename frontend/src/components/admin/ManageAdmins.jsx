@@ -5,6 +5,7 @@ import Button from '../common/Button.jsx';
 import { FaUsers, FaEdit, FaTrashAlt, FaKey, FaTimes, FaPlusCircle, FaEye, FaEyeSlash } from 'react-icons/fa';
 import api from '../../api/api.js';
 import { toast } from 'react-toastify';
+import PhoneInput from '../common/PhoneInput.jsx';
 
 const roles = ['admin', 'super-operator', 'operator', 'satsang-operator'];
 
@@ -23,9 +24,10 @@ const AdminModal = ({ user, modalOpen, setModalOpen, fetchUsers, setError }) => 
 
   const handleUpdateDetails = async (e) => {
     e.preventDefault();
-    if (updateForm.phone.length !== 10) {
-        toast.error('Phone number must be exactly 10 digits.');
-        setError('Phone number must be exactly 10 digits.');
+    const digits = updateForm.phone.replace(/\D/g, '');
+    if (digits.length < 10) {
+        toast.error('Please enter a valid phone number.');
+        setError('Please enter a valid phone number.');
         return;
     }
     try {
@@ -120,17 +122,11 @@ const AdminModal = ({ user, modalOpen, setModalOpen, fetchUsers, setError }) => 
                 <input type="text" name="name" value={updateForm.name} onChange={(e) => setUpdateForm({...updateForm, name: e.target.value})} className="mt-1 block w-full px-3 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary transition-colors" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Phone Number</label>
-                <input 
-                    type="text" 
-                    name="phone" 
-                    value={updateForm.phone} 
-                    onChange={(e) => {
-                        const val = e.target.value.replace(/\D/g, '').slice(0, 10);
-                        setUpdateForm({...updateForm, phone: val});
-                    }} 
-                    className="mt-1 block w-full px-3 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary transition-colors" 
-                    maxLength="10"
+                <PhoneInput
+                    label="Phone Number"
+                    value={updateForm.phone}
+                    onChange={(val) => setUpdateForm({...updateForm, phone: val})}
+                    // Removed maxLength logic as PhoneInput handles it differently (or let it be flexible)
                 />
               </div>
               <Button type="submit" className="w-full bg-primaryDark hover:bg-highlight text-white font-medium rounded-lg flex items-center justify-center">
@@ -223,12 +219,11 @@ const ManageAdmins = () => {
 
   const handleNewAdminChange = (e) => {
     const { name, value } = e.target;
-    if (name === 'phone') {
-        const val = value.replace(/\D/g, '').slice(0, 10);
-        setNewAdminForm({ ...newAdminForm, [name]: val });
-    } else {
-        setNewAdminForm({ ...newAdminForm, [name]: value });
-    }
+    setNewAdminForm({ ...newAdminForm, [name]: value });
+  };
+
+  const handleNewAdminPhoneChange = (val) => {
+      setNewAdminForm({ ...newAdminForm, phone: val });
   };
 
   const handleNewAdminRoleChange = (role) => {
@@ -242,9 +237,10 @@ const ManageAdmins = () => {
 
   const handleAddAdmin = async (e) => {
     e.preventDefault();
-    if (newAdminForm.phone.length !== 10) {
-        toast.error('Phone number must be exactly 10 digits.');
-        setError('Phone number must be exactly 10 digits.');
+    const digits = newAdminForm.phone.replace(/\D/g, '');
+    if (digits.length < 10) {
+        toast.error('Please enter a valid phone number.');
+        setError('Please enter a valid phone number.');
         return;
     }
     try {
@@ -289,7 +285,15 @@ const ManageAdmins = () => {
         <form onSubmit={handleAddAdmin} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <input type="text" name="name" value={newAdminForm.name} onChange={handleNewAdminChange} placeholder="Full Name" className="w-full px-4 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary transition-colors" required />
-            <input type="text" name="phone" value={newAdminForm.phone} onChange={handleNewAdminChange} placeholder="Phone Number" className="w-full px-4 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary transition-colors" required maxLength="10" />
+            <div className="w-full">
+                <PhoneInput
+                    label={null} // No label needed here as it's in a grid with placeholders
+                    value={newAdminForm.phone}
+                    onChange={handleNewAdminPhoneChange}
+                    placeholder="Phone Number"
+                    required
+                />
+            </div>
             
             {/* Temporary Password Input with Toggle */}
             <div className="relative">

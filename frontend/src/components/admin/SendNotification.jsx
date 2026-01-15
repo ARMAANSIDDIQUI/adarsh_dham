@@ -181,7 +181,7 @@ import { DateTime } from 'luxon';
 import api from '../../api/api.js';
 import Button from '../common/Button.jsx';
 import { FaPaperPlane, FaClock, FaExclamationCircle, FaCalendarAlt } from 'react-icons/fa';
-
+import PhoneInput from '../common/PhoneInput.jsx';
 const SendNotification = () => {
     const [message, setMessage] = useState('');
     const [target, setTarget] = useState({ userId: '', phones: [''], roles: [] });
@@ -221,9 +221,10 @@ const SendNotification = () => {
     };
 
     const handlePhoneChange = (index, value) => {
-        const sanitized = value.replace(/\D/g, '').slice(0, 10);
+        // PhoneInput returns the full string including country code. 
+        // We just update the state directly.
         const updated = [...target.phones];
-        updated[index] = sanitized;
+        updated[index] = value;
         setTarget({ ...target, phones: updated, userId: '', roles: [] });
     };
 
@@ -241,9 +242,12 @@ const SendNotification = () => {
         setLoading(true);
         setStatus(null);
 
-        const validPhones = target.phones.filter(p => /^\d{10}$/.test(p));
-        if (target.phones.some(p => p.trim() && !/^\d{10}$/.test(p))) {
-            setStatus({ type: 'error', message: 'Please enter valid 10-digit phone numbers only.' });
+        // Filter out empty phones. Basic validation: check if it has at least some digits.
+        const validPhones = target.phones.filter(p => p && p.replace(/\D/g, '').length >= 8);
+        
+        if (target.phones.some(p => p.trim() && p.replace(/\D/g, '').length < 8)) {
+             // Assuming a minimal valid phone length
+            setStatus({ type: 'error', message: 'Please enter valid phone numbers.' });
             setLoading(false);
             return;
         }
@@ -372,14 +376,13 @@ const SendNotification = () => {
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Phone Numbers</label>
                                     {target.phones.map((phone, index) => (
                                         <div key={index} className="flex items-center gap-2 mb-2">
-                                            <input
-                                                type="tel"
-                                                value={phone}
-                                                onChange={(e) => handlePhoneChange(index, e.target.value)}
-                                                className="w-full p-2 border rounded-lg"
-                                                placeholder={`Phone ${index + 1}`}
-                                                maxLength={10}
-                                            />
+                                            <div className="flex-grow">
+                                                <PhoneInput
+                                                    value={phone}
+                                                    onChange={(val) => handlePhoneChange(index, val)}
+                                                    placeholder={`Phone ${index + 1}`}
+                                                />
+                                            </div>
                                             {target.phones.length > 1 && (
                                                 <button
                                                     type="button"
@@ -387,7 +390,7 @@ const SendNotification = () => {
                                                         const updated = target.phones.filter((_, i) => i !== index);
                                                         setTarget({ ...target, phones: updated });
                                                     }}
-                                                    className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                                                    className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 h-10 w-10 flex items-center justify-center"
                                                 >
                                                     –
                                                 </button>
@@ -396,7 +399,7 @@ const SendNotification = () => {
                                                 <button
                                                     type="button"
                                                     onClick={() => setTarget({ ...target, phones: [...target.phones, ''] })}
-                                                    className="px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+                                                    className="px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600 h-10 w-10 flex items-center justify-center"
                                                 >
                                                     +
                                                 </button>

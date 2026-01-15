@@ -11,6 +11,35 @@ const sendAdminNotification = async (message) => {
     console.log(`[ADMIN NOTIFICATION] Notifying Admins: ${message}`);
 };
 
+exports.updateUserDetails = async (req, res) => {
+    const { userId } = req.params;
+    const { name, phone } = req.body;
+
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Check if phone is being changed and if new phone already exists
+        if (phone && phone !== user.phone) {
+            const existingUser = await User.findOne({ phone });
+            if (existingUser) {
+                return res.status(400).json({ message: 'User with this phone number already exists.' });
+            }
+            user.phone = phone;
+        }
+
+        if (name) user.name = name;
+
+        await user.save();
+        res.status(200).json({ message: 'User details updated successfully', user });
+    } catch (error) {
+        console.error("Error in updateUserDetails:", error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
 exports.getAllUsers = async (req, res) => {
     try {
         const users = await User.find().select('-passwordHash').sort({ name: 1 });
