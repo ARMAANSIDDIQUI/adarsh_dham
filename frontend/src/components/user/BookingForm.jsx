@@ -10,6 +10,8 @@ import {
   FaUniversity,
   FaUsers,
   FaPen,
+  FaUser,
+  FaPhoneAlt,
 } from "react-icons/fa";
 import { useParams } from "react-router-dom";
 import { toast } from 'react-toastify';
@@ -306,41 +308,39 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-8">
-          <div>
-            <h3 className="text-xl font-semibold font-heading text-primaryDark mb-4 border-b border-background pb-2">
-              {t.booking.sections.stay}
+          {/* Stay Details Section */}
+          <div className="bg-background/30 p-6 rounded-xl border border-background shadow-sm">
+            <h3 className="text-xl font-semibold font-heading text-primaryDark mb-6 flex items-center border-b border-primary/20 pb-2">
+              <FaCalendarAlt className="mr-3 text-primary" /> {t.booking.sections.stay}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <DynamicDateInput
-                  label={t.booking.fields.from}
-                  name="stayFrom"
-                  value={formData.stayFrom}
-                  onChange={handleChange}
-                  required
-                  icon={<FaCalendarAlt />}
-                  min={minStayDate.toISOString().split("T")[0]}
-                  max={maxStayDate.toISOString().split("T")[0]}
-                />
-              </div>
-              <div>
-                <DynamicDateInput
-                  label={t.booking.fields.to}
-                  name="stayTo"
-                  value={formData.stayTo}
-                  onChange={handleChange}
-                  required
-                  icon={<FaCalendarAlt />}
-                  min={formData.stayFrom || minStayDate.toISOString().split("T")[0]}
-                  max={maxStayDate.toISOString().split("T")[0]}
-                />
-              </div>
+              <DynamicDateInput
+                label={t.booking.fields.from}
+                name="stayFrom"
+                value={formData.stayFrom}
+                onChange={handleChange}
+                required
+                icon={<FaCalendarAlt />}
+                min={minStayDate.toISOString().split("T")[0]}
+                max={maxStayDate.toISOString().split("T")[0]}
+              />
+              <DynamicDateInput
+                label={t.booking.fields.to}
+                name="stayTo"
+                value={formData.stayTo}
+                onChange={handleChange}
+                required
+                icon={<FaCalendarAlt />}
+                min={formData.stayFrom || minStayDate.toISOString().split("T")[0]}
+                max={maxStayDate.toISOString().split("T")[0]}
+              />
             </div>
           </div>
 
-          <div>
-            <h3 className="text-xl font-semibold font-heading text-primaryDark mb-4 border-b border-background pb-2">
-              {t.booking.sections.ashram}
+          {/* Ashram / Guru Details Section */}
+          <div className="bg-background/30 p-6 rounded-xl border border-background shadow-sm">
+            <h3 className="text-xl font-semibold font-heading text-primaryDark mb-6 flex items-center border-b border-primary/20 pb-2">
+              <FaUniversity className="mr-3 text-primary" /> {t.booking.sections.ashram}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <ThemedInput
@@ -352,27 +352,31 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
                 icon={<FaUniversity />}
                 colSpan="md:col-span-2"
               />
-              <ThemedInput
-                label={t.booking.fields.baijiName}
-                name="baijiMahatmaJi"
-                value={formData.baijiMahatmaJi}
-                onChange={handleChange}
-                required
-              />
               <div>
-                <PhoneInput
-                    label={t.booking.fields.baijiContact}
-                    value={formData.baijiContact}
-                    onChange={(val) => handlePhoneChange('baijiContact', val)}
-                    required
+                <ThemedInput
+                  label={t.booking.fields.baijiName}
+                  name="baijiMahatmaJi"
+                  value={formData.baijiMahatmaJi}
+                  onChange={handleChange}
+                  required
+                  icon={<FaUser />}
                 />
+                <p className="text-xs text-gray-500 mt-1 ml-1">Name of your reference person or spiritual guide.</p>
               </div>
+              <PhoneInput
+                label={t.booking.fields.baijiContact}
+                value={formData.baijiContact}
+                onChange={(val) => handlePhoneChange('baijiContact', val)}
+                required
+                icon={<FaPhoneAlt />}
+              />
             </div>
           </div>
 
-          <div>
-            <h3 className="text-xl font-semibold font-heading text-primaryDark mb-4 border-b border-background pb-2">
-              {t.booking.sections.personal}
+          {/* Personal Details Section */}
+          <div className="bg-background/30 p-6 rounded-xl border border-background shadow-sm">
+            <h3 className="text-xl font-semibold font-heading text-primaryDark mb-6 flex items-center border-b border-primary/20 pb-2">
+              <FaUser className="mr-3 text-primary" /> {t.booking.sections.personal}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <ThemedInput
@@ -383,14 +387,13 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
                 onChange={handleChange}
                 icon={<FaEnvelope />}
               />
-              <div>
-                <PhoneInput
-                    label={t.booking.fields.contact}
-                    value={formData.contactNumber}
-                    onChange={(val) => handlePhoneChange('contactNumber', val)}
-                    required
-                />
-              </div>
+              <PhoneInput
+                label={t.booking.fields.contact}
+                value={formData.contactNumber}
+                onChange={(val) => handlePhoneChange('contactNumber', val)}
+                required
+                icon={<FaPhoneAlt />}
+              />
               <ThemedInput
                 label={t.booking.fields.address}
                 name="address"
@@ -412,17 +415,18 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
             </div>
           </div>
 
-          <div>
-            <h3 className="text-xl font-semibold font-heading text-primaryDark mb-4 border-b border-background pb-2">
-              {t.booking.sections.group}
+          {/* Group Details Section */}
+          <div className="bg-background/30 p-6 rounded-xl border border-background shadow-sm">
+            <h3 className="text-xl font-semibold font-heading text-primaryDark mb-6 flex items-center border-b border-primary/20 pb-2">
+              <FaUsers className="mr-3 text-primary" /> {t.booking.sections.group}
             </h3>
             <div className="space-y-6">
-              <div className="p-4 border border-background bg-background/50 rounded-lg">
-                <label className="text-sm font-medium text-gray-700 flex items-center mb-2">
+              <div className="p-4 bg-white/60 rounded-lg border border-background">
+                <label className="text-sm font-medium text-gray-700 flex items-center mb-3">
                   <FaUsers className="mr-2 text-primary" /> {t.booking.fields.fillingForOthers}
                 </label>
                 <div className="flex items-center space-x-6">
-                  <label className="flex items-center cursor-pointer">
+                  <label className="flex items-center cursor-pointer hover:bg-background/50 p-2 rounded-lg transition-colors">
                     <input
                       type="radio"
                       name="fillingForOthers"
@@ -431,9 +435,9 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
                       onChange={handleRadioChange}
                       className="form-radio h-4 w-4 text-primary focus:ring-primary"
                     />
-                    <span className="ml-2 text-gray-700">{t.booking.notices.yes}</span>
+                    <span className="ml-2 text-gray-700 font-medium">{t.booking.notices.yes}</span>
                   </label>
-                  <label className="flex items-center cursor-pointer">
+                  <label className="flex items-center cursor-pointer hover:bg-background/50 p-2 rounded-lg transition-colors">
                     <input
                       type="radio"
                       name="fillingForOthers"
@@ -442,12 +446,12 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
                       onChange={handleRadioChange}
                       className="form-radio h-4 w-4 text-primary focus:ring-primary"
                     />
-                    <span className="ml-2 text-gray-700">{t.booking.notices.no}</span>
+                    <span className="ml-2 text-gray-700 font-medium">{t.booking.notices.no}</span>
                   </label>
                 </div>
               </div>
-              <div className="p-4 border border-primary/20 bg-primary/10 rounded-lg shadow-inner">
-                <label className="text-base font-semibold text-primaryDark flex items-center mb-3">
+              <div className="p-4 bg-primary/5 border border-primary/10 rounded-lg">
+                <label className="text-base font-semibold text-primaryDark flex items-center mb-4">
                   <FaUserPlus className="mr-2 text-primary" /> {t.booking.fields.memberDetails}
                 </label>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -458,7 +462,7 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
                 </div>
               </div>
               {formData.people.length > 0 && (
-                <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 animate-fadeIn">
                   {renderPersonInputs("male")}
                   {renderPersonInputs("female")}
                   {renderPersonInputs("boy")}
@@ -468,12 +472,13 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
             </div>
           </div>
 
-          <div>
-            <h3 className="text-xl font-semibold font-heading text-primaryDark mb-4 border-b border-background pb-2">
-              {t.booking.sections.additional}
+          {/* Additional Info Section */}
+          <div className="bg-background/30 p-6 rounded-xl border border-background shadow-sm">
+            <h3 className="text-xl font-semibold font-heading text-primaryDark mb-6 flex items-center border-b border-primary/20 pb-2">
+              <FaPen className="mr-3 text-primary" /> {t.booking.sections.additional}
             </h3>
             <div>
-              <label className="text-sm font-medium text-gray-700 flex items-center mb-1">
+              <label className="text-sm font-medium text-gray-700 flex items-center mb-2">
                 <FaPen className="mr-2 text-primary" /> {t.booking.fields.notes}
               </label>
               <textarea
@@ -481,18 +486,19 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
                 value={formData.notes}
                 onChange={handleChange}
                 rows="3"
-                className="mt-1 block w-full px-4 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary shadow-sm"
+                className="mt-1 block w-full px-4 py-3 border border-background rounded-lg focus:ring-primary focus:border-primary shadow-sm transition-shadow placeholder-gray-400"
+                placeholder="Any special requests or details..."
               />
             </div>
           </div>
 
           {validationError && (
-            <p className="text-highlight bg-highlight/10 border border-highlight/20 p-3 rounded-lg text-sm text-center font-medium">
+            <p className="text-highlight bg-highlight/10 border border-highlight/20 p-4 rounded-xl text-sm text-center font-medium shadow-sm">
               {validationError}
             </p>
           )}
           {error && (
-            <p className="text-highlight bg-highlight/10 border border-highlight/20 p-3 rounded-lg text-sm text-center font-medium">
+            <p className="text-highlight bg-highlight/10 border border-highlight/20 p-4 rounded-xl text-sm text-center font-medium shadow-sm">
               {error}
             </p>
           )}
@@ -500,7 +506,7 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
           <div className="pt-4">
             <Button
               type="submit"
-              className={`w-full text-lg py-3 shadow-soft transition-all duration-300 transform ${
+              className={`w-full text-lg py-4 shadow-lg transition-all duration-300 transform rounded-xl font-bold tracking-wide ${
                 !formData.stayFrom ||
                 !formData.stayTo ||
                 !formData.ashramName.trim() ||
@@ -512,7 +518,7 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
                 (formData.numMales + formData.numFemales + formData.numBoys + formData.numGirls === 0) ||
                 !formData.people.every(p => p.name.trim() && p.age) || loading
                   ? "bg-gray-400 cursor-not-allowed opacity-70"
-                  : "bg-primaryDark hover:bg-primaryDark/70 hover:scale-[1.02] active:scale-[0.98] text-white"
+                  : "bg-primaryDark hover:bg-primaryDark/90 hover:scale-[1.01] active:scale-[0.99] text-white"
               }`}
               disabled={
                 !formData.stayFrom ||

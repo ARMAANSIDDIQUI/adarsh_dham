@@ -12,7 +12,7 @@ const COUNTRY_CODES = [
     // Add more as needed
 ];
 
-const PhoneInput = ({ value, onChange, error, label = "Phone Number", required = false, disabled = false, placeholder = "Enter mobile number" }) => {
+const PhoneInput = ({ value, onChange, error, label = "Phone Number", required = false, disabled = false, placeholder = "Enter mobile number", icon = null }) => {
     const [selectedCode, setSelectedCode] = useState('+91');
     const [phoneNumber, setPhoneNumber] = useState('');
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -63,11 +63,13 @@ const PhoneInput = ({ value, onChange, error, label = "Phone Number", required =
     return (
         <div className="w-full">
             {label && (
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {label} {required && <span className="text-red-500">*</span>}
+                <label className="text-sm font-medium text-gray-700 flex items-center mb-1">
+                    {icon && <span className="mr-2 text-primary">{icon}</span>}
+                    {label}
+                    {required && <span className="ml-1 text-highlight">*</span>}
                 </label>
             )}
-            <div className="relative flex rounded-lg shadow-sm mt-1">
+            <div className="relative flex items-center rounded-lg shadow-sm mt-1">
                 {/* Country Code Dropdown */}
                 <div className="relative">
                     <button
@@ -106,7 +108,7 @@ const PhoneInput = ({ value, onChange, error, label = "Phone Number", required =
                         value={phoneNumber}
                         onChange={handleNumberChange}
                         disabled={disabled}
-                        className={`block w-full pl-4 pr-4 py-2 border rounded-r-lg rounded-l-none shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-shadow ${error ? 'border-red-500' : 'border-background'}`}
+                        className={`block w-full pl-4 pr-4 py-2 border rounded-r-lg rounded-l-none shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-shadow placeholder-gray-500 ${error ? 'border-red-500' : 'border-background'}`}
                         placeholder={placeholder}
                         inputMode="numeric"
                     />
