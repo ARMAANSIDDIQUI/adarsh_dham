@@ -100,7 +100,8 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
       setIsLoading(true);
       setEventError(null);
       try {
-        const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/events/${eventId}`);
+        const baseUrl = process.env.REACT_APP_API_BASE_URL || '';
+        const res = await fetch(`${baseUrl}/api/events/${eventId}`);
         if (!res.ok) {
           const errorData = await res.json();
           throw new Error(errorData.message || "Failed to fetch event.");
