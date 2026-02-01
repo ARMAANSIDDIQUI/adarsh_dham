@@ -50,14 +50,14 @@ exports.createBooking = async (req, res) => {
 
 exports.approveOrDeclineBooking = async (req, res) => {
     const { bookingId } = req.params;
-    
+
     const { status, allocations: allocationData } = req.body;
-    
-    const { 
-        notificationOption, 
-        scheduledSendTime, 
-        notificationTtlMinutes, 
-        allocations 
+
+    const {
+        notificationOption,
+        scheduledSendTime,
+        notificationTtlMinutes,
+        allocations
     } = allocationData || {};
 
     try {
@@ -66,7 +66,7 @@ exports.approveOrDeclineBooking = async (req, res) => {
 
         const previousStatus = booking.status;
         let message = '';
-        
+
         if (status !== 'approved') {
             await Person.deleteMany({ bookingId: booking._id });
         }
@@ -88,8 +88,8 @@ exports.approveOrDeclineBooking = async (req, res) => {
                     name: personData.name,
                     age: personData.age,
                     gender: personData.gender,
-                    stayFrom: booking.formData.stayFrom,
-                    stayTo: booking.formData.stayTo,
+                    stayFrom: personData.stayFrom || booking.formData.stayFrom,
+                    stayTo: personData.stayTo || booking.formData.stayTo,
                     ashramName: booking.formData.ashramName,
                     contactNumber: booking.formData.contactNumber,
                     city: booking.formData.city,
@@ -119,7 +119,7 @@ exports.approveOrDeclineBooking = async (req, res) => {
                 userIds: [booking.userId._id.toString()], // Send to this one specific user
                 targetGroup: 'user' // Label it as a 'user' notification
             };
-            
+
             if (notificationOption === 'schedule' && scheduledSendTime) {
                 notificationPayload.sendAt = scheduledSendTime;
                 if (notificationTtlMinutes) {

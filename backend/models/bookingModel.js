@@ -27,6 +27,10 @@ const bookingSchema = new Schema({
         required: true
     },
     formData: {
+        hasSameStayDuration: {
+            type: Boolean,
+            default: true
+        },
         stayFrom: Date,
         stayTo: Date,
         ashramName: String,
@@ -43,7 +47,9 @@ const bookingSchema = new Schema({
         people: [{
             name: String,
             age: Number,
-            gender: String
+            gender: String,
+            stayFrom: Date,
+            stayTo: Date
         }],
         notes: String
     },

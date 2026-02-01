@@ -81,6 +81,7 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
     numBoys: 0,
     numGirls: 0,
     people: [],
+    hasSameStayDuration: true,
     stayFrom: "",
     stayTo: "",
     ashramName: "",
@@ -137,10 +138,10 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
   useEffect(() => {
     if (isEditing) return;
     const genderCounts = {
-      male: formData.numMales,
-      female: formData.numFemales,
-      boy: formData.numBoys,
-      girl: formData.numGirls,
+      male: parseInt(formData.numMales) || 0,
+      female: parseInt(formData.numFemales) || 0,
+      boy: parseInt(formData.numBoys) || 0,
+      girl: parseInt(formData.numGirls) || 0,
     };
     let newPeopleArray = [];
     for (const gender of ["male", "female", "boy", "girl"]) {
@@ -156,11 +157,23 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
       }
       newPeopleArray = [...newPeopleArray, ...existingPeople];
     }
+
+    // Preserve existing dates if switching back to individual dates, or initializing
+    newPeopleArray = newPeopleArray.map((p, i) => {
+      const existingPerson = formData.people[i];
+      return {
+        ...p,
+        stayFrom: existingPerson ? existingPerson.stayFrom : "",
+        stayTo: existingPerson ? existingPerson.stayTo : ""
+      };
+    });
+
     setFormData(prev => ({ ...prev, people: newPeopleArray }));
   }, [formData.numMales, formData.numFemales, formData.numBoys, formData.numGirls, isEditing]);
 
   const handleGroupChange = e => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
+    // Handle checkbox for boolean values if needed, though for now using for group counts mostly
     const numValue = parseInt(value, 10);
     setFormData(prev => ({ ...prev, [name]: numValue >= 0 ? numValue : 0 }));
   };
@@ -169,6 +182,14 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
     const { name, value } = e.target;
     const newPeople = [...formData.people];
     newPeople[index] = { ...newPeople[index], [name]: value };
+
+    // Date validation for individual stays
+    if (name === "stayFrom") {
+      if (!newPeople[index].stayTo || new Date(value) > new Date(newPeople[index].stayTo)) {
+        newPeople[index].stayTo = value;
+      }
+    }
+
     setFormData(prev => ({ ...prev, people: newPeople }));
   };
 
@@ -184,7 +205,7 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
   };
 
   const handlePhoneChange = (name, value) => {
-      setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleRadioChange = e => {
@@ -195,36 +216,83 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
     formData.people
       .map((p, i) => ({ p, i }))
       .filter(({ p }) => p.gender === gender)
-      .map(({ p, i }, idx) => (
-        <div key={i} className="grid grid-cols-2 gap-4 pt-4 border-b-2 border-background pb-4 last:border-b-0">
-          <h4 className="col-span-2 font-bold capitalize text-primaryDark">
-            {t.booking.genders[gender] || gender} #{idx + 1}
-          </h4>
-          <div>
-            <label className="block text-xs font-medium text-gray-600">{t.booking.fields.name}</label>
-            <input
-              type="text"
-              name="name"
-              value={p.name}
-              onChange={e => handlePersonChange(e, i)}
-              className="mt-1 block w-full px-3 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary"
-              required
-            />
+      .map(({ p, i }, idx) => {
+        // Calculate min/max dates similar to main form
+        let personMinDate = "";
+        let personMaxDate = "";
+
+        if (event) {
+          const start = new Date(event.startDate);
+          const end = new Date(event.endDate);
+          const minD = new Date(start);
+          minD.setDate(minD.getDate() - 5);
+          const maxD = new Date(end);
+          maxD.setDate(maxD.getDate() + 5);
+          personMinDate = minD.toISOString().split("T")[0];
+          personMaxDate = maxD.toISOString().split("T")[0];
+        }
+
+        return (
+          <div key={i} className="grid grid-cols-2 gap-4 pt-4 border-b-2 border-background pb-4 last:border-b-0">
+            <h4 className="col-span-2 font-bold capitalize text-primaryDark">
+              {t.booking.genders[gender] || gender} #{idx + 1}
+            </h4>
+            <div>
+              <label className="block text-xs font-medium text-gray-600">{t.booking.fields.name}</label>
+              <input
+                type="text"
+                name="name"
+                value={p.name}
+                onChange={e => handlePersonChange(e, i)}
+                className="mt-1 block w-full px-3 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600">{t.booking.fields.age}</label>
+              <input
+                type="number"
+                name="age"
+                value={p.age}
+                onChange={e => handlePersonChange(e, i)}
+                className="mt-1 block w-full px-3 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary"
+                required
+                min="1"
+              />
+            </div>
+            {!formData.hasSameStayDuration && (
+              <>
+                <div className="col-span-1">
+                  <label className="block text-xs font-medium text-gray-600">Stay From</label>
+                  <input
+                    type="date"
+                    name="stayFrom"
+                    value={p.stayFrom || ""}
+                    onChange={e => handlePersonChange(e, i)}
+                    className="mt-1 block w-full px-3 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary"
+                    required={!formData.hasSameStayDuration}
+                    min={personMinDate}
+                    max={personMaxDate}
+                  />
+                </div>
+                <div className="col-span-1">
+                  <label className="block text-xs font-medium text-gray-600">Stay To</label>
+                  <input
+                    type="date"
+                    name="stayTo"
+                    value={p.stayTo || ""}
+                    onChange={e => handlePersonChange(e, i)}
+                    className="mt-1 block w-full px-3 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary"
+                    required={!formData.hasSameStayDuration}
+                    min={p.stayFrom || personMinDate}
+                    max={personMaxDate}
+                  />
+                </div>
+              </>
+            )}
           </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-600">{t.booking.fields.age}</label>
-            <input
-              type="number"
-              name="age"
-              value={p.age}
-              onChange={e => handlePersonChange(e, i)}
-              className="mt-1 block w-full px-3 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary"
-              required
-              min="1"
-            />
-          </div>
-        </div>
-      ));
+        )
+      });
 
   const handleSubmit = e => {
     e.preventDefault();
@@ -263,15 +331,63 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
       toast.error(msg);
       return;
     }
-    const fromDate = new Date(formData.stayFrom);
-    const toDate = new Date(formData.stayTo);
-    if (fromDate > toDate) {
-      const msg = t.booking.errors.dateOrder;
-      setValidationError(msg);
-      toast.error(msg);
-      return;
+    if (formData.hasSameStayDuration) {
+      const fromDate = new Date(formData.stayFrom);
+      const toDate = new Date(formData.stayTo);
+      if (fromDate > toDate) {
+        const msg = t.booking.errors.dateOrder;
+        setValidationError(msg);
+        toast.error(msg);
+        return;
+      }
+    } else {
+      // Validation for individual dates
+      for (const p of formData.people) {
+        if (!p.stayFrom || !p.stayTo) {
+          const msg = "Please select stay dates for all members.";
+          setValidationError(msg);
+          toast.error(msg);
+          return;
+        }
+        if (new Date(p.stayFrom) > new Date(p.stayTo)) {
+          const msg = `Invalid date range for ${p.name || 'a member'}.`;
+          setValidationError(msg);
+          toast.error(msg);
+          return;
+        }
+      }
     }
-    const { numMales, numFemales, numBoys, numGirls, ...data } = formData;
+
+    // Prepare data for submission
+    const submissionData = { ...formData };
+
+    // If different durations, calculate global range for search/indexing purposes
+    if (!formData.hasSameStayDuration) {
+      const allStartDates = formData.people.map(p => new Date(p.stayFrom)).filter(d => !isNaN(d));
+      const allEndDates = formData.people.map(p => new Date(p.stayTo)).filter(d => !isNaN(d));
+
+      if (allStartDates.length > 0) {
+        const minStart = new Date(Math.min(...allStartDates));
+        submissionData.stayFrom = minStart.toISOString().split('T')[0];
+      }
+      if (allEndDates.length > 0) {
+        const maxEnd = new Date(Math.max(...allEndDates));
+        submissionData.stayTo = maxEnd.toISOString().split('T')[0];
+      }
+
+      // Ensure individual dates are set (they are already in people array)
+    } else {
+      // If same duration, we can clear individual dates to avoid confusion, 
+      // OR populate them to make backend logic uniform. 
+      // Let's populate them for uniformity if Backend expects them from 'people' array as updated in Plan.
+      submissionData.people = submissionData.people.map(p => ({
+        ...p,
+        stayFrom: formData.stayFrom,
+        stayTo: formData.stayTo
+      }));
+    }
+
+    const { numMales, numFemales, numBoys, numGirls, ...data } = submissionData;
     onSubmit(data);
   };
 
@@ -314,28 +430,50 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
             <h3 className="text-xl font-semibold font-heading text-primaryDark mb-6 flex items-center border-b border-primary/20 pb-2">
               <FaCalendarAlt className="mr-3 text-primary" /> {t.booking.sections.stay}
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <DynamicDateInput
-                label={t.booking.fields.from}
-                name="stayFrom"
-                value={formData.stayFrom}
-                onChange={handleChange}
-                required
-                icon={<FaCalendarAlt />}
-                min={minStayDate.toISOString().split("T")[0]}
-                max={maxStayDate.toISOString().split("T")[0]}
+
+            <div className="mb-4 bg-white/50 p-3 rounded-lg flex items-center">
+              <input
+                type="checkbox"
+                name="hasSameStayDuration"
+                checked={formData.hasSameStayDuration}
+                onChange={(e) => setFormData(prev => ({ ...prev, hasSameStayDuration: e.target.checked }))}
+                className="w-5 h-5 text-primary rounded focus:ring-primary mr-3 cursor-pointer"
+                id="sameDurationCheck"
               />
-              <DynamicDateInput
-                label={t.booking.fields.to}
-                name="stayTo"
-                value={formData.stayTo}
-                onChange={handleChange}
-                required
-                icon={<FaCalendarAlt />}
-                min={formData.stayFrom || minStayDate.toISOString().split("T")[0]}
-                max={maxStayDate.toISOString().split("T")[0]}
-              />
+              <label htmlFor="sameDurationCheck" className="text-gray-700 font-medium cursor-pointer select-none">
+                All members have the same stay duration
+              </label>
             </div>
+
+            {formData.hasSameStayDuration && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fadeIn">
+                <DynamicDateInput
+                  label={t.booking.fields.from}
+                  name="stayFrom"
+                  value={formData.stayFrom}
+                  onChange={handleChange}
+                  required
+                  icon={<FaCalendarAlt />}
+                  min={minStayDate.toISOString().split("T")[0]}
+                  max={maxStayDate.toISOString().split("T")[0]}
+                />
+                <DynamicDateInput
+                  label={t.booking.fields.to}
+                  name="stayTo"
+                  value={formData.stayTo}
+                  onChange={handleChange}
+                  required
+                  icon={<FaCalendarAlt />}
+                  min={formData.stayFrom || minStayDate.toISOString().split("T")[0]}
+                  max={maxStayDate.toISOString().split("T")[0]}
+                />
+              </div>
+            )}
+            {!formData.hasSameStayDuration && (
+              <p className="text-sm text-gray-500 italic bg-blue-50 p-2 rounded border border-blue-100">
+                please specify stay dates for each member below in the 'Group Details' section.
+              </p>
+            )}
           </div>
 
           {/* Ashram / Guru Details Section */}
@@ -507,8 +645,7 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
           <div className="pt-4">
             <Button
               type="submit"
-              className={`w-full text-lg py-4 shadow-lg transition-all duration-300 transform rounded-xl font-bold tracking-wide ${
-                !formData.stayFrom ||
+              className={`w-full text-lg py-4 shadow-lg transition-all duration-300 transform rounded-xl font-bold tracking-wide ${!formData.stayFrom ||
                 !formData.stayTo ||
                 !formData.ashramName.trim() ||
                 !formData.baijiMahatmaJi.trim() ||
@@ -517,13 +654,12 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
                 !formData.address.trim() ||
                 !formData.city.trim() ||
                 (formData.numMales + formData.numFemales + formData.numBoys + formData.numGirls === 0) ||
-                !formData.people.every(p => p.name.trim() && p.age) || loading
-                  ? "bg-gray-400 cursor-not-allowed opacity-70"
-                  : "bg-primaryDark hover:bg-primaryDark/90 hover:scale-[1.01] active:scale-[0.99] text-white"
-              }`}
+                !formData.people.every(p => p.name.trim() && p.age && (formData.hasSameStayDuration || (p.stayFrom && p.stayTo))) || loading
+                ? "bg-gray-400 cursor-not-allowed opacity-70"
+                : "bg-primaryDark hover:bg-primaryDark/90 hover:scale-[1.01] active:scale-[0.99] text-white"
+                }`}
               disabled={
-                !formData.stayFrom ||
-                !formData.stayTo ||
+                (formData.hasSameStayDuration && (!formData.stayFrom || !formData.stayTo)) ||
                 !formData.ashramName.trim() ||
                 !formData.baijiMahatmaJi.trim() ||
                 formData.baijiContact.replace(/\D/g, '').length < 10 ||
@@ -531,7 +667,7 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
                 !formData.address.trim() ||
                 !formData.city.trim() ||
                 (formData.numMales + formData.numFemales + formData.numBoys + formData.numGirls === 0) ||
-                !formData.people.every(p => p.name.trim() && p.age) ||
+                !formData.people.every(p => p.name.trim() && p.age && (formData.hasSameStayDuration || (p.stayFrom && p.stayTo))) ||
                 loading
               }
             >

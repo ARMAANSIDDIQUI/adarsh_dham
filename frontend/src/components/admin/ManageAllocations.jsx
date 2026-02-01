@@ -5,6 +5,7 @@ import DynamicDateInput from '../common/DynamicDateInput.jsx';
 import Button from '../common/Button.jsx';
 import { FaCheck, FaTimes, FaSpinner, FaEdit, FaUserShield, FaFilter, FaFilePdf, FaInfoCircle, FaChevronDown, FaSearch } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import EditBookingModal from './EditBookingModal.jsx';
 
 const datesOverlap = (startA, endA, startB, endB) => {
     if (!startA || !endA || !startB || !endB) return false;
@@ -214,7 +215,7 @@ const AccordionItem = ({ title, children }) => {
     );
 };
 
-const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, buildings, rooms, people, onShowRoomDetails, setError, readOnly = false }) => {
+const BookingCard = ({ booking, onAction, onEdit, allocations, handleAllocationChange, buildings, rooms, people, onShowRoomDetails, setError, readOnly = false }) => {
     const { formData = {}, userId = {}, status, _id: bookingId, bookingNumber, allocations: savedAllocations, eventId = {} } = booking || {};
     const pendingAllocations = allocations?.[bookingId] || [];
     const safeSavedAllocations = Array.isArray(savedAllocations) ? savedAllocations : [];
@@ -275,7 +276,7 @@ const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, b
         const bookingEnd = currentBooking?.formData?.stayTo ? new Date(currentBooking.formData.stayTo) : null;
         const globallyOccupiedBedIds = new Set(
             (people || []).filter(p => p && String(p.bookingId) !== String(currentBooking._id) && p.stayFrom && p.stayTo && datesOverlap(bookingStart, bookingEnd, p.stayFrom, p.stayTo))
-            .map(p => String(p.bedId?._id || p.bedId))
+                .map(p => String(p.bedId?._id || p.bedId))
         );
         const tentativelyOccupiedBedIds = new Set(
             (pendingAllocations || []).filter((alloc, index) => index !== currentPersonIndex && alloc?.bedId).map(alloc => String(alloc.bedId))
@@ -343,6 +344,11 @@ const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, b
                     <p className="text-xs font-mono text-gray-500 mt-1">{bookingNumber || bookingId}</p>
                 </div>
                 <span className="text-sm font-semibold capitalize bg-gray-100 px-3 py-1 rounded-full">{status}</span>
+                {!readOnly && (
+                    <button onClick={() => onEdit(booking)} className="ml-2 text-primary hover:text-primaryDark p-1" title="Edit Booking Details">
+                        <FaEdit />
+                    </button>
+                )}
             </div>
 
             <div className="space-y-2 text-sm">
@@ -387,7 +393,7 @@ const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, b
                             const buildingOptions = getBuildingOptions(person);
                             const roomOptions = getRoomOptions(personAllocated, booking);
                             const bedOptions = getBedOptions(personAllocated, booking, index);
-                            
+
                             // The zIndex is calculated to ensure each row stacks correctly
                             const zIndex = (formData?.people?.length || 0) - index + 10;
 
@@ -403,7 +409,7 @@ const BookingCard = ({ booking, onAction, allocations, handleAllocationChange, b
                                         />
                                         <div className="flex items-center space-x-2">
                                             {/* FIX START: This wrapper allows the dropdown to shrink and make space for the icon */}
-                                            <div className="flex-1 min-w-0"> 
+                                            <div className="flex-1 min-w-0">
                                                 <SearchableSelect
                                                     options={roomOptions}
                                                     value={personAllocated.roomId || ''}
@@ -534,6 +540,7 @@ const ManageAllocations = () => {
     const [roomDetailsModal, setRoomDetailsModal] = useState({ isOpen: false, room: null, occupants: [] });
     const [filters, setFilters] = useState({ userName: '', email: '', phone: '', memberName: '', event: '', bookingDate: '', stayFrom: '', stayTo: '' });
     const [showOldAllocations, setShowOldAllocations] = useState(false);
+    const [editModal, setEditModal] = useState({ isOpen: false, booking: null });
 
     const fetchAllData = async () => {
         try {
@@ -634,14 +641,26 @@ const ManageAllocations = () => {
         setRoomDetailsModal({ isOpen: true, room, occupants });
     };
 
+    const handleEditBooking = (booking) => {
+        setEditModal({ isOpen: true, booking });
+    };
+
+    const handleBookingUpdate = (updatedBooking) => {
+        if (!updatedBooking) return;
+        setBookings(prev => prev.map(b => b._id === updatedBooking._id ? updatedBooking : b));
+        // Refresh people if needed, but the main allocations view relies on booking objects
+        // Ideally, we should re-fetch people too if dates changed, to update collision logic
+        fetchAllData();
+    };
+
     const filteredBookings = useMemo(() => {
         const today = new Date();
         today.setHours(0, 0, 0, 0); // Start of today
 
         return (bookings || []).filter(b => {
             // Use Event End Date if available (priority), otherwise fallback to Stay To date
-            const relevantEndDate = b.eventId?.endDate 
-                ? new Date(b.eventId.endDate) 
+            const relevantEndDate = b.eventId?.endDate
+                ? new Date(b.eventId.endDate)
                 : (b.formData?.stayTo ? new Date(b.formData.stayTo) : null);
 
             if (showOldAllocations) {
@@ -725,9 +744,9 @@ const ManageAllocations = () => {
             {error && <p className="text-red-600 bg-red-100 p-3 rounded-md mb-6">{error}</p>}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <BookingSection title="Pending" color="pink" bookings={pendingBookings} onAction={handleAction} allocations={allocations} handleAllocationChange={handleAllocationChange} buildings={buildings} rooms={rooms} people={people} onShowRoomDetails={handleShowRoomDetails} setError={setError} readOnly={showOldAllocations} />
-                <BookingSection title="Approved" color="emerald" bookings={approvedBookings} onAction={handleAction} allocations={allocations} handleAllocationChange={handleAllocationChange} buildings={buildings} rooms={rooms} people={people} onShowRoomDetails={handleShowRoomDetails} setError={setError} readOnly={showOldAllocations} />
-                <BookingSection title="Declined" color="rose" bookings={declinedBookings} onAction={handleAction} allocations={allocations} handleAllocationChange={handleAllocationChange} buildings={buildings} rooms={rooms} people={people} onShowRoomDetails={handleShowRoomDetails} setError={setError} readOnly={showOldAllocations} />
+                <BookingSection title="Pending" color="pink" bookings={pendingBookings} onAction={handleAction} onEdit={handleEditBooking} allocations={allocations} handleAllocationChange={handleAllocationChange} buildings={buildings} rooms={rooms} people={people} onShowRoomDetails={handleShowRoomDetails} setError={setError} readOnly={showOldAllocations} />
+                <BookingSection title="Approved" color="emerald" bookings={approvedBookings} onAction={handleAction} onEdit={handleEditBooking} allocations={allocations} handleAllocationChange={handleAllocationChange} buildings={buildings} rooms={rooms} people={people} onShowRoomDetails={handleShowRoomDetails} setError={setError} readOnly={showOldAllocations} />
+                <BookingSection title="Declined" color="rose" bookings={declinedBookings} onAction={handleAction} onEdit={handleEditBooking} allocations={allocations} handleAllocationChange={handleAllocationChange} buildings={buildings} rooms={rooms} people={people} onShowRoomDetails={handleShowRoomDetails} setError={setError} readOnly={showOldAllocations} />
             </div>
 
             <RoomOccupantsModal
@@ -735,6 +754,13 @@ const ManageAllocations = () => {
                 room={roomDetailsModal.room}
                 occupants={roomDetailsModal.occupants}
                 onClose={() => setRoomDetailsModal({ isOpen: false, room: null, occupants: [] })}
+            />
+
+            <EditBookingModal
+                isOpen={editModal.isOpen}
+                booking={editModal.booking}
+                onClose={() => setEditModal({ isOpen: false, booking: null })}
+                onUpdate={handleBookingUpdate}
             />
         </motion.div>
     );
