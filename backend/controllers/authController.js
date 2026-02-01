@@ -156,17 +156,45 @@ exports.sendOtp = async (req, res) => {
       }
     }
 
+    // Rate Limiting: Check last OTP sent time (5 minute cooldown)
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    const recentOtp = await OTP.findOne({
+      email,
+      type,
+      createdAt: { $gte: fiveMinutesAgo }
+    }).sort({ createdAt: -1 });
+
+    if (recentOtp) {
+      const timeLeft = Math.ceil((recentOtp.createdAt.getTime() + 5 * 60 * 1000 - Date.now()) / 1000);
+      const minutesLeft = Math.floor(timeLeft / 60);
+      const secondsLeft = timeLeft % 60;
+      return res.status(429).json({
+        message: `Please wait ${minutesLeft}m ${secondsLeft}s before requesting another OTP.`
+      });
+    }
+
+    // Rate Limiting: Check daily limit (5 OTPs per day)
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const dailyOtpCount = await OTP.countDocuments({
+      email,
+      type,
+      createdAt: { $gte: oneDayAgo }
+    });
+
+    if (dailyOtpCount >= 5) {
+      return res.status(429).json({
+        message: 'Daily OTP limit reached (5 per day). Please try again tomorrow.'
+      });
+    }
+
     // Generate 6 digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Remove existing OTPs for this email/type
-    await OTP.deleteMany({ email, type });
-
-    // Save new OTP
+    // Save new OTP (don't delete old ones to maintain rate limit tracking)
     await OTP.create({ email, otp, type });
 
     // Send Email
-    const subject = `Your OTP for ${type === 'register' ? 'Registration' : 'Profile Update'}`;
+    const subject = `Your OTP for ${type === 'register' ? 'Registration' : type === 'forgot_password' ? 'Password Reset' : 'Profile Update'}`;
     const text = `Your OTP is ${otp}. It expires in 10 minutes.`;
     const html = `<p>Your OTP is <b>${otp}</b>.</p><p>It expires in 10 minutes.</p>`;
 
