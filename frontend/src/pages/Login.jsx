@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { motion } from 'framer-motion';
-import { FaUser, FaLock, FaSignInAlt, FaSpinner, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaLock, FaSignInAlt, FaSpinner, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { login } from '../redux/slices/authSlice';
 import { toast } from 'react-toastify';
 import { useTranslation } from '../hooks/useTranslation';
@@ -46,7 +46,7 @@ const Login = () => {
         e.preventDefault();
 
         const newErrors = {};
-        
+
         if (!validatePhoneNumber(formData.phone)) {
             newErrors.phone = t.login.error.phoneLength || 'Invalid phone number';
         }
@@ -69,7 +69,7 @@ const Login = () => {
             setLoading(false);
         }
     };
-    
+
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
     };
@@ -127,9 +127,9 @@ const Login = () => {
                         </Link>
                     </div>
                     <div>
-                        <button 
-                            type="submit" 
-                            disabled={loading || isFormIncomplete} 
+                        <button
+                            type="submit"
+                            disabled={loading || isFormIncomplete}
                             className={`w-full inline-flex justify-center items-center px-4 py-3 text-white font-semibold rounded-lg shadow-soft transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-primary/50 bg-primaryDark hover:bg-highlight disabled:bg-gray-400 disabled:cursor-not-allowed`}
                         >
                             {loading ? <FaSpinner className="animate-spin mr-2" /> : <FaSignInAlt className="mr-2" />}

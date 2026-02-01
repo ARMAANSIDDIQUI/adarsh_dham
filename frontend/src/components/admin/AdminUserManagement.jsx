@@ -43,7 +43,7 @@ const UserDetailsModal = ({
                                     required
                                 />
                             </div>
-                            
+
                             <div className="mb-6">
                                 <PhoneInput
                                     label="Phone Number"
@@ -58,20 +58,20 @@ const UserDetailsModal = ({
                             )}
 
                             <div className="flex justify-end space-x-3">
-                                <Button 
-                                    type="button" 
+                                <Button
+                                    type="button"
                                     onClick={onClose}
                                     className="bg-background hover:bg-opacity-80 text-primaryDark"
                                     disabled={loading}
                                 >
                                     Cancel
                                 </Button>
-                                <Button 
-                                    type="submit" 
+                                <Button
+                                    type="submit"
                                     className="bg-primaryDark hover:bg-highlight text-white"
                                     disabled={loading}
                                 >
-                                    {loading ? <FaSpinner className="animate-spin inline-block mr-2" /> : <><FaSave className="inline-block mr-2"/> Save Changes</>}
+                                    {loading ? <FaSpinner className="animate-spin inline-block mr-2" /> : <><FaSave className="inline-block mr-2" /> Save Changes</>}
                                 </Button>
                             </div>
                         </form>
@@ -129,7 +129,7 @@ const PasswordModal = ({
                                     {/* Input field with dynamic type */}
                                     <input
                                         id="newPassword"
-                                        type={showPassword ? "text" : "password"} 
+                                        type={showPassword ? "text" : "password"}
                                         value={passwordInput}
                                         onChange={onPasswordChange}
                                         // Increased right padding for the toggle icon
@@ -148,26 +148,26 @@ const PasswordModal = ({
                                     </span>
                                 </div>
                             </div>
-                            
+
                             {error && (
                                 <p className="text-highlight text-sm mb-4 text-center">{error}</p>
                             )}
 
                             <div className="flex justify-end space-x-3">
-                                <Button 
-                                    type="button" 
+                                <Button
+                                    type="button"
                                     onClick={onClose}
                                     className="bg-background hover:bg-opacity-80 text-primaryDark"
                                     disabled={loading}
                                 >
                                     Cancel
                                 </Button>
-                                <Button 
-                                    type="submit" 
+                                <Button
+                                    type="submit"
                                     className="bg-primaryDark hover:bg-highlight text-white"
                                     disabled={loading}
                                 >
-                                    {loading ? <FaSpinner className="animate-spin inline-block mr-2" /> : <><FaKey className="inline-block mr-2"/> Set New Password</>}
+                                    {loading ? <FaSpinner className="animate-spin inline-block mr-2" /> : <><FaKey className="inline-block mr-2" /> Set New Password</>}
                                 </Button>
                             </div>
                         </form>
@@ -197,7 +197,7 @@ const AdminUserManagement = () => {
         setLoading(true);
         try {
             const res = await api.get('/admin/all-users');
-            setUsers(res.data);
+            setUsers(Array.isArray(res.data) ? res.data : []);
             setGlobalError(null);
         } catch (err) {
             console.error("Error fetching users:", err);
@@ -232,13 +232,13 @@ const AdminUserManagement = () => {
         setIsEditModalOpen(false);
         setTimeout(() => setCurrentUser(null), 300);
     };
-    
+
     const handleUpdateUser = async (e) => {
         e.preventDefault();
-        
+
         if (!validatePhoneNumber(editFormData.phone)) {
-             setModalError('Please enter a valid phone number.');
-             return;
+            setModalError('Please enter a valid phone number.');
+            return;
         }
 
         setIsModalLoading(true);
@@ -247,10 +247,10 @@ const AdminUserManagement = () => {
 
         try {
             await api.put(`/admin/update-user-details/${currentUser._id}`, editFormData);
-            
+
             // Optimistic UI update or refetch
             setUsers(users.map(u => u._id === currentUser._id ? { ...u, ...editFormData } : u));
-            
+
             setGlobalMessage(`User details updated for ${editFormData.name}.`);
             toast.success(`User details updated successfully.`);
             handleCloseModals();
@@ -283,7 +283,7 @@ const AdminUserManagement = () => {
             setGlobalMessage(`Password successfully changed for ${currentUser.name}.`);
             toast.success(`Password successfully changed for ${currentUser.name}.`);
             handleCloseModals();
-        
+
         } catch (err) {
             const msg = err.response?.data?.message || 'Failed to change password on server.';
             setModalError(msg);
@@ -294,16 +294,16 @@ const AdminUserManagement = () => {
 
     if (loading) return (
         <div className="text-center p-10 font-body text-gray-700">
-            <FaSpinner className="animate-spin text-4xl text-primary mx-auto" /> 
+            <FaSpinner className="animate-spin text-4xl text-primary mx-auto" />
             <p className="mt-2">Loading Users...</p>
         </div>
     );
 
-    const filteredUsers = users.filter(user =>
+    const filteredUsers = Array.isArray(users) ? users.filter(user =>
         user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.roles?.join(', ').toLowerCase().includes(searchTerm.toLowerCase())
-    );
+        (user.roles && user.roles.join(', ').toLowerCase().includes(searchTerm.toLowerCase()))
+    ) : [];
 
     return (
         <div className="p-4 md:p-8 bg-neutral min-h-screen font-body">
@@ -311,8 +311,8 @@ const AdminUserManagement = () => {
                 <FaUser className="inline-block mr-3 text-primary" /> User Management
             </h2>
 
-            {globalError && <div className="bg-highlight/10 text-highlight p-4 rounded-xl mb-4 flex items-center shadow-soft"><FaTimes className="mr-2"/>{globalError}</div>}
-            {globalMessage && <div className="bg-accent/10 text-accent p-4 rounded-xl mb-4 flex items-center shadow-soft"><FaCheck className="mr-2"/>{globalMessage}</div>}
+            {globalError && <div className="bg-highlight/10 text-highlight p-4 rounded-xl mb-4 flex items-center shadow-soft"><FaTimes className="mr-2" />{globalError}</div>}
+            {globalMessage && <div className="bg-accent/10 text-accent p-4 rounded-xl mb-4 flex items-center shadow-soft"><FaCheck className="mr-2" />{globalMessage}</div>}
 
             <div className="mb-6 flex items-center max-w-md">
                 <div className="relative w-full">
@@ -342,16 +342,16 @@ const AdminUserManagement = () => {
                             <tr key={user._id} className="hover:bg-background transition-colors">
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-700">{user.name}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.phone}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm capitalize text-gray-700">{user.roles.join(', ')}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm capitalize text-gray-700">{user.roles ? user.roles.join(', ') : 'User'}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm flex space-x-2">
-                                    <Button 
+                                    <Button
                                         onClick={() => handleOpenEditModal(user)}
                                         className="text-sm bg-accent hover:bg-highlight text-white py-2 px-3"
                                         title="Edit Details"
                                     >
                                         <FaEdit />
                                     </Button>
-                                    <Button 
+                                    <Button
                                         onClick={() => handleOpenPasswordModal(user)}
                                         className="text-sm bg-primaryDark hover:bg-highlight text-white py-2 px-3"
                                         title="Reset Password"

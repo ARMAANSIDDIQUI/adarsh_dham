@@ -203,9 +203,9 @@ const ManageBeds = () => {
         try {
             setLoading(true);
             const [bedsRes, roomsRes, buildingsRes] = await Promise.all([api.get('/beds'), api.get('/rooms'), api.get('/buildings')]);
-            setBeds(bedsRes.data || []);
-            setRooms(roomsRes.data || []);
-            setBuildings(buildingsRes.data || []);
+            setBeds(Array.isArray(bedsRes.data) ? bedsRes.data : []);
+            setRooms(Array.isArray(roomsRes.data) ? roomsRes.data : []);
+            setBuildings(Array.isArray(buildingsRes.data) ? buildingsRes.data : []);
         } catch (err) {
             setError('Failed to fetch data. Please ensure the server is running.');
         } finally {
@@ -221,14 +221,14 @@ const ManageBeds = () => {
             female: { total: 0, occupied: 0, vacant: 0 },
             unisex: { total: 0, occupied: 0, vacant: 0 },
         };
-    
+
         if (!beds.length || !rooms.length || !buildings.length) {
             return stats;
         }
-    
+
         const buildingGenderMap = new Map(buildings.map(b => [b._id, b.gender?.toLowerCase()]));
         const roomToBuildingMap = new Map(rooms.map(r => [r._id, r.buildingId?._id]));
-    
+
         beds.forEach(bed => {
             const buildingId = roomToBuildingMap.get(bed.roomId);
             if (buildingId) {
@@ -242,11 +242,11 @@ const ManageBeds = () => {
                 }
             }
         });
-    
+
         stats.male.vacant = stats.male.total - stats.male.occupied;
         stats.female.vacant = stats.female.total - stats.female.occupied;
         stats.unisex.vacant = stats.unisex.total - stats.unisex.occupied;
-    
+
         return stats;
     }, [beds, rooms, buildings]);
 
@@ -295,11 +295,11 @@ const ManageBeds = () => {
         const roomsInBuilding = getRoomsForBuilding(buildingId);
         return [{ value: '', label: 'All Rooms' }, ...roomsInBuilding.map(r => ({ value: r._id, label: `Room ${r.roomNumber}` }))];
     };
-    
+
     const roomMap = useMemo(() => new Map(rooms.map(room => [room._id, room])), [rooms]);
 
     const filteredBeds = useMemo(() => {
-        if (!beds) return [];
+        if (!beds || !Array.isArray(beds)) return [];
         return beds.filter(bed => {
             const roomOfBed = roomMap.get(bed.roomId);
             const matchesName = filters.name ? bed.name?.toLowerCase().includes(filters.name.toLowerCase()) : true;
@@ -315,8 +315,8 @@ const ManageBeds = () => {
 
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-8 bg-neutral min-h-screen font-body">
-            <h2 className="text-3xl md:text-4xl font-extrabold mb-8 text-gray-800 border-b-4 border-primary pb-2 inline-block font-heading"><FaBed className="inline mr-3 text-primary"/> Manage Beds</h2>
-            
+            <h2 className="text-3xl md:text-4xl font-extrabold mb-8 text-gray-800 border-b-4 border-primary pb-2 inline-block font-heading"><FaBed className="inline mr-3 text-primary" /> Manage Beds</h2>
+
             {error && <div className="bg-highlight/10 text-highlight p-3 rounded-xl mb-6 font-medium text-center">{error}</div>}
 
             {/* Analytics Section */}
@@ -325,38 +325,38 @@ const ManageBeds = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {/* Male Section */}
                     <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg shadow-sm">
-                        <h4 className="font-bold text-blue-800 flex items-center mb-3"><FaMale className="mr-2"/> Male</h4>
+                        <h4 className="font-bold text-blue-800 flex items-center mb-3"><FaMale className="mr-2" /> Male</h4>
                         <div className="grid grid-cols-3 gap-4 text-center">
-                            <div><FaBed className="mx-auto text-blue-500 text-2xl mb-1"/><p className="text-xl font-bold">{analytics.male.total}</p><p className="text-xs">Total</p></div>
-                            <div><FaUserCheck className="mx-auto text-emerald-500 text-2xl mb-1"/><p className="text-xl font-bold">{analytics.male.occupied}</p><p className="text-xs">Occupied</p></div>
-                            <div><FaBed className="mx-auto text-orange-500 text-2xl mb-1"/><p className="text-xl font-bold">{analytics.male.vacant}</p><p className="text-xs">Vacant</p></div>
+                            <div><FaBed className="mx-auto text-blue-500 text-2xl mb-1" /><p className="text-xl font-bold">{analytics.male.total}</p><p className="text-xs">Total</p></div>
+                            <div><FaUserCheck className="mx-auto text-emerald-500 text-2xl mb-1" /><p className="text-xl font-bold">{analytics.male.occupied}</p><p className="text-xs">Occupied</p></div>
+                            <div><FaBed className="mx-auto text-orange-500 text-2xl mb-1" /><p className="text-xl font-bold">{analytics.male.vacant}</p><p className="text-xs">Vacant</p></div>
                         </div>
                     </div>
-                     {/* Female Section */}
+                    {/* Female Section */}
                     <div className="bg-pink-50 border-l-4 border-pink-500 p-4 rounded-r-lg shadow-sm">
-                        <h4 className="font-bold text-pink-800 flex items-center mb-3"><FaFemale className="mr-2"/> Female</h4>
+                        <h4 className="font-bold text-pink-800 flex items-center mb-3"><FaFemale className="mr-2" /> Female</h4>
                         <div className="grid grid-cols-3 gap-4 text-center">
-                            <div><FaBed className="mx-auto text-pink-500 text-2xl mb-1"/><p className="text-xl font-bold">{analytics.female.total}</p><p className="text-xs">Total</p></div>
-                            <div><FaUserCheck className="mx-auto text-emerald-500 text-2xl mb-1"/><p className="text-xl font-bold">{analytics.female.occupied}</p><p className="text-xs">Occupied</p></div>
-                            <div><FaBed className="mx-auto text-orange-500 text-2xl mb-1"/><p className="text-xl font-bold">{analytics.female.vacant}</p><p className="text-xs">Vacant</p></div>
+                            <div><FaBed className="mx-auto text-pink-500 text-2xl mb-1" /><p className="text-xl font-bold">{analytics.female.total}</p><p className="text-xs">Total</p></div>
+                            <div><FaUserCheck className="mx-auto text-emerald-500 text-2xl mb-1" /><p className="text-xl font-bold">{analytics.female.occupied}</p><p className="text-xs">Occupied</p></div>
+                            <div><FaBed className="mx-auto text-orange-500 text-2xl mb-1" /><p className="text-xl font-bold">{analytics.female.vacant}</p><p className="text-xs">Vacant</p></div>
                         </div>
                     </div>
-                     {/* Family/Unisex Section */}
+                    {/* Family/Unisex Section */}
                     <div className="bg-gray-50 border-l-4 border-gray-500 p-4 rounded-r-lg shadow-sm">
-                        <h4 className="font-bold text-gray-800 flex items-center mb-3"><FaRestroom className="mr-2"/> Family / Unisex</h4>
+                        <h4 className="font-bold text-gray-800 flex items-center mb-3"><FaRestroom className="mr-2" /> Family / Unisex</h4>
                         <div className="grid grid-cols-3 gap-4 text-center">
-                           <div><FaBed className="mx-auto text-gray-500 text-2xl mb-1"/><p className="text-xl font-bold">{analytics.unisex.total}</p><p className="text-xs">Total</p></div>
-                            <div><FaUserCheck className="mx-auto text-emerald-500 text-2xl mb-1"/><p className="text-xl font-bold">{analytics.unisex.occupied}</p><p className="text-xs">Occupied</p></div>
-                            <div><FaBed className="mx-auto text-orange-500 text-2xl mb-1"/><p className="text-xl font-bold">{analytics.unisex.vacant}</p><p className="text-xs">Vacant</p></div>
+                            <div><FaBed className="mx-auto text-gray-500 text-2xl mb-1" /><p className="text-xl font-bold">{analytics.unisex.total}</p><p className="text-xs">Total</p></div>
+                            <div><FaUserCheck className="mx-auto text-emerald-500 text-2xl mb-1" /><p className="text-xl font-bold">{analytics.unisex.occupied}</p><p className="text-xs">Occupied</p></div>
+                            <div><FaBed className="mx-auto text-orange-500 text-2xl mb-1" /><p className="text-xl font-bold">{analytics.unisex.vacant}</p><p className="text-xs">Vacant</p></div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div className="bg-card p-6 rounded-2xl shadow-soft mb-6">
-                <h3 className="text-lg font-semibold mb-4 text-primaryDark font-heading flex items-center"><FaFilter className="mr-2"/> Filter Beds</h3>
+                <h3 className="text-lg font-semibold mb-4 text-primaryDark font-heading flex items-center"><FaFilter className="mr-2" /> Filter Beds</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
-                    <input type="text" placeholder="Search by name" value={filters.name} onChange={(e) => setFilters({ ...filters, name: e.target.value })} className="p-2 border border-background rounded-lg focus:ring-primary focus:border-primary"/>
+                    <input type="text" placeholder="Search by name" value={filters.name} onChange={(e) => setFilters({ ...filters, name: e.target.value })} className="p-2 border border-background rounded-lg focus:ring-primary focus:border-primary" />
                     <SearchableSelect options={getBuildingOptions()} value={filters.buildingId} onChange={(e) => setFilters({ ...filters, buildingId: e.target.value, roomId: '' })} placeholder="All Buildings" searchTerm={filterBuildingSearch} onSearchTermChange={setFilterBuildingSearch} />
                     <SearchableSelect options={getRoomOptionsForBuilding(filters.buildingId)} value={filters.roomId} onChange={(e) => setFilters({ ...filters, roomId: e.target.value })} placeholder="All Rooms" disabled={!filters.buildingId} searchTerm={filterRoomSearch} onSearchTermChange={setFilterRoomSearch} />
                     <select value={filters.type} onChange={(e) => setFilters({ ...filters, type: e.target.value })} className="p-2 border border-background rounded-lg focus:ring-primary focus:border-primary">
@@ -373,11 +373,11 @@ const ManageBeds = () => {
             </div>
 
             <div className="bg-card p-6 rounded-2xl shadow-soft mb-8">
-                <h3 className="text-xl font-semibold mb-4 text-primaryDark font-heading flex items-center"><FaPlus className="mr-2"/> Add New Bed Unit</h3>
+                <h3 className="text-xl font-semibold mb-4 text-primaryDark font-heading flex items-center"><FaPlus className="mr-2" /> Add New Bed Unit</h3>
                 <form onSubmit={handleAddBed} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-end">
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Building</label>
-                        <SearchableSelect options={buildings.map(b => ({ value: b._id, label: b.name }))} value={selectedBuildingId} onChange={(e) => {setSelectedBuildingId(e.target.value); setNewBed({ ...newBed, roomId: '' });}} placeholder="Select Building" searchTerm={addBedBuildingSearch} onSearchTermChange={setAddBedBuildingSearch} />
+                        <SearchableSelect options={buildings.map(b => ({ value: b._id, label: b.name }))} value={selectedBuildingId} onChange={(e) => { setSelectedBuildingId(e.target.value); setNewBed({ ...newBed, roomId: '' }); }} placeholder="Select Building" searchTerm={addBedBuildingSearch} onSearchTermChange={setAddBedBuildingSearch} />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Room</label>

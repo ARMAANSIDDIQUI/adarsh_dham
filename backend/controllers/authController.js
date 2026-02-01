@@ -24,20 +24,13 @@ exports.register = async (req, res) => {
 
     // Normalization logic for backward compatibility
     // If phone starts with +91, we also check if the number exists without it
-    let query = { phone };
-    if (phone.startsWith('+91')) {
-      const phoneWithoutPrefix = phone.slice(3);
-      query = { $or: [{ phone: phone }, { phone: phoneWithoutPrefix }] };
-    } else {
-      // Also check if the number provided without prefix exists with prefix in DB (unlikely for new reg but good safety)
-      // Or if simple number provided, check if +91 version exists?
-      // Let's stick to preventing duplicates: 
-      // If incoming is +91999, check 999.
-      // If incoming is 999 (legacy API usage?), check +91999.
-      if (/^\d{10}$/.test(phone)) {
-        query = { $or: [{ phone: phone }, { phone: '+91' + phone }] };
-      }
+    // Normalization logic: Enforce 10 digit number
+    // Clean input just in case
+    const cleanPhone = phone.replace(/\D/g, '').slice(-10); // Take last 10 digits
+    if (cleanPhone.length !== 10) {
+      return res.status(400).json({ message: 'Invalid phone number format' });
     }
+    const query = { phone: cleanPhone };
 
     const existingUser = await User.findOne(query);
     if (existingUser) {
@@ -67,22 +60,25 @@ exports.login = async (req, res) => {
   const { phone, password } = req.body;
   try {
     // Normalization logic for backward compatibility
-    let query = { phone };
-    if (phone && phone.startsWith('+91')) {
-      const phoneWithoutPrefix = phone.slice(3);
-      query = { $or: [{ phone: phone }, { phone: phoneWithoutPrefix }] };
-    } else if (phone && /^\d{10}$/.test(phone)) {
-      // If user somehow sends raw 10 digit (legacy app), check for +91 version too
-      query = { $or: [{ phone: phone }, { phone: '+91' + phone }] };
+    // Normalization logic
+    const cleanPhone = phone ? phone.replace(/\D/g, '').slice(-10) : '';
+    console.log('Login Attempt:', { original: phone, clean: cleanPhone });
+
+    if (!cleanPhone || cleanPhone.length !== 10) {
+      console.log('Login Failed: Invalid Format');
+      return res.status(400).json({ message: 'Invalid phone number format' });
     }
+    const query = { phone: cleanPhone };
 
     const user = await User.findOne(query);
     if (!user) {
+      console.log('Login Failed: User Not Found for', cleanPhone);
       return res.status(400).json({ message: 'Invalid phone or password' });
     }
 
     const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) {
+      console.log('Login Failed: Password Mismatch');
       return res.status(400).json({ message: 'Invalid phone or password' });
     }
 
@@ -152,6 +148,12 @@ exports.sendOtp = async (req, res) => {
       if (existingUser) {
         return res.status(400).json({ message: 'Email already registered' });
       }
+    } else if (type === 'forgot_password') {
+      // Ensure user exists for password reset
+      const existingUser = await User.findOne({ email });
+      if (!existingUser) {
+        return res.status(404).json({ message: 'No user found with this email' });
+      }
     }
 
     // Generate 6 digit OTP
@@ -174,5 +176,61 @@ exports.sendOtp = async (req, res) => {
   } catch (error) {
     console.error('Error sending OTP:', error);
     res.status(500).json({ message: 'Failed to send OTP' });
+  }
+};
+
+exports.checkRecoveryMethod = async (req, res) => {
+  const { phone } = req.body;
+  try {
+    const cleanPhone = phone ? phone.replace(/\D/g, '').slice(-10) : '';
+    const query = { phone: cleanPhone };
+
+    const user = await User.findOne(query);
+    if (!user) {
+      // Return generic response or 404. Let's return 404 to let frontend know user not found
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (user.email) {
+      // Mask email
+      const [local, domain] = user.email.split('@');
+      const maskedLocal = local.length > 2 ? local[0] + '***' + local[local.length - 1] : local + '***';
+      const maskedEmail = `${maskedLocal}@${domain}`;
+      return res.status(200).json({ method: 'email', email: user.email, maskedEmail });
+    } else {
+      return res.status(200).json({ method: 'admin' });
+    }
+
+  } catch (error) {
+    res.status(500).json({ message: 'Server error check recovery method' });
+  }
+};
+
+exports.resetPasswordWithOtp = async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+  if (!email || !otp || !newPassword) {
+    return res.status(400).json({ message: 'All fields are required' });
+  }
+
+  try {
+    const otpRecord = await OTP.findOne({ email, otp, type: 'forgot_password' });
+    if (!otpRecord) {
+      return res.status(400).json({ message: 'Invalid or expired OTP' });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    user.passwordHash = await bcrypt.hash(newPassword, salt);
+    await user.save();
+
+    await OTP.deleteOne({ _id: otpRecord._id });
+    res.status(200).json({ message: 'Password reset successfully' });
+
+  } catch (error) {
+    res.status(500).json({ message: 'Server error resetting password' });
   }
 };

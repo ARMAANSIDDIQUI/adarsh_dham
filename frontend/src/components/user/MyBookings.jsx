@@ -10,10 +10,10 @@ import { useTranslation } from '../../hooks/useTranslation';
 
 const BookingCard = ({ booking, onEdit, onDelete, onDownloadPdf, navigateToEvent }) => {
     const t = useTranslation();
-    
+
     const getStatusStyles = (status) => {
         switch (status) {
-            case 'approved': return 'bg-green-100 border-green-500 text-green-700'; 
+            case 'approved': return 'bg-green-100 border-green-500 text-green-700';
             case 'pending': return 'bg-yellow-100 border-yellow-500 text-yellow-700';
             case 'declined': return 'bg-red-100 border-red-500 text-red-700';
             default: return 'bg-gray-100 border-gray-400 text-gray-700';
@@ -45,8 +45,8 @@ const BookingCard = ({ booking, onEdit, onDelete, onDownloadPdf, navigateToEvent
                     </h3>
                     <p className="text-xs font-mono text-gray-500 mt-1">{booking.bookingNumber}</p>
                     <div className={`flex items-center space-x-2 font-semibold capitalize mt-1 text-base`}>
-                        {booking.status === 'approved' && <FaCheckCircle className="text-green-500" />} 
-                        {booking.status === 'declined' && <FaTimesCircle className="text-red-500" />}   
+                        {booking.status === 'approved' && <FaCheckCircle className="text-green-500" />}
+                        {booking.status === 'declined' && <FaTimesCircle className="text-red-500" />}
                         <span>{getStatusText(booking.status)}</span>
                     </div>
                 </div>
@@ -56,9 +56,9 @@ const BookingCard = ({ booking, onEdit, onDelete, onDownloadPdf, navigateToEvent
             </div>
 
             {booking.status === 'approved' && (
-                <div className="mt-4 space-y-3 p-4 bg-green-50 rounded-lg shadow-inner"> 
+                <div className="mt-4 space-y-3 p-4 bg-green-50 rounded-lg shadow-inner">
                     <h4 className="font-bold font-heading text-primary text-md border-b border-background pb-2">{t.myBookings.card.allocation}</h4>
-                    {(booking.allocations || []).map((alloc, i) => {
+                    {(Array.isArray(booking.allocations) ? booking.allocations : []).map((alloc, i) => {
                         const person = booking.formData.people[i];
                         return (
                             <div key={i} className="p-3 bg-green-100 rounded-md text-sm border border-green-200">
@@ -87,12 +87,12 @@ const BookingCard = ({ booking, onEdit, onDelete, onDownloadPdf, navigateToEvent
                     </Button>
                 )}
                 {(booking.status === 'pending' || booking.status === 'approved') && new Date(booking.eventId?.bookingEndDate) >= new Date() && (
-                    <Button onClick={() => onEdit(booking)} className="w-full sm:w-auto bg-blue-500 hover:bg-blue-600 text-white text-sm py-2"> 
+                    <Button onClick={() => onEdit(booking)} className="w-full sm:w-auto bg-blue-500 hover:bg-blue-600 text-white text-sm py-2">
                         <FaEdit className="inline mr-1" /> {t.myBookings.card.edit}
                     </Button>
                 )}
-                <Button onClick={() => onDelete(booking._id)} className="w-full sm:w-auto bg-red-500 hover:bg-red-600 text-white text-sm py-2"> 
-                        <FaTrash className="inline mr-1" /> {t.myBookings.card.withdraw}
+                <Button onClick={() => onDelete(booking._id)} className="w-full sm:w-auto bg-red-500 hover:bg-red-600 text-white text-sm py-2">
+                    <FaTrash className="inline mr-1" /> {t.myBookings.card.withdraw}
                 </Button>
             </div>
         </motion.div>
@@ -112,7 +112,7 @@ const MyBookings = () => {
     const fetchMyBookings = async () => {
         try {
             const res = await api.get('/bookings/my-bookings');
-            setBookings(res.data || []);
+            setBookings(Array.isArray(res.data) ? res.data : []);
         } catch (err) {
             setError(t.myBookings.actions.fetchFail);
         } finally {
@@ -247,10 +247,10 @@ const MyBookings = () => {
                         b.bookingNumber.includes(searchQuery) || b.eventId?.name?.toLowerCase().includes(searchQuery.toLowerCase())
                     ).length === 0
                 ) && searchQuery && (
-                    <div className="text-center mt-10 text-gray-700">
-                        {t.myBookings.noMatch}
-                    </div>
-                )}
+                        <div className="text-center mt-10 text-gray-700">
+                            {t.myBookings.noMatch}
+                        </div>
+                    )}
             </div>
 
             <AnimatePresence>

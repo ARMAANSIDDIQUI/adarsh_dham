@@ -3,8 +3,8 @@ const PDFDocument = require('pdfkit');
 function generateBookingPdf(booking) {
     return new Promise((resolve, reject) => {
         const doc = new PDFDocument({
-            size: 'A4',
-            margin: 40,
+            size: 'A5', // Changed to A5
+            margin: 30, // Reduced margin for smaller page
             info: {
                 Title: `Booking Pass - ${booking.bookingNumber}`,
                 Author: 'Shri Adarsh Dham',
@@ -29,42 +29,64 @@ function generateBookingPdf(booking) {
         doc.moveDown(2);
 
         // Booking Info Section
-        doc.rect(40, doc.y, 515, 2).fill(lightGray).stroke();
+        doc.rect(30, doc.y, 360, 1).fill(lightGray).stroke();
         doc.moveDown();
 
         const infoTop = doc.y;
-        
-        // Left Column
-        doc.fillColor(secondaryColor).fontSize(11).font('Helvetica-Bold');
-        doc.text('Booked By:', 50, infoTop);
-        doc.text('Contact:', 50, infoTop + 20);
-        doc.text('Ashram:', 50, infoTop + 40);
-        doc.text('City:', 50, infoTop + 60);
+
+        // Re-defining layout for A5
+        const leftColX = 40;
+        const leftColValueX = 110;
+        const rightColX = 230;
+        const rightColValueX = 300;
+
+        // Let's rewrite the Booking Info Section content placement
+        doc.fillColor(secondaryColor).fontSize(10).font('Helvetica-Bold');
+        doc.text('Booked By:', leftColX, infoTop);
+        doc.text('Contact:', leftColX, infoTop + 20);
+        doc.text('Ashram:', leftColX, infoTop + 40);
+        doc.text('City:', leftColX, infoTop + 60);
 
         doc.fillColor('black').font('Helvetica');
-        doc.text(booking.userId.name, 150, infoTop);
-        doc.text(booking.formData.contactNumber, 150, infoTop + 20);
-        doc.text(booking.formData.ashramName, 150, infoTop + 40);
-        doc.text(booking.formData.city, 150, infoTop + 60);
+        doc.text(booking.userId.name, leftColValueX, infoTop, { width: 110 });
+        doc.text(booking.formData.contactNumber, leftColValueX, infoTop + 20);
+        doc.text(booking.formData.ashramName, leftColValueX, infoTop + 40);
+        doc.text(booking.formData.city, leftColValueX, infoTop + 60);
 
         // Right Column
         doc.fillColor(secondaryColor).font('Helvetica-Bold');
-        doc.text('Booking ID:', 320, infoTop);
-        doc.text('Event:', 320, infoTop + 20);
-        doc.text('Stay From:', 320, infoTop + 40);
-        doc.text('Stay To:', 320, infoTop + 60);
+        doc.text('Booking ID:', rightColX, infoTop);
+        doc.text('Event:', rightColX, infoTop + 20);
 
+        // Add extra spacing for Event logic
+        const eventName = booking.eventId.name;
+        const eventY = infoTop + 20;
+        doc.fillColor('black').font('Helvetica');
+
+        // Print Booking ID
+        doc.text(booking.bookingNumber, rightColValueX, infoTop);
+
+        // Print Event with potential wrap and extra spacing below
+        doc.text(eventName, rightColValueX, eventY, { width: 100 });
+
+        // Calculate where the event text ended
+        const eventHeight = doc.heightOfString(eventName, { width: 100 });
+        const nextY = eventY + Math.max(20, eventHeight + 10); // Ensure at least 20px step, or more if multiline + 10px buffer
+
+        // Continue with dates
         const stayFrom = formatDate(booking.formData.stayFrom);
         const stayTo = formatDate(booking.formData.stayTo);
 
+        doc.fillColor(secondaryColor).font('Helvetica-Bold');
+        doc.text('Stay From:', rightColX, nextY);
+        doc.text('Stay To:', rightColX, nextY + 20);
+
         doc.fillColor('black').font('Helvetica');
-        doc.text(booking.bookingNumber, 420, infoTop);
-        doc.text(booking.eventId.name, 420, infoTop + 20);
-        doc.text(stayFrom, 420, infoTop + 40);
-        doc.text(stayTo, 420, infoTop + 60);
-        
-        doc.y = infoTop + 80;
-        doc.rect(40, doc.y, 515, 2).fill(lightGray).stroke();
+        doc.text(stayFrom, rightColValueX, nextY);
+        doc.text(stayTo, rightColValueX, nextY + 20);
+
+        doc.y = nextY + 40; // Spacing after section
+        doc.rect(30, doc.y, 360, 1).fill(lightGray).stroke(); // A5 width adjustment
         doc.moveDown(2);
 
         // Allocation Table
@@ -73,10 +95,9 @@ function generateBookingPdf(booking) {
 
         const tableTop = doc.y;
         generateTableHeader(doc, tableTop);
-        
+
         let currentY = tableTop + 25;
-        
-        // CORRECTED LOOP LOGIC
+
         booking.formData.people.forEach((person, index) => {
             const alloc = booking.allocations[index];
             if (alloc) {
@@ -86,13 +107,13 @@ function generateBookingPdf(booking) {
         });
 
         // Finalize table
-        doc.rect(40, currentY - 5, 515, 0.5).stroke(secondaryColor);
-        
+        doc.rect(30, currentY - 5, 360, 0.5).stroke(secondaryColor);
+
         // Footer
         const generatedDate = formatDate(new Date());
         doc.fontSize(8).fillColor(secondaryColor).text(
             'This is a computer-generated pass. Please keep it with you for the duration of your stay. Wishing you a peaceful visit.',
-            40, 780, { align: 'center' }
+            30, 520, { align: 'center', width: 360 } // Adjusted Y coordinate for A5 height (approx 595 - padding)
         );
         doc.text(`Generated on: ${generatedDate}`, { align: 'center' });
 
@@ -108,31 +129,30 @@ function formatDate(dateString) {
 
 // Helper function to draw the table header
 function generateTableHeader(doc, y) {
-    const headerX = 40;
-    const headerY = y;
+    const headerX = 30; // Reduced X
+    const headerWidth = 360; // A5 printable width
     const headerHeight = 20;
-    const headerWidth = 515;
 
-    doc.rect(headerX, headerY, headerWidth, headerHeight).fill('#F7FAFC').stroke('#E2E8F0');
-    doc.fontSize(10).fillColor('#2D3748').font('Helvetica-Bold');
-    doc.text('Guest Name', 50, y + 6);
-    doc.text('Gender', 160, y + 6);
-    doc.text('Building', 240, y + 6);
-    doc.text('Room No.', 370, y + 6);
-    doc.text('Bed No.', 470, y + 6);
+    doc.rect(headerX, y, headerWidth, headerHeight).fill('#F7FAFC').stroke('#E2E8F0');
+    doc.fontSize(9).fillColor('#2D3748').font('Helvetica-Bold'); // Smaller font
+    doc.text('Name', 35, y + 6);
+    doc.text('Gen', 120, y + 6);
+    doc.text('Build', 160, y + 6);
+    doc.text('Room', 250, y + 6);
+    doc.text('Bed', 320, y + 6);
 }
 
 // Helper function to draw a single table row
 function generateTableRow(doc, y, person, alloc) {
-    doc.fontSize(10).fillColor('black').font('Helvetica');
-    doc.text(person.name, 50, y);
-    doc.text(person.gender, 160, y, { width: 70, align: 'left', lineBreak: false });
-    doc.text(alloc.buildingId.name, 240, y, { width: 120, align: 'left', lineBreak: false });
-    doc.text(alloc.roomId.roomNumber, 370, y, { width: 90, align: 'left', lineBreak: false });
-    doc.text(alloc.bedId.name, 470, y, { width: 70, align: 'left', lineBreak: false });
+    doc.fontSize(9).fillColor('black').font('Helvetica');
+    doc.text(person.name, 35, y, { width: 80 });
+    doc.text(person.gender, 120, y, { width: 35 });
+    doc.text(alloc.buildingId.name, 160, y, { width: 85 });
+    doc.text(alloc.roomId.roomNumber, 250, y, { width: 60 });
+    doc.text(alloc.bedId.name, 320, y, { width: 60 });
 
     // Draw the line below the row
-    doc.rect(40, y + 15, 515, 0.5).stroke('#E2E8F0');
+    doc.rect(30, y + 15, 360, 0.5).stroke('#E2E8F0');
 }
 
 module.exports = { generateBookingPdf };

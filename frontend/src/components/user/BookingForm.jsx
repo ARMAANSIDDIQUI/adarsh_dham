@@ -150,7 +150,13 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
       let existingPeople = formData.people.filter(p => p.gender === gender);
       if (targetCount > currentCount) {
         for (let i = 0; i < targetCount - currentCount; i++) {
-          existingPeople.push({ name: "", age: "", gender });
+          existingPeople.push({
+            name: "",
+            age: "",
+            gender,
+            stayFrom: formData.stayFrom || "",
+            stayTo: formData.stayTo || ""
+          });
         }
       } else if (targetCount < currentCount) {
         existingPeople = existingPeople.slice(0, targetCount);
@@ -163,8 +169,8 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
       const existingPerson = formData.people[i];
       return {
         ...p,
-        stayFrom: existingPerson ? existingPerson.stayFrom : "",
-        stayTo: existingPerson ? existingPerson.stayTo : ""
+        stayFrom: existingPerson?.stayFrom || formData.stayFrom || "",
+        stayTo: existingPerson?.stayTo || formData.stayTo || ""
       };
     });
 
@@ -469,11 +475,7 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
                 />
               </div>
             )}
-            {!formData.hasSameStayDuration && (
-              <p className="text-sm text-gray-500 italic bg-blue-50 p-2 rounded border border-blue-100">
-                please specify stay dates for each member below in the 'Group Details' section.
-              </p>
-            )}
+
           </div>
 
           {/* Ashram / Guru Details Section */}
@@ -560,6 +562,11 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
               <FaUsers className="mr-3 text-primary" /> {t.booking.sections.group}
             </h3>
             <div className="space-y-6">
+              {!formData.hasSameStayDuration && (
+                <p className="text-sm text-gray-500 italic bg-blue-50 p-2 rounded border border-blue-100">
+                  Please specify stay dates for each member below.
+                </p>
+              )}
               <div className="p-4 bg-white/60 rounded-lg border border-background">
                 <label className="text-sm font-medium text-gray-700 flex items-center mb-3">
                   <FaUsers className="mr-2 text-primary" /> {t.booking.fields.fillingForOthers}

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../common/Button.jsx';
 import DynamicDateInput from '../common/DynamicDateInput.jsx';
+import PhoneInput from '../common/PhoneInput.jsx';
 import api from '../../api/api.js';
 import { toast } from 'react-toastify';
 import { FaTimes, FaCalendarAlt, FaUser, FaSave } from 'react-icons/fa';
@@ -136,6 +137,11 @@ const EditBookingModal = ({ isOpen, booking, onClose, onUpdate }) => {
                             {/* Members Editor */}
                             <div className="space-y-4">
                                 <h3 className="font-semibold text-lg text-primaryDark flex items-center"><FaUser className="mr-2" /> Member Details</h3>
+                                {!formData.hasSameStayDuration && (
+                                    <p className="text-xs text-gray-500 italic bg-blue-50 p-2 rounded border border-blue-100 mb-2">
+                                        Please specify stay dates for each member below.
+                                    </p>
+                                )}
                                 {formData.people && formData.people.map((person, index) => (
                                     <div key={index} className="p-4 border border-gray-200 rounded-lg bg-white relative">
                                         <div className="absolute top-2 right-2 text-xs font-mono text-gray-400">#{index + 1}</div>
@@ -181,7 +187,7 @@ const EditBookingModal = ({ isOpen, booking, onClose, onUpdate }) => {
                                                         <label className="block text-xs text-gray-500 mb-1">Stay From</label>
                                                         <input
                                                             type="date"
-                                                            value={person.stayFrom ? person.stayFrom.split('T')[0] : ''}
+                                                            value={person.stayFrom ? person.stayFrom.split('T')[0] : (formData.stayFrom || '')}
                                                             onChange={(e) => handlePersonChange(index, 'stayFrom', e.target.value)}
                                                             className="w-full p-2 border rounded-md text-sm"
                                                             required
@@ -191,7 +197,7 @@ const EditBookingModal = ({ isOpen, booking, onClose, onUpdate }) => {
                                                         <label className="block text-xs text-gray-500 mb-1">Stay To</label>
                                                         <input
                                                             type="date"
-                                                            value={person.stayTo ? person.stayTo.split('T')[0] : ''}
+                                                            value={person.stayTo ? person.stayTo.split('T')[0] : (formData.stayTo || '')}
                                                             onChange={(e) => handlePersonChange(index, 'stayTo', e.target.value)}
                                                             className="w-full p-2 border rounded-md text-sm"
                                                             required
@@ -207,8 +213,12 @@ const EditBookingModal = ({ isOpen, booking, onClose, onUpdate }) => {
                             {/* Contact Info (Simplified) */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Phone</label>
-                                    <input type="text" name="contactNumber" value={formData.contactNumber} onChange={handleChange} className="mt-1 w-full p-2 border rounded-lg" required />
+                                    <PhoneInput
+                                        label="Phone"
+                                        value={formData.contactNumber}
+                                        onChange={(val) => setFormData(prev => ({ ...prev, contactNumber: val }))}
+                                        required
+                                    />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700">Ashram Name</label>

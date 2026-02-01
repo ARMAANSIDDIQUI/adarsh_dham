@@ -7,7 +7,9 @@ const OTP = require('../models/otpModel');
 // @access  Private
 exports.updateMyProfile = async (req, res) => {
     try {
+        console.log('Update Profile Request for ID:', req.user.id);
         const user = await User.findById(req.user.id);
+        console.log('User found in DB:', user ? 'Yes' : 'No');
 
         if (user) {
             user.name = req.body.name || user.name;

@@ -25,9 +25,9 @@ const AdminModal = ({ user, modalOpen, setModalOpen, fetchUsers, setError }) => 
   const handleUpdateDetails = async (e) => {
     e.preventDefault();
     if (!validatePhoneNumber(updateForm.phone)) {
-        toast.error('Please enter a valid phone number.');
-        setError('Please enter a valid phone number.');
-        return;
+      toast.error('Please enter a valid phone number.');
+      setError('Please enter a valid phone number.');
+      return;
     }
     try {
       await api.put(`/admin/update-details/${user._id}`, updateForm);
@@ -74,13 +74,13 @@ const AdminModal = ({ user, modalOpen, setModalOpen, fetchUsers, setError }) => 
 
   return (
     // FIX: Made modal scrollable and added click outside logic
-    <div 
+    <div
       className="fixed inset-0 z-50 bg-black bg-opacity-60 overflow-y-auto flex items-start justify-center p-4 md:p-8 font-body"
       onClick={handleBackdropClick}
     >
       <div className="relative bg-card w-full max-w-md mx-auto rounded-2xl shadow-soft p-6 md:p-8 mt-10 mb-10">
-        <button 
-          onClick={() => setModalOpen(false)} 
+        <button
+          onClick={() => setModalOpen(false)}
           className="absolute top-4 right-4 text-primaryDark hover:text-accent transition-colors"
         >
           <FaTimes className="text-xl" />
@@ -96,14 +96,14 @@ const AdminModal = ({ user, modalOpen, setModalOpen, fetchUsers, setError }) => 
               Are you sure you want to permanently delete <strong>{user.name}</strong>? This action cannot be undone.
             </p>
             <div className="flex space-x-3">
-              <Button 
-                onClick={handleDeleteUser} 
-                className="flex-1 bg-primaryDark hover:bg-highlight text-white font-medium rounded-lg flex items-center justify-center" 
+              <Button
+                onClick={handleDeleteUser}
+                className="flex-1 bg-primaryDark hover:bg-highlight text-white font-medium rounded-lg flex items-center justify-center"
               >
                 <FaTrashAlt className="mr-2" /> Yes, Delete
               </Button>
-              <Button 
-                onClick={() => setDeleteStep(false)} 
+              <Button
+                onClick={() => setDeleteStep(false)}
                 className="flex-1 bg-background hover:bg-opacity-80 text-primaryDark font-medium rounded-lg"
               >
                 Cancel
@@ -118,14 +118,14 @@ const AdminModal = ({ user, modalOpen, setModalOpen, fetchUsers, setError }) => 
               </h4>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Full Name</label>
-                <input type="text" name="name" value={updateForm.name} onChange={(e) => setUpdateForm({...updateForm, name: e.target.value})} className="mt-1 block w-full px-3 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary transition-colors" />
+                <input type="text" name="name" value={updateForm.name} onChange={(e) => setUpdateForm({ ...updateForm, name: e.target.value })} className="mt-1 block w-full px-3 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary transition-colors" />
               </div>
               <div>
                 <PhoneInput
-                    label="Phone Number"
-                    value={updateForm.phone}
-                    onChange={(val) => setUpdateForm({...updateForm, phone: val})}
-                    // Removed maxLength logic as PhoneInput handles it differently (or let it be flexible)
+                  label="Phone Number"
+                  value={updateForm.phone}
+                  onChange={(val) => setUpdateForm({ ...updateForm, phone: val })}
+                // Removed maxLength logic as PhoneInput handles it differently (or let it be flexible)
                 />
               </div>
               <Button type="submit" className="w-full bg-primaryDark hover:bg-highlight text-white font-medium rounded-lg flex items-center justify-center">
@@ -141,12 +141,12 @@ const AdminModal = ({ user, modalOpen, setModalOpen, fetchUsers, setError }) => 
                 <label className="block text-sm font-medium text-gray-700">New Password</label>
                 <div className="relative mt-1">
                   {/* Password Input with Toggle */}
-                  <input 
-                    type={showPassword ? "text" : "password"} 
-                    name="newPassword" 
-                    value={passwordForm.newPassword} 
-                    onChange={(e) => setPasswordForm({...passwordForm, newPassword: e.target.value})} 
-                    className="block w-full px-3 pr-10 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary transition-colors" 
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="newPassword"
+                    value={passwordForm.newPassword}
+                    onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                    className="block w-full px-3 pr-10 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary transition-colors"
                     required
                   />
                   <span
@@ -163,8 +163,8 @@ const AdminModal = ({ user, modalOpen, setModalOpen, fetchUsers, setError }) => 
             </form>
 
             <div className="pt-4">
-              <Button 
-                onClick={() => setDeleteStep(true)} 
+              <Button
+                onClick={() => setDeleteStep(true)}
                 className="w-full bg-primaryDark hover:bg-highlight text-white font-medium rounded-lg flex items-center justify-center"
               >
                 <FaTrashAlt className="mr-2" /> Delete Admin
@@ -191,7 +191,7 @@ const ManageAdmins = () => {
   const fetchUsers = async () => {
     try {
       const res = await api.get('/admin');
-      setUsers(res.data || []);
+      setUsers(Array.isArray(res.data) ? res.data : []);
       setError(null);
     } catch (err) {
       setError('Failed to fetch user list.');
@@ -204,7 +204,7 @@ const ManageAdmins = () => {
 
   const handleRoleToggle = async (userId, role, hasRole) => {
     try {
-      setUsers(prevUsers => prevUsers.map(u => 
+      setUsers(prevUsers => prevUsers.map(u =>
         u._id === userId ? { ...u, roles: hasRole ? u.roles.filter(r => r !== role) : [...u.roles, role] } : u
       ));
       await api.post(`/admin/toggle-role/${userId}`, { role, hasRole: !hasRole });
@@ -212,7 +212,7 @@ const ManageAdmins = () => {
     } catch (err) {
       setError('Failed to update user role. Reverting changes.');
       toast.error('Failed to update user role. Reverting changes.');
-      fetchUsers(); 
+      fetchUsers();
     }
   };
 
@@ -222,7 +222,7 @@ const ManageAdmins = () => {
   };
 
   const handleNewAdminPhoneChange = (val) => {
-      setNewAdminForm({ ...newAdminForm, phone: val });
+    setNewAdminForm({ ...newAdminForm, phone: val });
   };
 
   const handleNewAdminRoleChange = (role) => {
@@ -237,9 +237,9 @@ const ManageAdmins = () => {
   const handleAddAdmin = async (e) => {
     e.preventDefault();
     if (!validatePhoneNumber(newAdminForm.phone)) {
-        toast.error('Please enter a valid phone number.');
-        setError('Please enter a valid phone number.');
-        return;
+      toast.error('Please enter a valid phone number.');
+      setError('Please enter a valid phone number.');
+      return;
     }
     try {
       await api.post('/admin/add-admin', newAdminForm);
@@ -259,57 +259,57 @@ const ManageAdmins = () => {
     setModalOpen(true);
   };
 
-  const filteredUsers = users.filter(user => {
+  const filteredUsers = Array.isArray(users) ? users.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          user.phone.includes(searchQuery);
+      user.phone.includes(searchQuery);
     const matchesRole = roleFilter ? user.roles.includes(roleFilter) : true;
     return matchesSearch && matchesRole;
-  });
+  }) : [];
 
   if (loading) return <div className="text-center mt-20 text-xl text-gray-700 font-body">Loading administrator list...</div>;
-  
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-8 bg-neutral min-h-screen font-body">
       <h2 className="text-3xl md:text-4xl font-extrabold mb-8 text-gray-800 border-b-4 border-primary pb-2 inline-block font-heading">
-        <FaUsers className="inline mr-3 text-primary"/> Manage Administrators
+        <FaUsers className="inline mr-3 text-primary" /> Manage Administrators
       </h2>
 
       {error && <div className="p-4 mb-4 text-highlight bg-highlight/10 rounded-xl font-medium">{error}</div>}
 
       <div className="bg-card p-6 rounded-2xl shadow-soft mb-8">
         <h3 className="text-xl font-semibold mb-4 text-primaryDark font-heading flex items-center">
-            <FaPlusCircle className="mr-2"/> Add New Admin Account
+          <FaPlusCircle className="mr-2" /> Add New Admin Account
         </h3>
         <form onSubmit={handleAddAdmin} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <input type="text" name="name" value={newAdminForm.name} onChange={handleNewAdminChange} placeholder="Full Name" className="w-full px-4 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary transition-colors" required />
             <div className="w-full">
-                <PhoneInput
-                    label={null} // No label needed here as it's in a grid with placeholders
-                    value={newAdminForm.phone}
-                    onChange={handleNewAdminPhoneChange}
-                    placeholder="Phone Number"
-                    required
-                />
+              <PhoneInput
+                label={null} // No label needed here as it's in a grid with placeholders
+                value={newAdminForm.phone}
+                onChange={handleNewAdminPhoneChange}
+                placeholder="Phone Number"
+                required
+              />
             </div>
-            
+
             {/* Temporary Password Input with Toggle */}
             <div className="relative">
-                <input 
-                    type={showNewAdminPassword ? "text" : "password"} 
-                    name="password" 
-                    value={newAdminForm.password} 
-                    onChange={handleNewAdminChange} 
-                    placeholder="Temporary Password" 
-                    className="w-full px-4 pr-10 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary transition-colors" 
-                    required 
-                />
-                <span
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-400 hover:text-gray-600"
-                    onClick={() => setShowNewAdminPassword(!showNewAdminPassword)}
-                >
-                    {showNewAdminPassword ? <FaEyeSlash /> : <FaEye />}
-                </span>
+              <input
+                type={showNewAdminPassword ? "text" : "password"}
+                name="password"
+                value={newAdminForm.password}
+                onChange={handleNewAdminChange}
+                placeholder="Temporary Password"
+                className="w-full px-4 pr-10 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary transition-colors"
+                required
+              />
+              <span
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-400 hover:text-gray-600"
+                onClick={() => setShowNewAdminPassword(!showNewAdminPassword)}
+              >
+                {showNewAdminPassword ? <FaEyeSlash /> : <FaEye />}
+              </span>
             </div>
           </div>
 
@@ -390,8 +390,8 @@ const ManageAdmins = () => {
                   );
                 })}
                 <td className="px-6 py-4 whitespace-nowrap text-center">
-                  <button 
-                    onClick={() => openUserModal(user)} 
+                  <button
+                    onClick={() => openUserModal(user)}
                     className="text-accent hover:text-primaryDark p-2 rounded-full hover:bg-background transition-colors"
                     aria-label={`Edit ${user.name}`}
                   >
@@ -405,12 +405,12 @@ const ManageAdmins = () => {
       </div>
 
       {modalOpen && selectedUser && (
-        <AdminModal 
-          user={selectedUser} 
-          modalOpen={modalOpen} 
-          setModalOpen={setModalOpen} 
-          fetchUsers={fetchUsers} 
-          setError={setError} 
+        <AdminModal
+          user={selectedUser}
+          modalOpen={modalOpen}
+          setModalOpen={setModalOpen}
+          fetchUsers={fetchUsers}
+          setError={setError}
         />
       )}
     </motion.div>

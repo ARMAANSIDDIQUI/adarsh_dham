@@ -63,12 +63,12 @@ const ManageEvents = () => {
     const [error, setError] = useState(null);
     const [editingEvent, setEditingEvent] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [modalData, setModalData] = useState({ title: '', message: '', onConfirm: () => {}, onCancel: () => {}, confirmText: '', isAlert: false });
+    const [modalData, setModalData] = useState({ title: '', message: '', onConfirm: () => { }, onCancel: () => { }, confirmText: '', isAlert: false });
 
     const fetchEvents = async () => {
         try {
             const res = await api.get('/events');
-            setEvents(res.data || []);
+            setEvents(Array.isArray(res.data) ? res.data : []);
         } catch {
             setError('Failed to fetch events.');
         } finally {
@@ -180,9 +180,9 @@ const ManageEvents = () => {
     if (loading) return <div className="text-center mt-10 text-xl text-primary font-body"><FaSpinner className="animate-spin inline mr-2" /> Loading Events...</div>;
 
     const today = new Date();
-    const finishedEvents = events.filter(e => new Date(e.endDate) < today);
-    const ongoingEvents = events.filter(e => new Date(e.startDate) <= today && new Date(e.endDate) >= today);
-    const upcomingEvents = events.filter(e => new Date(e.startDate) > today);
+    const finishedEvents = Array.isArray(events) ? events.filter(e => new Date(e.endDate) < today) : [];
+    const ongoingEvents = Array.isArray(events) ? events.filter(e => new Date(e.startDate) <= today && new Date(e.endDate) >= today) : [];
+    const upcomingEvents = Array.isArray(events) ? events.filter(e => new Date(e.startDate) > today) : [];
 
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-8 bg-neutral min-h-screen font-body">
@@ -227,21 +227,21 @@ const ManageEvents = () => {
                     </div>
                     <div className="col-span-1 sm:col-span-2 space-y-2 mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
                         <label className="flex items-center space-x-2 cursor-pointer">
-                            <input 
-                                type="checkbox" 
-                                checked={newEvent.isBookingOpen} 
-                                onChange={e => setNewEvent({ ...newEvent, isBookingOpen: e.target.checked })} 
-                                className="form-checkbox h-5 w-5 text-pink-500 rounded focus:ring-pink-500" 
+                            <input
+                                type="checkbox"
+                                checked={newEvent.isBookingOpen}
+                                onChange={e => setNewEvent({ ...newEvent, isBookingOpen: e.target.checked })}
+                                className="form-checkbox h-5 w-5 text-pink-500 rounded focus:ring-pink-500"
                             />
                             <span className="text-gray-700 font-medium">Bookings Open</span>
                         </label>
                         {!newEvent.isBookingOpen && (
-                            <input 
-                                type="text" 
-                                placeholder="Message to display when booking is closed (e.g., 'Bookings Full')" 
-                                value={newEvent.bookingClosedMessage} 
-                                onChange={e => setNewEvent({ ...newEvent, bookingClosedMessage: e.target.value })} 
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-500 text-sm" 
+                            <input
+                                type="text"
+                                placeholder="Message to display when booking is closed (e.g., 'Bookings Full')"
+                                value={newEvent.bookingClosedMessage}
+                                onChange={e => setNewEvent({ ...newEvent, bookingClosedMessage: e.target.value })}
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-500 text-sm"
                             />
                         )}
                     </div>
@@ -274,7 +274,7 @@ const ManageEvents = () => {
 
             {editingEvent && (
                 <div className="fixed inset-0 bg-black bg-opacity-60 overflow-y-auto h-full w-full flex items-center justify-center z-[1000]">
-                    <motion.div initial={{scale: 0.9, opacity: 0}} animate={{scale: 1, opacity: 1}} className="relative p-6 bg-card w-full max-w-4xl rounded-2xl shadow-soft m-4">
+                    <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="relative p-6 bg-card w-full max-w-4xl rounded-2xl shadow-soft m-4">
                         <h3 className="text-2xl font-bold font-heading text-primaryDark mb-4">Edit Event: {editingEvent.name}</h3>
                         <form onSubmit={handleUpdateEvent} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <input type="text" placeholder="Event Name" value={editingEvent.name} onChange={e => setEditingEvent({ ...editingEvent, name: e.target.value })} className="px-4 py-2 border border-gray-300 rounded-lg" required />
@@ -312,25 +312,25 @@ const ManageEvents = () => {
                             </div>
                             <div className="col-span-1 sm:col-span-2 space-y-2 mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
                                 <label className="flex items-center space-x-2 cursor-pointer">
-                                    <input 
-                                        type="checkbox" 
-                                        checked={editingEvent.isBookingOpen !== undefined ? editingEvent.isBookingOpen : true} 
-                                        onChange={e => setEditingEvent({ 
-                                            ...editingEvent, 
+                                    <input
+                                        type="checkbox"
+                                        checked={editingEvent.isBookingOpen !== undefined ? editingEvent.isBookingOpen : true}
+                                        onChange={e => setEditingEvent({
+                                            ...editingEvent,
                                             isBookingOpen: e.target.checked,
-                                            bookingClosedMessage: !e.target.checked && !editingEvent.bookingClosedMessage ? 'Bookings closed' : editingEvent.bookingClosedMessage 
-                                        })} 
-                                        className="form-checkbox h-5 w-5 text-pink-500 rounded focus:ring-pink-500" 
+                                            bookingClosedMessage: !e.target.checked && !editingEvent.bookingClosedMessage ? 'Bookings closed' : editingEvent.bookingClosedMessage
+                                        })}
+                                        className="form-checkbox h-5 w-5 text-pink-500 rounded focus:ring-pink-500"
                                     />
                                     <span className="text-gray-700 font-medium">Bookings Open</span>
                                 </label>
                                 {!editingEvent.isBookingOpen && (
-                                    <input 
-                                        type="text" 
-                                        placeholder="Message to display when booking is closed" 
-                                        value={editingEvent.bookingClosedMessage || ''} 
-                                        onChange={e => setEditingEvent({ ...editingEvent, bookingClosedMessage: e.target.value })} 
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-500 text-sm" 
+                                    <input
+                                        type="text"
+                                        placeholder="Message to display when booking is closed"
+                                        value={editingEvent.bookingClosedMessage || ''}
+                                        onChange={e => setEditingEvent({ ...editingEvent, bookingClosedMessage: e.target.value })}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-500 text-sm"
                                     />
                                 )}
                             </div>

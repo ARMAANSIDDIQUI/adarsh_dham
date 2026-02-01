@@ -21,10 +21,11 @@ module.exports = function (req, res, next) {
     try {
         // Ensure process.env.JWT_SECRET is accessible here!
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        
+
         // 4. Attach the full decoded payload (id, roles) to req.user
-        req.user = decoded; 
-        
+        console.log('Decoded Token Payload:', decoded);
+        req.user = decoded;
+
         next(); // Authorization successful, proceed to the next handler
     } catch (err) {
         // Token is invalid (expired, wrong signature, etc.)

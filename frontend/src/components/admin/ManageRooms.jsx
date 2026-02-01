@@ -114,8 +114,8 @@ const ManageRooms = () => {
     const [modalData, setModalData] = useState({
         title: '',
         message: '',
-        onConfirm: () => {},
-        onCancel: () => {},
+        onConfirm: () => { },
+        onCancel: () => { },
         confirmText: '',
         isAlert: false,
     });
@@ -132,8 +132,8 @@ const ManageRooms = () => {
                 api.get('/rooms'),
                 api.get('/buildings')
             ]);
-            setRooms(roomsRes.data || []);
-            setBuildings(buildingsRes.data || []);
+            setRooms(Array.isArray(roomsRes.data) ? roomsRes.data : []);
+            setBuildings(Array.isArray(buildingsRes.data) ? buildingsRes.data : []);
             setError(null);
         } catch (err) {
             setError('Failed to fetch data. Please try again.');
@@ -153,7 +153,7 @@ const ManageRooms = () => {
             unisex: { rooms: 0, capacity: 0 },
         };
 
-        if (!rooms.length || !buildings.length) return stats;
+        if (!rooms || !Array.isArray(rooms) || !buildings || !Array.isArray(buildings) || !rooms.length || !buildings.length) return stats;
 
         const buildingGenderMap = new Map(buildings.map(b => [b._id, b.gender?.toLowerCase()]));
 
@@ -237,15 +237,16 @@ const ManageRooms = () => {
             await fetchAllData();
             toast.success("Room updated successfully");
         } catch (err) {
-             const msg = err.response?.data?.message || 'Failed to update room.';
-             setError(msg);
-             toast.error(msg);
+            const msg = err.response?.data?.message || 'Failed to update room.';
+            setError(msg);
+            toast.error(msg);
         }
     };
 
-    const getBuildingOptions = () => ([{ value: '', label: 'All Buildings' }, ...buildings.map(b => ({ value: b._id, label: b.name }))]);
+    const getBuildingOptions = () => ([{ value: '', label: 'All Buildings' }, ...(Array.isArray(buildings) ? buildings : []).map(b => ({ value: b._id, label: b.name }))]);
 
     const filteredRooms = useMemo(() => {
+        if (!Array.isArray(rooms)) return [];
         return rooms.filter(room => {
             const matchesSearch = room.roomNumber.toLowerCase().includes(searchQuery.toLowerCase());
             const matchesBuilding = selectedBuilding ? room.buildingId?._id === selectedBuilding : true;
@@ -268,26 +269,26 @@ const ManageRooms = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {/* Male Section */}
                     <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg shadow-sm">
-                        <h4 className="font-bold text-blue-800 flex items-center mb-3"><FaMale className="mr-2"/> Male</h4>
+                        <h4 className="font-bold text-blue-800 flex items-center mb-3"><FaMale className="mr-2" /> Male</h4>
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="text-center"><FaDoorOpen className="mx-auto text-blue-500 text-2xl mb-1"/><p className="text-xl font-bold">{analytics.male.rooms}</p><p className="text-xs">Rooms</p></div>
-                            <div className="text-center"><FaUsers className="mx-auto text-blue-500 text-2xl mb-1"/><p className="text-xl font-bold">{analytics.male.capacity}</p><p className="text-xs">Capacity</p></div>
+                            <div className="text-center"><FaDoorOpen className="mx-auto text-blue-500 text-2xl mb-1" /><p className="text-xl font-bold">{analytics.male.rooms}</p><p className="text-xs">Rooms</p></div>
+                            <div className="text-center"><FaUsers className="mx-auto text-blue-500 text-2xl mb-1" /><p className="text-xl font-bold">{analytics.male.capacity}</p><p className="text-xs">Capacity</p></div>
                         </div>
                     </div>
                     {/* Female Section */}
                     <div className="bg-pink-50 border-l-4 border-pink-500 p-4 rounded-r-lg shadow-sm">
-                        <h4 className="font-bold text-pink-800 flex items-center mb-3"><FaFemale className="mr-2"/> Female</h4>
+                        <h4 className="font-bold text-pink-800 flex items-center mb-3"><FaFemale className="mr-2" /> Female</h4>
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="text-center"><FaDoorOpen className="mx-auto text-pink-500 text-2xl mb-1"/><p className="text-xl font-bold">{analytics.female.rooms}</p><p className="text-xs">Rooms</p></div>
-                            <div className="text-center"><FaUsers className="mx-auto text-pink-500 text-2xl mb-1"/><p className="text-xl font-bold">{analytics.female.capacity}</p><p className="text-xs">Capacity</p></div>
+                            <div className="text-center"><FaDoorOpen className="mx-auto text-pink-500 text-2xl mb-1" /><p className="text-xl font-bold">{analytics.female.rooms}</p><p className="text-xs">Rooms</p></div>
+                            <div className="text-center"><FaUsers className="mx-auto text-pink-500 text-2xl mb-1" /><p className="text-xl font-bold">{analytics.female.capacity}</p><p className="text-xs">Capacity</p></div>
                         </div>
                     </div>
                     {/* Family/Unisex Section */}
                     <div className="bg-gray-50 border-l-4 border-gray-500 p-4 rounded-r-lg shadow-sm">
-                        <h4 className="font-bold text-gray-800 flex items-center mb-3"><FaRestroom className="mr-2"/> Family / Unisex</h4>
+                        <h4 className="font-bold text-gray-800 flex items-center mb-3"><FaRestroom className="mr-2" /> Family / Unisex</h4>
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="text-center"><FaDoorOpen className="mx-auto text-gray-500 text-2xl mb-1"/><p className="text-xl font-bold">{analytics.unisex.rooms}</p><p className="text-xs">Rooms</p></div>
-                            <div className="text-center"><FaUsers className="mx-auto text-gray-500 text-2xl mb-1"/><p className="text-xl font-bold">{analytics.unisex.capacity}</p><p className="text-xs">Capacity</p></div>
+                            <div className="text-center"><FaDoorOpen className="mx-auto text-gray-500 text-2xl mb-1" /><p className="text-xl font-bold">{analytics.unisex.rooms}</p><p className="text-xs">Rooms</p></div>
+                            <div className="text-center"><FaUsers className="mx-auto text-gray-500 text-2xl mb-1" /><p className="text-xl font-bold">{analytics.unisex.capacity}</p><p className="text-xs">Capacity</p></div>
                         </div>
                     </div>
                 </div>
@@ -301,7 +302,7 @@ const ManageRooms = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700">Building</label>
-                             <SearchableSelect
+                            <SearchableSelect
                                 options={buildings.map(b => ({ value: b._id, label: b.name }))}
                                 value={newRoomData.buildingId}
                                 onChange={(e) => setNewRoomData({ ...newRoomData, buildingId: e.target.value })}
@@ -437,7 +438,7 @@ const ManageRooms = () => {
 
             {editingRoom && (
                 <div className="fixed inset-0 bg-black bg-opacity-60 overflow-y-auto h-full w-full flex items-center justify-center z-[1000]">
-                    <motion.div initial={{scale: 0.9, opacity: 0}} animate={{scale: 1, opacity: 1}} className="bg-card p-8 rounded-2xl shadow-soft w-full max-w-md m-4">
+                    <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-card p-8 rounded-2xl shadow-soft w-full max-w-md m-4">
                         <h3 className="text-2xl font-bold font-heading text-primaryDark mb-4">Edit Room Number</h3>
                         <form onSubmit={handleUpdateRoom}>
                             <div>
@@ -445,7 +446,7 @@ const ManageRooms = () => {
                                 <input
                                     type="text"
                                     value={editingRoom.roomNumber}
-                                    onChange={(e) => setEditingRoom({...editingRoom, roomNumber: e.target.value})}
+                                    onChange={(e) => setEditingRoom({ ...editingRoom, roomNumber: e.target.value })}
                                     className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-500"
                                     required
                                 />

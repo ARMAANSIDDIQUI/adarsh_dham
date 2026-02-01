@@ -161,7 +161,7 @@ const RegisterForm = () => {
                                 type="button"
                                 onClick={handleSendOtp}
                                 disabled={otpLoading || !formData.email}
-                                className="px-4 py-2 bg-secondary text-white rounded-lg hover:bg-secondaryDark disabled:bg-gray-300 text-sm whitespace-nowrap"
+                                className="px-4 py-2 bg-primaryDark text-white rounded-lg hover:bg-highlight disabled:bg-gray-300 text-sm whitespace-nowrap"
                             >
                                 {otpLoading ? <FaSpinner className="animate-spin" /> : (otpSent ? "Resend OTP" : "Send OTP")}
                             </button>
@@ -171,7 +171,7 @@ const RegisterForm = () => {
 
                     {/* OTP Field */}
                     {otpSent && (
-                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}>
+                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-4">
                             <label htmlFor="otp" className="block text-sm font-medium text-gray-700">Enter OTP</label>
                             <input
                                 type="text"
@@ -184,7 +184,7 @@ const RegisterForm = () => {
                                 required
                             />
                             {errors.otp && <p className="text-red-500 text-xs mt-1">{errors.otp}</p>}
-                            <p className="text-xs text-gray-500 mt-1">Check your email for the code.</p>
+                            <p className="text-xs text-gray-500 mt-2">Check your email for the code.</p>
                         </motion.div>
                     )}
 

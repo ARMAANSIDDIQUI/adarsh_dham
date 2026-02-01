@@ -56,7 +56,7 @@ const BookingStatus = ({ bookings, onDelete }) => {
     };
 
     const handleDownloadPdf = (bookingId) => {
-        const backendUrl = process.env.REACT_APP_API_BASE_URL || '' ;
+        const backendUrl = process.env.REACT_APP_API_BASE_URL || '';
         window.open(`${backendUrl}/api/bookings/pdf/${bookingId}`, '_blank');
     };
 
@@ -93,14 +93,14 @@ const BookingStatus = ({ bookings, onDelete }) => {
                                 <span>{booking.status}</span>
                             </div>
                         </div>
-                                        <span className="text-xs px-3 py-1 rounded-full bg-background/50 text-gray-700 shadow-inner">
-                                            Requested: {new Date(booking.createdAt).toLocaleDateString('en-GB')}
-                                        </span>                    </div>
+                        <span className="text-xs px-3 py-1 rounded-full bg-background/50 text-gray-700 shadow-inner">
+                            Requested: {new Date(booking.createdAt).toLocaleDateString('en-GB')}
+                        </span>                    </div>
 
                     {booking.status === 'approved' && (
                         <div className="mt-4 space-y-3 p-4 bg-card rounded-lg shadow-inner">
                             <h4 className="font-bold font-heading text-primary mb-2 text-md border-b border-background pb-2">Your Allocation Details:</h4>
-                            {(booking.allocations || []).map((alloc, index) => {
+                            {(Array.isArray(booking.allocations) ? booking.allocations : []).map((alloc, index) => {
                                 const person = booking.formData.people[index];
                                 return (
                                     <div key={index} className="p-3 bg-background/50 rounded-md text-sm border border-background">
@@ -115,7 +115,7 @@ const BookingStatus = ({ bookings, onDelete }) => {
                             })}
                         </div>
                     )}
-                    
+
                     {booking.status === 'declined' && (
                         <p className="mt-4 text-sm font-medium text-red-700">We're sorry, we couldn't accommodate your request at this time. Please contact support for more information.</p>
                     )}

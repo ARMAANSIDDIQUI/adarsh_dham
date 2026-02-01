@@ -19,11 +19,12 @@ import {
   FaArrowRight,
   FaDownload
 } from "react-icons/fa";
+import EmailVerificationNag from "../components/user/EmailVerificationNag.jsx";
 
 // --- Internal Footer Component ---
 const Footer = () => {
   const t = useTranslation();
-  
+
   const contactInfo = [
     { icon: FaPhone, text: "+91 98370 50318", href: "tel:+919837050318" },
     {
@@ -137,13 +138,13 @@ const UpcomingEventModal = ({ isOpen, onClose, event }) => {
 
   return (
     <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4 backdrop-blur-sm">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
         className="bg-card w-full max-w-lg rounded-2xl shadow-2xl border-4 border-primary overflow-hidden relative"
       >
-        <button 
+        <button
           onClick={onClose}
           className="absolute top-3 right-3 text-gray-500 hover:text-red-500 transition-colors p-1 bg-white/50 rounded-full"
         >
@@ -171,7 +172,7 @@ const UpcomingEventModal = ({ isOpen, onClose, event }) => {
             </div>
           </div>
 
-          <button 
+          <button
             onClick={handleBookNow}
             className="w-full bg-primaryDark hover:bg-highlight text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 group"
           >
@@ -199,22 +200,22 @@ const WelcomeModal = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black/80 z-[10000] flex items-center justify-center p-4 backdrop-blur-sm" onClick={onClose}>
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.8 }}
         className="relative max-w-4xl w-full max-h-[90vh] flex items-center justify-center"
         onClick={(e) => e.stopPropagation()}
       >
-        <button 
+        <button
           onClick={onClose}
           className="absolute -top-10 right-0 text-white hover:text-red-500 transition-colors bg-black/50 rounded-full p-2"
         >
           <FaTimes size={24} />
         </button>
-        <img 
-          src="/welcome.jpg" 
-          alt="Welcome to Shri Adarsh Dham" 
+        <img
+          src="/welcome.jpg"
+          alt="Welcome to Shri Adarsh Dham"
           className="max-w-full max-h-[85vh] rounded-lg shadow-2xl object-contain"
         />
       </motion.div>
@@ -223,17 +224,17 @@ const WelcomeModal = ({ isOpen, onClose }) => {
 };
 
 const Home = () => {
-  const { isAuthenticated } = useSelector((state) => state.auth);
+  // const { isAuthenticated } = useSelector((state) => state.auth); // Unused
   const t = useTranslation();
   const { isInstallable, installPWA } = usePWA();
   const [liveLinks, setLiveLinks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [imagesLoaded, setImagesLoaded] = useState(false);
-  
+
   // Modal state
   const [upcomingEvent, setUpcomingEvent] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
+
   // Welcome Modal state
   const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
   const [welcomeProcessed, setWelcomeProcessed] = useState(false);
@@ -241,7 +242,7 @@ const Home = () => {
   // Carousel state
   const [currentSlide, setCurrentSlide] = useState(0);
   const [direction, setDirection] = useState(1);
-  
+
   // Define carousel images inside component to use translations
   const carouselImages = [
     {
@@ -286,20 +287,20 @@ const Home = () => {
 
         // Load Welcome Image and check logic
         try {
-            await loadImage("/welcome.jpg");
-            const lastShown = localStorage.getItem('welcome_modal_last_shown');
-            const lastShownTime = lastShown ? parseInt(lastShown, 10) : 0;
-            const twoHours = 2 * 60 * 60 * 1000;
+          await loadImage("/welcome.jpg");
+          const lastShown = localStorage.getItem('welcome_modal_last_shown');
+          const lastShownTime = lastShown ? parseInt(lastShown, 10) : 0;
+          const twoHours = 2 * 60 * 60 * 1000;
 
-            if (Date.now() - lastShownTime > twoHours) {
-                setIsWelcomeModalOpen(true);
-                localStorage.setItem('welcome_modal_last_shown', Date.now().toString());
-            } else {
-                setWelcomeProcessed(true);
-            }
-        } catch (err) {
-            console.error("Failed to load welcome image", err);
+          if (Date.now() - lastShownTime > twoHours) {
+            setIsWelcomeModalOpen(true);
+            localStorage.setItem('welcome_modal_last_shown', Date.now().toString());
+          } else {
             setWelcomeProcessed(true);
+          }
+        } catch (err) {
+          console.error("Failed to load welcome image", err);
+          setWelcomeProcessed(true);
         }
 
       } catch (error) {
@@ -315,11 +316,11 @@ const Home = () => {
   // Handle Event Modal Opening after Welcome is done
   useEffect(() => {
     if (welcomeProcessed && upcomingEvent) {
-         const timer = setTimeout(() => {
-             setIsModalOpen(true);
-             localStorage.setItem('event_popup_last_shown', Date.now().toString());
-         }, 500);
-         return () => clearTimeout(timer);
+      const timer = setTimeout(() => {
+        setIsModalOpen(true);
+        localStorage.setItem('event_popup_last_shown', Date.now().toString());
+      }, 500);
+      return () => clearTimeout(timer);
     }
   }, [welcomeProcessed, upcomingEvent]);
 
@@ -328,15 +329,15 @@ const Home = () => {
     const fetchData = async () => {
       try {
         const apiUrl = process.env.REACT_APP_API_BASE_URL || '';
-        
+
         // 1. Fetch Live Links
         const liveRes = await axios.get(`${apiUrl}/api/satsang/live-links/active`);
-        setLiveLinks(liveRes.data || []);
+        setLiveLinks(Array.isArray(liveRes.data) ? liveRes.data : []);
 
         // 2. Fetch Events for Modal
         const eventsRes = await axios.get(`${apiUrl}/api/events`);
         const allEvents = Array.isArray(eventsRes.data) ? eventsRes.data : [];
-        
+
         const now = new Date();
         const upcoming = allEvents
           .filter(e => new Date(e.startDate) >= now || (new Date(e.startDate) <= now && new Date(e.endDate) >= now)) // Upcoming or Ongoing
@@ -345,9 +346,9 @@ const Home = () => {
         if (upcoming.length > 0) {
           const lastShown = localStorage.getItem('event_popup_last_shown');
           const lastShownTime = lastShown ? parseInt(lastShown, 10) : 0;
-          const twoHours = 2 * 60 * 60 * 1000;
+          const thirtyMinutes = 30 * 60 * 1000;
 
-          if (Date.now() - lastShownTime > twoHours) {
+          if (Date.now() - lastShownTime > thirtyMinutes) {
             setUpcomingEvent(upcoming[0]);
           }
         }
@@ -362,14 +363,14 @@ const Home = () => {
     fetchData();
     // Refresh live links every minute
     const interval = setInterval(() => {
-        const fetchLive = async () => {
-            try {
-                const apiUrl = process.env.REACT_APP_API_BASE_URL || '';
-                const liveRes = await axios.get(`${apiUrl}/api/satsang/live-links/active`);
-                setLiveLinks(liveRes.data || []);
-            } catch(e) { console.error(e); }
-        };
-        fetchLive();
+      const fetchLive = async () => {
+        try {
+          const apiUrl = process.env.REACT_APP_API_BASE_URL || '';
+          const liveRes = await axios.get(`${apiUrl}/api/satsang/live-links/active`);
+          setLiveLinks(Array.isArray(liveRes.data) ? liveRes.data : []);
+        } catch (e) { console.error(e); }
+      };
+      fetchLive();
     }, 60000);
     return () => clearInterval(interval);
   }, []);
@@ -414,7 +415,7 @@ const Home = () => {
   };
 
   const LiveMarquee = ({ links }) => {
-    if (!links || links.length === 0) return null;
+    if (!links || !Array.isArray(links) || links.length === 0) return null;
     return (
       <div className="marquee-container bg-highlight text-white py-2 overflow-hidden">
         <div className="marquee-content flex items-center animate-marquee">
@@ -447,6 +448,7 @@ const Home = () => {
   };
 
   const LiveVideoSection = ({ links }) => {
+    if (!links || !Array.isArray(links)) return null;
     const videoLink = links.find((link) => link.youtubeEmbedUrl);
     if (!videoLink) return null;
     return (
@@ -494,6 +496,8 @@ const Home = () => {
     >
       <LiveMarquee links={liveLinks} />
 
+      <EmailVerificationNag />
+
       {/* Welcome Modal */}
       <AnimatePresence>
         {isWelcomeModalOpen && (
@@ -504,10 +508,10 @@ const Home = () => {
       {/* Render the Modal if an event exists and modal is open */}
       <AnimatePresence>
         {isModalOpen && upcomingEvent && (
-          <UpcomingEventModal 
-            isOpen={isModalOpen} 
-            onClose={() => setIsModalOpen(false)} 
-            event={upcomingEvent} 
+          <UpcomingEventModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            event={upcomingEvent}
           />
         )}
       </AnimatePresence>
@@ -556,9 +560,8 @@ const Home = () => {
             <button
               key={idx}
               onClick={() => setCurrentSlide(idx)}
-              className={`h-3 w-3 rounded-full transition-all duration-300 transform hover:scale-125 ${
-                idx === currentSlide ? "bg-primary w-5" : "bg-neutral bg-opacity-70"
-              }`}
+              className={`h-3 w-3 rounded-full transition-all duration-300 transform hover:scale-125 ${idx === currentSlide ? "bg-primary w-5" : "bg-neutral bg-opacity-70"
+                }`}
             />
           ))}
         </div>
@@ -619,7 +622,7 @@ const Home = () => {
             </Link>
           </motion.div>
         </section>
-        
+
         <section className="mt-20 text-center">
           <h2 className="text-3xl font-bold font-heading mb-10 text-primaryDark border-b-2 border-primary inline-block pb-1">
             {t.home.timings.title}

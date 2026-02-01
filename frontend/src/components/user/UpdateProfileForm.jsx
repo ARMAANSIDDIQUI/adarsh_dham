@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
+import { motion } from 'framer-motion';
 import api from '../../api/api.js';
 import { updateUser } from '../../redux/slices/authSlice.js';
 import { FaUser, FaSpinner } from 'react-icons/fa';
@@ -112,7 +113,7 @@ const UpdateProfileForm = () => {
                             type="button"
                             onClick={handleSendOtp}
                             disabled={otpLoading || !email}
-                            className="px-4 py-2 bg-secondary text-white rounded-lg hover:bg-secondaryDark disabled:bg-gray-300 text-sm whitespace-nowrap"
+                            className="px-4 py-2 bg-primaryDark text-white rounded-lg hover:bg-highlight disabled:bg-gray-300 text-sm whitespace-nowrap"
                         >
                             {otpLoading ? <FaSpinner className="animate-spin" /> : (otpSent ? "Resend OTP" : "Send OTP")}
                         </button>
@@ -123,7 +124,7 @@ const UpdateProfileForm = () => {
 
             {/* OTP Field for Email Update */}
             {isEmailChanged && otpSent && (
-                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}>
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-4">
                     <ThemedInput
                         label="Enter OTP"
                         name="otp"
@@ -131,7 +132,7 @@ const UpdateProfileForm = () => {
                         onChange={(e) => setOtp(e.target.value)}
                         required={isEmailChanged}
                     />
-                    <p className="text-xs text-gray-500 -mt-2">Check your new email for the code.</p>
+                    <p className="text-xs text-gray-500 mt-2">Check your new email for the code.</p>
                 </motion.div>
             )}
             <div>
@@ -141,7 +142,7 @@ const UpdateProfileForm = () => {
                     disabled
                 />
             </div>
-            <p className="text-xs text-gray-700 -mt-2">{t.profile.updateForm.phoneNotice}</p>
+            <p className="text-xs text-gray-700 mt-2">{t.profile.updateForm.phoneNotice}</p>
 
             <div className="pt-2">
                 <button
