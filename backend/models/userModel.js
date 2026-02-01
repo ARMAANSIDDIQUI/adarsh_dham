@@ -11,6 +11,11 @@ const userSchema = new Schema({
     required: true,
     unique: true
   },
+  email: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
   passwordHash: {
     type: String,
     required: true

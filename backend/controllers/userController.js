@@ -1,5 +1,6 @@
 const User = require('../models/userModel');
 const bcrypt = require('bcrypt');
+const OTP = require('../models/otpModel');
 
 // @desc    Update current user's profile (name)
 // @route   PUT /api/users/profile
@@ -10,13 +11,38 @@ exports.updateMyProfile = async (req, res) => {
 
         if (user) {
             user.name = req.body.name || user.name;
+
+            // Handle Email Update
+            if (req.body.email && req.body.email !== user.email) {
+                const { email, otp } = req.body;
+                if (!otp) {
+                    return res.status(400).json({ message: 'OTP is required to change email.' });
+                }
+
+                // Verify OTP
+                const otpRecord = await OTP.findOne({ email, otp, type: 'update' });
+                if (!otpRecord) {
+                    return res.status(400).json({ message: 'Invalid or expired OTP.' });
+                }
+
+                // Check if email taken
+                const existingUser = await User.findOne({ email });
+                if (existingUser && existingUser._id.toString() !== user._id.toString()) {
+                    return res.status(400).json({ message: 'Email already in use.' });
+                }
+
+                user.email = email;
+                await OTP.deleteOne({ _id: otpRecord._id });
+            }
+
             const updatedUser = await user.save();
-            
+
             // Return the updated user object (without the password hash)
             res.json({
                 id: updatedUser._id,
                 name: updatedUser.name,
                 phone: updatedUser.phone,
+                email: updatedUser.email,
                 roles: updatedUser.roles,
             });
         } else {
