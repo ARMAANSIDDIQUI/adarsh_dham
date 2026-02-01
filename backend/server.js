@@ -31,6 +31,7 @@ const structureRoutes = require('./routes/structureRoutes');
 const passwordRequestRoutes = require('./routes/passwordRequestRoutes');
 const commentRoutes = require('./routes/commentRoutes');
 const userRoutes = require('./routes/userRoutes');
+const emailRoutes = require('./routes/emailRoutes');
 
 // --- NEW HELPER IMPORT ---
 const { createAndSaveNotification } = require('./utils/notificationHelper');
@@ -47,22 +48,22 @@ webpush.setVapidDetails(
 
 //SECURE CORS CONFIGURATION
 const allowedOrigins = [
- 	'http://localhost:5000',
+  'http://localhost:5000',
   'http://localhost:5173',
   'https://adarsh-dham-backend.onrender.com',
- 	'https://adarsh-dham-9vio.vercel.app',
+  'https://adarsh-dham-9vio.vercel.app',
   'https://adarsh-dham-frontend.vercel.app',
   'https://adarshdham.com'
 ];
 
 const corsOptions = {
- 	origin: (origin, callback) => {
- 		if (allowedOrigins.includes(origin) || !origin) {
- 			callback(null, true);
- 		} else {
- 			callback(new Error('This domain is not allowed by CORS'));
- 		}
- 	}
+  origin: (origin, callback) => {
+    if (allowedOrigins.includes(origin) || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('This domain is not allowed by CORS'));
+    }
+  }
 };
 
 app.use(cors(corsOptions));
@@ -114,65 +115,65 @@ const setupAllocationResetJob = () => {
     twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
 
     try {
-        const completedEvents = await Event.find({ endDate: { $lte: twoDaysAgo } });
-        const completedEventIds = completedEvents.map(event => event._id);
+      const completedEvents = await Event.find({ endDate: { $lte: twoDaysAgo } });
+      const completedEventIds = completedEvents.map(event => event._id);
 
-        if (completedEventIds.length > 0) {
-            const result = await Person.deleteMany({ eventId: { $in: completedEventIds } });
-            console.log(`Nightly job completed. Cleared ${result.deletedCount} person records from completed events.`);
-        } else {
-            console.log('Nightly job completed. No old events found to clear.');
-        }
+      if (completedEventIds.length > 0) {
+        const result = await Person.deleteMany({ eventId: { $in: completedEventIds } });
+        console.log(`Nightly job completed. Cleared ${result.deletedCount} person records from completed events.`);
+      } else {
+        console.log('Nightly job completed. No old events found to clear.');
+      }
     } catch (error) {
-        console.error('Error during nightly occupancy reset job:', error);
+      console.error('Error during nightly occupancy reset job:', error);
     }
   });
 };
 
 const setupScheduledNotificationJob = () => {
-    schedule.scheduleJob('* * * * *', async () => {
-        console.log('Checking for scheduled notifications...');
-        try {
-            const now = new Date();
-            const notificationsToSend = await Notification.find({
-                status: 'scheduled',
-                sendAt: { $lte: now }
-            }).populate('userId', 'pushSubscription');
+  schedule.scheduleJob('* * * * *', async () => {
+    console.log('Checking for scheduled notifications...');
+    try {
+      const now = new Date();
+      const notificationsToSend = await Notification.find({
+        status: 'scheduled',
+        sendAt: { $lte: now }
+      }).populate('userId', 'pushSubscription');
 
-            if (notificationsToSend.length > 0) {
-                console.log(`Found ${notificationsToSend.length} notifications to send.`);
-                const pushPromises = notificationsToSend.map(async (notification) => {
-                    const user = notification.userId;
-                    if (user && user.pushSubscription) {
-                        const payload = JSON.stringify({
-                            title: "Adarsh Dham: New Update",
-                            body: notification.message,
-                        });
-                        try {
-                            await webpush.sendNotification(user.pushSubscription, payload);
-                            notification.status = 'sent';
-                            await notification.save();
-                            console.log(`Notification sent to user: ${user._id}`);
-                        } catch (err) {
-                            console.error(`Error sending push notification to user ${user._id}: ${err.message}`);
-                            if (err.statusCode === 410) {
-                                user.pushSubscription = null;
-                                await user.save();
-                                console.log(`Invalid subscription removed for user: ${user._id}`);
-                                }
-                        }
-                    } else {
-                        notification.status = 'sent';
-                        await notification.save();
-                        console.log(`No valid subscription found for notification ${notification._id}, marked as sent.`);
-                    }
-                });
-                await Promise.all(pushPromises);
+      if (notificationsToSend.length > 0) {
+        console.log(`Found ${notificationsToSend.length} notifications to send.`);
+        const pushPromises = notificationsToSend.map(async (notification) => {
+          const user = notification.userId;
+          if (user && user.pushSubscription) {
+            const payload = JSON.stringify({
+              title: "Adarsh Dham: New Update",
+              body: notification.message,
+            });
+            try {
+              await webpush.sendNotification(user.pushSubscription, payload);
+              notification.status = 'sent';
+              await notification.save();
+              console.log(`Notification sent to user: ${user._id}`);
+            } catch (err) {
+              console.error(`Error sending push notification to user ${user._id}: ${err.message}`);
+              if (err.statusCode === 410) {
+                user.pushSubscription = null;
+                await user.save();
+                console.log(`Invalid subscription removed for user: ${user._id}`);
+              }
             }
-        } catch (error) {
-            console.error('Error in scheduled notification job:', error);
-        }
-    });
+          } else {
+            notification.status = 'sent';
+            await notification.save();
+            console.log(`No valid subscription found for notification ${notification._id}, marked as sent.`);
+          }
+        });
+        await Promise.all(pushPromises);
+      }
+    } catch (error) {
+      console.error('Error in scheduled notification job:', error);
+    }
+  });
 };
 
 // --- NEW FUNCTION ---
@@ -194,7 +195,7 @@ const setupPendingBookingCheckJob = () => {
 
       if (pendingCount > 0) {
         console.log(`Found ${pendingCount} pending bookings for active events. Notifying operators.`);
-        
+
         // Find all users with the required roles
         const targetRoles = ['admin', 'super-admin', 'operator', 'super-operator'];
         const adminAndOperatorUsers = await User.find({ roles: { $in: targetRoles } });
@@ -205,7 +206,7 @@ const setupPendingBookingCheckJob = () => {
           await createAndSaveNotification({
             message: `There ${pendingCount === 1 ? 'is' : 'are'} ${pendingCount} pending booking(s) awaiting review.`,
             userIds: userIds,
-            notifyAdmins: false 
+            notifyAdmins: false
           });
         }
       } else {
@@ -232,6 +233,7 @@ app.use('/api/people', peopleRoutes);
 app.use('/api/structure', structureRoutes);
 app.use('/api/password-requests', passwordRequestRoutes);
 app.use('/api/comments', commentRoutes);
+app.use('/api/email', emailRoutes);
 
 // Original root route - Commented out so it doesn't block frontend serving
 // app.get('/', (req, res) => {
