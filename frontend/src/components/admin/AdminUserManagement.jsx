@@ -301,6 +301,7 @@ const AdminUserManagement = () => {
 
     const filteredUsers = Array.isArray(users) ? users.filter(user =>
         user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (user.roles && user.roles.join(', ').toLowerCase().includes(searchTerm.toLowerCase()))
     ) : [];
@@ -332,6 +333,7 @@ const AdminUserManagement = () => {
                     <thead className="bg-background/50">
                         <tr>
                             <th className="px-6 py-3 text-left text-xs font-semibold font-heading text-primaryDark uppercase tracking-wider">Name</th>
+                            <th className="px-6 py-3 text-left text-xs font-semibold font-heading text-primaryDark uppercase tracking-wider">Email</th>
                             <th className="px-6 py-3 text-left text-xs font-semibold font-heading text-primaryDark uppercase tracking-wider">Phone</th>
                             <th className="px-6 py-3 text-left text-xs font-semibold font-heading text-primaryDark uppercase tracking-wider">Roles</th>
                             <th className="px-6 py-3 text-left text-xs font-semibold font-heading text-primaryDark uppercase tracking-wider">Actions</th>
@@ -341,6 +343,7 @@ const AdminUserManagement = () => {
                         {filteredUsers.length > 0 ? filteredUsers.map(user => (
                             <tr key={user._id} className="hover:bg-background transition-colors">
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-700">{user.name}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.email || '-'}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.phone}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm capitalize text-gray-700">{user.roles ? user.roles.join(', ') : 'User'}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm flex space-x-2">

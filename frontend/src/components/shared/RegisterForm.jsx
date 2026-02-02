@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../../api/api';
 import { motion } from 'framer-motion';
@@ -20,6 +20,17 @@ const RegisterForm = () => {
     const [otp, setOtp] = useState('');
     const [otpSent, setOtpSent] = useState(false);
     const [otpLoading, setOtpLoading] = useState(false);
+    const [timer, setTimer] = useState(0);
+
+    useEffect(() => {
+        let interval;
+        if (timer > 0) {
+            interval = setInterval(() => {
+                setTimer((prev) => prev - 1);
+            }, 1000);
+        }
+        return () => clearInterval(interval);
+    }, [timer]);
 
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
@@ -81,6 +92,7 @@ const RegisterForm = () => {
         try {
             await api.post('/auth/send-otp', { email: formData.email, type: 'register' });
             setOtpSent(true);
+            setTimer(60);
             toast.success("OTP sent to your email!");
             setErrors({ ...errors, otp: null });
         } catch (err) {
@@ -160,10 +172,10 @@ const RegisterForm = () => {
                             <button
                                 type="button"
                                 onClick={handleSendOtp}
-                                disabled={otpLoading || !formData.email}
+                                disabled={otpLoading || !formData.email || timer > 0}
                                 className="px-4 py-2 bg-primaryDark text-white rounded-lg hover:bg-highlight disabled:bg-gray-300 text-sm whitespace-nowrap"
                             >
-                                {otpLoading ? <FaSpinner className="animate-spin" /> : (otpSent ? "Resend OTP" : "Send OTP")}
+                                {otpLoading ? <FaSpinner className="animate-spin" /> : (timer > 0 ? `Resend in ${timer}s` : (otpSent ? "Resend OTP" : "Send OTP"))}
                             </button>
                         </div>
                         {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}

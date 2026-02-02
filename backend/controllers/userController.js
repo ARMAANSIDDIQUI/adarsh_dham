@@ -60,10 +60,10 @@ exports.updateMyProfile = async (req, res) => {
 // @route   PUT /api/users/change-password
 // @access  Private
 exports.changeMyPassword = async (req, res) => {
-    const { currentPassword, newPassword } = req.body;
+    const { newPassword } = req.body;
 
-    if (!currentPassword || !newPassword) {
-        return res.status(400).json({ message: 'Please provide both current and new passwords.' });
+    if (!newPassword) {
+        return res.status(400).json({ message: 'Please provide a new password.' });
     }
     if (newPassword.length < 6) {
         return res.status(400).json({ message: 'Password must be at least 6 characters long.' });
@@ -73,11 +73,6 @@ exports.changeMyPassword = async (req, res) => {
         const user = await User.findById(req.user.id);
         if (!user) {
             return res.status(404).json({ message: 'User not found.' });
-        }
-
-        const isMatch = await bcrypt.compare(currentPassword, user.passwordHash);
-        if (!isMatch) {
-            return res.status(401).json({ message: 'Incorrect current password.' });
         }
 
         const salt = await bcrypt.genSalt(10);

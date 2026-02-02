@@ -94,6 +94,7 @@ exports.login = async (req, res) => {
         id: user._id,
         name: user.name,
         phone: user.phone,
+        email: user.email,
         roles: user.roles
       }
     });
@@ -124,6 +125,7 @@ exports.getMe = async (req, res) => {
         id: user._id,
         name: user.name,
         phone: user.phone,
+        email: user.email,
         roles: user.roles
       },
       bookings: user.bookings.filter(b => b.eventId)

@@ -45,7 +45,6 @@ const PasswordInput = ({ name, placeholder, value, onChange }) => {
 const ChangePasswordForm = () => {
     const t = useTranslation();
     const [formData, setFormData] = useState({
-        currentPassword: '',
         newPassword: '',
         confirmNewPassword: ''
     });
@@ -75,12 +74,11 @@ const ChangePasswordForm = () => {
         setLoading(true);
         try {
             const { data } = await api.put('/users/change-password', {
-                currentPassword: formData.currentPassword,
                 newPassword: formData.newPassword
             });
             toast.success(data.message || t.profile.passwordForm.success);
             // Reset form fields on success
-            setFormData({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
+            setFormData({ newPassword: '', confirmNewPassword: '' });
         } catch (error) {
             toast.error(error.response?.data?.message || t.profile.passwordForm.error);
         } finally {
@@ -92,15 +90,6 @@ const ChangePasswordForm = () => {
         <div className="bg-card p-6 rounded-2xl shadow-soft font-body h-full">
             <h3 className="text-xl font-semibold font-heading mb-4 text-primaryDark border-b border-background pb-2">{t.profile.passwordForm.title}</h3>
             <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                    <label className="text-sm font-medium text-gray-700">{t.profile.passwordForm.current}</label>
-                    <PasswordInput
-                        name="currentPassword"
-                        placeholder={t.profile.passwordForm.currentPlaceholder}
-                        value={formData.currentPassword}
-                        onChange={handleChange}
-                    />
-                </div>
                 <div>
                     <label className="text-sm font-medium text-gray-700">{t.profile.passwordForm.new}</label>
                     <PasswordInput
