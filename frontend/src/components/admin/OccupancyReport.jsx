@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../api/api.js';
 import Button from '../common/Button.jsx';
-import { FaUsers, FaFilter, FaSearch, FaChevronDown } from 'react-icons/fa';
+import { FaUsers, FaFilter, FaSearch, FaChevronDown, FaFileCsv, FaFilePdf } from 'react-icons/fa';
 import DynamicDateInput from '../common/DynamicDateInput.jsx';
 import AllocationsView from './AllocationsView';
 import Pagination from './Pagination';
@@ -110,6 +110,8 @@ const OccupancyReport = () => {
     const [buildings, setBuildings] = useState([]);
     const [error, setError] = useState(null);
     const [dateFilterType, setDateFilterType] = useState('stayRange');
+    const [isDownloading, setIsDownloading] = useState(false);
+    const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
 
     const { firstDayOfMonth, lastDayOfMonth } = useMemo(getIstDateBoundaries, []);
 
@@ -177,6 +179,70 @@ const OccupancyReport = () => {
         }));
     };
 
+    const handleDownloadCsv = async () => {
+        setIsDownloading(true);
+        try {
+            const params = new URLSearchParams({
+                startDate: filters.startDate,
+                endDate: filters.endDate,
+                eventId: filters.eventId,
+                buildingId: filters.buildingId,
+                gender: filters.gender,
+                dateFilterType: dateFilterType,
+                searchTerm: debouncedSearchTerm,
+            });
+
+            const response = await api.get(`/people/export-csv?${params.toString()}`, {
+                responseType: 'blob',
+            });
+
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'occupancy_report.csv');
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        } catch (error) {
+            console.error("Failed to download CSV", error);
+            setError("Failed to download CSV");
+        } finally {
+            setIsDownloading(false);
+        }
+    };
+
+    const handleDownloadPdf = async () => {
+        setIsDownloadingPdf(true);
+        try {
+            const params = new URLSearchParams({
+                startDate: filters.startDate,
+                endDate: filters.endDate,
+                eventId: filters.eventId,
+                buildingId: filters.buildingId,
+                gender: filters.gender,
+                dateFilterType: dateFilterType,
+                searchTerm: debouncedSearchTerm,
+            });
+
+            const response = await api.get(`/people/export-pdf?${params.toString()}`, {
+                responseType: 'blob',
+            });
+
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'occupancy_report.pdf');
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        } catch (error) {
+            console.error("Failed to download PDF", error);
+            setError("Failed to download PDF");
+        } finally {
+            setIsDownloadingPdf(false);
+        }
+    };
+
         const adjustedFilters = useMemo(() => {
             // If no adjustments are needed for the API, then adjustedFilters can simply be filters.
             // However, if other adjustments are required in the future,
@@ -194,7 +260,19 @@ const OccupancyReport = () => {
             {error && <p className="text-red-600 bg-red-100 p-3 rounded-md mb-6">{error}</p>}
             
             <div className="bg-card p-4 rounded-2xl shadow-soft mb-8">
-                <h3 className="font-semibold font-heading text-lg mb-4 flex items-center text-primaryDark"><FaFilter className="mr-2 text-primary"/>Filters</h3>
+                <div className="flex justify-between items-center mb-4">
+                    <h3 className="font-semibold font-heading text-lg flex items-center text-primaryDark"><FaFilter className="mr-2 text-primary"/>Filters</h3>
+                    <div className="flex gap-2">
+                        <Button onClick={handleDownloadCsv} disabled={isDownloading} className="flex items-center gap-2">
+                            {isDownloading ? <span className="loading loading-spinner loading-sm"></span> : <FaFileCsv />}
+                            Download CSV
+                        </Button>
+                        <Button onClick={handleDownloadPdf} disabled={isDownloadingPdf} className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white">
+                            {isDownloadingPdf ? <span className="loading loading-spinner loading-sm"></span> : <FaFilePdf />}
+                            Download PDF
+                        </Button>
+                    </div>
+                </div>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pb-4 border-b border-background mb-4">
                     <label className="font-semibold sm:col-span-1">Date Range Applies To:</label>

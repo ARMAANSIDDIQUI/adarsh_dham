@@ -10,14 +10,39 @@ import { FaTimes, FaCalendarAlt, FaUser, FaSave } from 'react-icons/fa';
 const EditBookingModal = ({ isOpen, booking, onClose, onUpdate }) => {
     const [formData, setFormData] = useState({});
     const [loading, setLoading] = useState(false);
+    const [dateLimits, setDateLimits] = useState({ min: '', max: '' });
 
     useEffect(() => {
         if (booking) {
+            // Calculate date limits from booking.eventId if available
+            if (booking.eventId && booking.eventId.startDate && booking.eventId.endDate) {
+                const start = new Date(booking.eventId.startDate);
+                const end = new Date(booking.eventId.endDate);
+                const minD = new Date(start);
+                minD.setDate(minD.getDate() - 5);
+                const maxD = new Date(end);
+                maxD.setDate(maxD.getDate() + 5);
+                setDateLimits({
+                    min: minD.toISOString().split('T')[0],
+                    max: maxD.toISOString().split('T')[0]
+                });
+            }
+
             // Ensure default values to prevent uncontrolled input warnings
             setFormData({
                 ...booking.formData,
+                stayFrom: booking.formData.stayFrom || '',
+                stayTo: booking.formData.stayTo || '',
+                contactNumber: booking.formData.contactNumber || '',
+                ashramName: booking.formData.ashramName || '',
                 hasSameStayDuration: booking.formData.hasSameStayDuration ?? true,
-                people: booking.formData.people || []
+                people: (booking.formData.people || []).map(p => ({
+                    ...p,
+                    name: p.name || '',
+                    age: p.age || '',
+                    stayFrom: p.stayFrom || '',
+                    stayTo: p.stayTo || ''
+                }))
             });
         }
     }, [booking]);
@@ -80,7 +105,7 @@ const EditBookingModal = ({ isOpen, booking, onClose, onUpdate }) => {
             }
 
 
-            const res = await api.put(`/bookings/${booking._id}`, { formData: payload });
+            const res = await api.put(`/bookings/update/${booking._id}`, { formData: payload });
             toast.success("Booking updated successfully!");
             onUpdate(res.data.booking); // Pass back updated booking
             onClose();
@@ -128,8 +153,8 @@ const EditBookingModal = ({ isOpen, booking, onClose, onUpdate }) => {
 
                                 {formData.hasSameStayDuration && (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fadeIn">
-                                        <DynamicDateInput label="Stay From" name="stayFrom" value={formData.stayFrom} onChange={handleChange} required />
-                                        <DynamicDateInput label="Stay To" name="stayTo" value={formData.stayTo} onChange={handleChange} required />
+                                        <DynamicDateInput label="Stay From" name="stayFrom" value={formData.stayFrom || ''} onChange={handleChange} required min={dateLimits.min} max={dateLimits.max} />
+                                        <DynamicDateInput label="Stay To" name="stayTo" value={formData.stayTo || ''} onChange={handleChange} required min={formData.stayFrom || dateLimits.min} max={dateLimits.max} />
                                     </div>
                                 )}
                             </div>
@@ -150,7 +175,7 @@ const EditBookingModal = ({ isOpen, booking, onClose, onUpdate }) => {
                                                 <label className="block text-xs text-gray-500 mb-1">Name</label>
                                                 <input
                                                     type="text"
-                                                    value={person.name}
+                                                    value={person.name || ''}
                                                     onChange={(e) => handlePersonChange(index, 'name', e.target.value)}
                                                     className="w-full p-2 border rounded-md text-sm"
                                                     required
@@ -160,7 +185,7 @@ const EditBookingModal = ({ isOpen, booking, onClose, onUpdate }) => {
                                                 <label className="block text-xs text-gray-500 mb-1">Age</label>
                                                 <input
                                                     type="number"
-                                                    value={person.age}
+                                                    value={person.age || ''}
                                                     onChange={(e) => handlePersonChange(index, 'age', e.target.value)}
                                                     className="w-full p-2 border rounded-md text-sm"
                                                     required
@@ -170,7 +195,7 @@ const EditBookingModal = ({ isOpen, booking, onClose, onUpdate }) => {
                                             <div className="md:col-span-2">
                                                 <label className="block text-xs text-gray-500 mb-1">Gender</label>
                                                 <select
-                                                    value={person.gender}
+                                                    value={person.gender || 'male'}
                                                     onChange={(e) => handlePersonChange(index, 'gender', e.target.value)}
                                                     className="w-full p-2 border rounded-md text-sm capitalize"
                                                 >
@@ -191,6 +216,8 @@ const EditBookingModal = ({ isOpen, booking, onClose, onUpdate }) => {
                                                             onChange={(e) => handlePersonChange(index, 'stayFrom', e.target.value)}
                                                             className="w-full p-2 border rounded-md text-sm"
                                                             required
+                                                            min={dateLimits.min}
+                                                            max={dateLimits.max}
                                                         />
                                                     </div>
                                                     <div className="md:col-span-3">
@@ -201,6 +228,8 @@ const EditBookingModal = ({ isOpen, booking, onClose, onUpdate }) => {
                                                             onChange={(e) => handlePersonChange(index, 'stayTo', e.target.value)}
                                                             className="w-full p-2 border rounded-md text-sm"
                                                             required
+                                                            min={person.stayFrom || dateLimits.min}
+                                                            max={dateLimits.max}
                                                         />
                                                     </div>
                                                 </>
@@ -215,14 +244,14 @@ const EditBookingModal = ({ isOpen, booking, onClose, onUpdate }) => {
                                 <div>
                                     <PhoneInput
                                         label="Phone"
-                                        value={formData.contactNumber}
+                                        value={formData.contactNumber || ''}
                                         onChange={(val) => setFormData(prev => ({ ...prev, contactNumber: val }))}
                                         required
                                     />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700">Ashram Name</label>
-                                    <input type="text" name="ashramName" value={formData.ashramName} onChange={handleChange} className="mt-1 w-full p-2 border rounded-lg" required />
+                                    <input type="text" name="ashramName" value={formData.ashramName || ''} onChange={handleChange} className="mt-1 w-full p-2 border rounded-lg" required />
                                 </div>
                             </div>
 

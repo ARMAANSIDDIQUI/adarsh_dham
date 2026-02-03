@@ -4,6 +4,7 @@ const Bed = require('../models/bedModel');
 const Person = require('../models/peopleModel');
 const Notification = require('../models/notificationModel');
 const User = require('../models/userModel');
+const Event = require('../models/eventModel');
 const pdfGenerator = require('../utils/pdfGenerator');
 const webpush = require('web-push');
 
@@ -19,11 +20,55 @@ const generateBookingNumber = () => {
     return `BK${dateString}-${randomChars}`;
 };
 
+// Helper for date validation
+const validateDates = (formData, event) => {
+    const eventStart = new Date(event.startDate);
+    const eventEnd = new Date(event.endDate);
+    
+    // Calculate allowed range (+/- 5 days)
+    const minDate = new Date(eventStart);
+    minDate.setDate(minDate.getDate() - 5);
+    const maxDate = new Date(eventEnd);
+    maxDate.setDate(maxDate.getDate() + 5);
+
+    // Normalize comparison (set time to midnight)
+    const normalize = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+    const minTime = normalize(minDate);
+    const maxTime = normalize(maxDate);
+
+    const checkDate = (dateStr, label) => {
+        if (!dateStr) return;
+        const d = new Date(dateStr);
+        const time = normalize(d);
+        if (time < minTime || time > maxTime) {
+            throw new Error(`${label} must be between ${minDate.toDateString()} and ${maxDate.toDateString()}`);
+        }
+    };
+
+    if (formData.hasSameStayDuration) {
+        checkDate(formData.stayFrom, 'Stay From date');
+        checkDate(formData.stayTo, 'Stay To date');
+    } else if (formData.people && Array.isArray(formData.people)) {
+        formData.people.forEach((p, i) => {
+            checkDate(p.stayFrom, `Person #${i + 1} Stay From date`);
+            checkDate(p.stayTo, `Person #${i + 1} Stay To date`);
+        });
+    }
+};
 
 exports.createBooking = async (req, res) => {
     const { eventId, formData } = req.body;
     const userId = req.user.id;
     try {
+        const event = await Event.findById(eventId);
+        if (!event) return res.status(404).json({ message: 'Event not found' });
+
+        try {
+            validateDates(formData, event);
+        } catch (validationError) {
+            return res.status(400).json({ message: validationError.message });
+        }
+
         const bookingNumber = generateBookingNumber();
         const newBooking = new Booking({ userId, eventId, formData, bookingNumber, status: 'pending' });
         await newBooking.save();
@@ -188,7 +233,23 @@ exports.updateBooking = async (req, res) => {
     try {
         const booking = await Booking.findById(bookingId);
         if (!booking) return res.status(404).json({ message: 'Booking not found' });
-        if (booking.userId.toString() !== req.user.id) return res.status(403).json({ message: 'Not authorized.' });
+        
+        // Allow if user is owner OR has admin privileges
+        const isOwner = booking.userId.toString() === req.user.id;
+        const isAdmin = req.user.roles && (req.user.roles.includes('admin') || req.user.roles.includes('super-admin'));
+
+        if (!isOwner && !isAdmin) {
+            return res.status(403).json({ message: 'Not authorized.' });
+        }
+
+        const event = await Event.findById(booking.eventId);
+        if (event) {
+             try {
+                validateDates(formData, event);
+            } catch (validationError) {
+                return res.status(400).json({ message: validationError.message });
+            }
+        }
 
         if (booking.status === 'approved') await Person.deleteMany({ bookingId: booking._id });
 

@@ -18,4 +18,18 @@ router.get(
     peopleController.getPeoplePaginated
 );
 
+router.get(
+    '/export-csv',
+    authMiddleware,
+    roleMiddleware(['admin', 'super-admin', 'operator', 'super-operator']),
+    peopleController.exportPeopleCsv
+);
+
+router.get(
+    '/export-pdf',
+    authMiddleware,
+    roleMiddleware(['admin', 'super-admin', 'operator', 'super-operator']),
+    peopleController.exportPeoplePdf
+);
+
 module.exports = router;
