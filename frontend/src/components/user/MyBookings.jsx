@@ -200,7 +200,7 @@ const MyBookings = () => {
 
                 {['upcoming', 'ongoing', 'finished'].map(category => {
                     const filtered = categorizedBookings[category].filter(b =>
-                        b.bookingNumber.includes(searchQuery) || b.eventId?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+                        (b.bookingNumber || '').includes(searchQuery) || (b.eventId?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
                     );
                     if (filtered.length === 0) return null;
 
@@ -244,7 +244,7 @@ const MyBookings = () => {
 
                 {['upcoming', 'ongoing', 'finished'].every(category =>
                     categorizedBookings[category].filter(b =>
-                        b.bookingNumber.includes(searchQuery) || b.eventId?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+                        (b.bookingNumber || '').includes(searchQuery) || (b.eventId?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
                     ).length === 0
                 ) && searchQuery && (
                         <div className="text-center mt-10 text-gray-700">

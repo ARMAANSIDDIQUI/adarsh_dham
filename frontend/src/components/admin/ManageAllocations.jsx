@@ -82,7 +82,7 @@ const SearchableSelect = ({ options, value, onChange, placeholder, disabled = fa
         }
         const lowercasedTerm = searchTerm.toLowerCase();
         return options.filter(option =>
-            option.label.toLowerCase().includes(lowercasedTerm)
+            (option.label || '').toLowerCase().includes(lowercasedTerm)
         );
     }, [options, searchTerm]);
 

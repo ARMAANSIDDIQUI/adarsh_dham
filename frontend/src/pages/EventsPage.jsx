@@ -309,7 +309,7 @@ const EventsPage = () => {
     : events;
 
   const filteredEvents = dailyEvents.filter((e) =>
-    e.name.toLowerCase().includes(searchTerm.toLowerCase())
+    (e.name || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const now = new Date();

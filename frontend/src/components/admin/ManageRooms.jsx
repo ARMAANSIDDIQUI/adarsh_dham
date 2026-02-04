@@ -61,7 +61,7 @@ const SearchableSelect = ({ options, value, onChange, placeholder, disabled = fa
     const filteredOptions = useMemo(() => {
         if (!searchTerm) return options;
         const lowercasedTerm = searchTerm.toLowerCase();
-        return options.filter(option => option.label.toLowerCase().includes(lowercasedTerm));
+        return options.filter(option => (option.label || '').toLowerCase().includes(lowercasedTerm));
     }, [options, searchTerm]);
 
     const selectedOption = options.find(option => option.value === value);

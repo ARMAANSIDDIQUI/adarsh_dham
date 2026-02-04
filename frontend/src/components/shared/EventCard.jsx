@@ -26,7 +26,7 @@ const EventCard = ({ event }) => {
         console.error("Failed to fetch live links", err);
       }
     };
-    if (event.name.toLowerCase().includes('satsang')) {
+    if ((event.name || '').toLowerCase().includes('satsang')) {
       fetchLiveLinks();
     }
   }, [event]);
@@ -91,7 +91,7 @@ const EventCard = ({ event }) => {
       </div>
 
       {/* Live Links Section */}
-      {event.name.toLowerCase().includes('satsang') && liveLinks.length > 0 && (
+      {(event.name || '').toLowerCase().includes('satsang') && liveLinks.length > 0 && (
         <div className="mb-6 p-3 bg-background/50 rounded-lg border border-background">
           <h4 className="font-semibold font-heading text-primaryDark mb-2 flex items-center space-x-1">
             <FaPlayCircle className="text-primary" /> <span>{t.events.card.liveLinks}:</span>
