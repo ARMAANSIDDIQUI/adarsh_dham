@@ -37,7 +37,7 @@ const Booking = () => {
 
     const handleCloseModal = () => {
         setSuccess(false);
-        navigate('/calendar');
+        navigate('/my-bookings');
     };
 
     return (

@@ -155,18 +155,27 @@ const MyBookings = () => {
 
     const categorizedBookings = useMemo(() => {
         const now = new Date();
-        const finished = [];
-        const ongoing = [];
-        const upcoming = [];
+        const oldBookings = [];
+        const newBookings = [];
+
         bookings.forEach(b => {
-            const eventStart = new Date(b.eventId?.startDate);
             const eventEnd = new Date(b.eventId?.endDate);
-            if (eventEnd < now) finished.push(b);
-            else if (eventStart <= now && eventEnd >= now) ongoing.push(b);
-            else upcoming.push(b);
+            // If event end date is in the past, it's "old".
+            // We assume end of day for the end date if it's just a date string, but Date object comparison usually works fine.
+            if (eventEnd < now) {
+                oldBookings.push(b);
+            } else {
+                newBookings.push(b);
+            }
         });
-        upcoming.sort((a, b) => new Date(a.eventId.startDate) - new Date(b.eventId.startDate));
-        return { finished, ongoing, upcoming };
+
+        // Sort new bookings: nearest start date first
+        newBookings.sort((a, b) => new Date(a.eventId?.startDate) - new Date(b.eventId?.startDate));
+        
+        // Sort old bookings: most recent start date first (descending)
+        oldBookings.sort((a, b) => new Date(b.eventId?.startDate) - new Date(a.eventId?.startDate));
+
+        return { newBookings, oldBookings };
     }, [bookings]);
 
     if (loading) return <div className="flex justify-center items-center h-screen bg-neutral"><FaSpinner className="animate-spin text-4xl text-primary" /></div>;
@@ -198,20 +207,14 @@ const MyBookings = () => {
                     className="w-full p-3 mb-6 border border-background rounded-lg focus:ring-primary focus:border-primary transition-colors"
                 />
 
-                {['upcoming', 'ongoing', 'finished'].map(category => {
+                {['newBookings', 'oldBookings'].map(category => {
                     const filtered = categorizedBookings[category].filter(b =>
                         (b.bookingNumber || '').includes(searchQuery) || (b.eventId?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
                     );
                     if (filtered.length === 0) return null;
 
-                    const titleColor = category === 'upcoming' ? 'text-highlight' : category === 'ongoing' ? 'text-accent' : 'text-gray-500';
-                    const categoryTitleMap = {
-                        upcoming: t.events.upcomingEvents,
-                        ongoing: t.events.ongoingEvents,
-                        finished: t.events.finishedEvents
-                    };
-
-                    const titleText = categoryTitleMap[category];
+                    const titleColor = category === 'newBookings' ? 'text-highlight' : 'text-gray-500';
+                    const titleText = category === 'newBookings' ? "Current & Upcoming Bookings" : "Past Bookings";
 
                     return (
                         <div key={category} className="mb-8">
@@ -242,7 +245,7 @@ const MyBookings = () => {
                     );
                 })}
 
-                {['upcoming', 'ongoing', 'finished'].every(category =>
+                {['newBookings', 'oldBookings'].every(category =>
                     categorizedBookings[category].filter(b =>
                         (b.bookingNumber || '').includes(searchQuery) || (b.eventId?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
                     ).length === 0

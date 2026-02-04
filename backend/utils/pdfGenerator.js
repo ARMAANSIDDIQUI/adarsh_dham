@@ -72,8 +72,7 @@ function generateBookingPdf(booking) {
         const stayFrom = formatDate(booking.formData.stayFrom);
         const stayTo = formatDate(booking.formData.stayTo);
         
-        currentRightY += printField('Stay From:', stayFrom, rightColX, rightColValueX, currentRightY, colWidthRight);
-        currentRightY += printField('Stay To:', stayTo, rightColX, rightColValueX, currentRightY, colWidthRight);
+        currentRightY += printField('Group Stay:', `${stayFrom} - ${stayTo}`, rightColX, rightColValueX, currentRightY, colWidthRight);
 
         // Determine where to start the next section
         const sectionBottom = Math.max(currentLeftY, currentRightY) + 10;
@@ -95,8 +94,8 @@ function generateBookingPdf(booking) {
             const alloc = booking.allocations[index];
             if (alloc) {
                 // Calculate dynamic row height for table
-                const nameHeight = doc.heightOfString(person.name, { width: 80 });
-                const buildHeight = doc.heightOfString(alloc.buildingId.name, { width: 85 });
+                const nameHeight = doc.heightOfString(person.name, { width: 70 });
+                const buildHeight = doc.heightOfString(alloc.buildingId.name, { width: 65 });
                 const rowHeight = Math.max(20, nameHeight, buildHeight) + 10;
 
                 // Check page break
@@ -132,6 +131,12 @@ function formatDate(dateString) {
     return new Date(dateString).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
+// Helper for short dates (e.g. "04 Oct")
+function formatShortDate(dateString) {
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+}
+
 // Helper function to draw the table header
 function generateTableHeader(doc, y) {
     const headerX = 30; // Reduced X
@@ -139,24 +144,31 @@ function generateTableHeader(doc, y) {
     const headerHeight = 20;
 
     doc.rect(headerX, y, headerWidth, headerHeight).fill('#F7FAFC').stroke('#E2E8F0');
-    doc.fontSize(9).fillColor('#2D3748').font('Helvetica-Bold'); // Smaller font
+    doc.fontSize(8).fillColor('#2D3748').font('Helvetica-Bold'); // Smaller font
+    
+    // Layout: Name(35), Gen(105), Stay(135), Build(220), Room(285), Bed(325)
     doc.text('Name', 35, y + 6);
-    doc.text('Gen', 120, y + 6);
-    doc.text('Build', 160, y + 6);
-    doc.text('Room', 250, y + 6);
-    doc.text('Bed', 320, y + 6);
+    doc.text('Gen', 105, y + 6);
+    doc.text('Stay', 135, y + 6);
+    doc.text('Building', 220, y + 6);
+    doc.text('Room', 285, y + 6);
+    doc.text('Bed', 325, y + 6);
 }
 
 // Helper function to draw a single table row
 function generateTableRow(doc, y, person, alloc, height) {
-    doc.fontSize(9).fillColor('black').font('Helvetica');
+    doc.fontSize(8).fillColor('black').font('Helvetica');
     
-    // Use width options to allow wrapping
-    doc.text(person.name, 35, y, { width: 80 });
-    doc.text(person.gender, 120, y, { width: 35 });
-    doc.text(alloc.buildingId.name, 160, y, { width: 85 });
-    doc.text(alloc.roomId.roomNumber, 250, y, { width: 60 });
-    doc.text(alloc.bedId.name, 320, y, { width: 60 });
+    // Layout: Name(35), Gen(105), Stay(135), Build(220), Room(285), Bed(325)
+    doc.text(person.name, 35, y, { width: 70 });
+    doc.text(person.gender?.substring(0, 1) || '-', 105, y, { width: 25 }); // Short gender
+    
+    const stayStr = `${formatShortDate(person.stayFrom)}-${formatShortDate(person.stayTo)}`;
+    doc.text(stayStr, 135, y, { width: 80 });
+
+    doc.text(alloc.buildingId.name, 220, y, { width: 60 });
+    doc.text(alloc.roomId.roomNumber, 285, y, { width: 35 });
+    doc.text(alloc.bedId.name, 325, y, { width: 35 });
 
     // Draw the line below the row based on dynamic height
     doc.rect(30, y + height - 5, 360, 0.5).stroke('#E2E8F0');
@@ -193,7 +205,6 @@ function generateOccupancyReportPdf(people, filters) {
         if (filters.startDate) filterText.push(`From: ${new Date(filters.startDate).toLocaleDateString()}`);
         if (filters.endDate) filterText.push(`To: ${new Date(filters.endDate).toLocaleDateString()}`);
         if (filters.gender) filterText.push(`Gender: ${filters.gender}`);
-        // Add more filter summaries if needed
         
         if (filterText.length > 0) {
             doc.text(filterText.join(' | '), { align: 'center' });
@@ -202,9 +213,11 @@ function generateOccupancyReportPdf(people, filters) {
 
         // Table Constants
         const tableTop = doc.y;
-        const colX = [40, 140, 180, 220, 290, 360, 420, 480]; // Column X positions
-        // Widths: Name, Gen, Age, City, Contact, Building, Room, Bed
-        const colWidths = [95, 35, 35, 65, 65, 55, 55, 50]; 
+        // Updated Columns: Name, Gen, Age, City, Contact, Stay, Building, Room, Bed
+        // X positions
+        const colX = [40, 130, 160, 190, 250, 315, 390, 445, 485]; 
+        // Widths: Name, Gen, Age, City, Contact, Stay, Building, Room, Bed
+        const colWidths = [85, 25, 25, 55, 60, 70, 50, 35, 35]; 
         
         // Header Row
         drawReportTableHeader(doc, doc.y, colX);
@@ -217,9 +230,13 @@ function generateOccupancyReportPdf(people, filters) {
             doc.fontSize(9).font('Helvetica');
             const nameH = doc.heightOfString(person.name, { width: colWidths[0] });
             const cityH = doc.heightOfString(person.city, { width: colWidths[3] });
-            const buildH = doc.heightOfString(person.buildingName, { width: colWidths[5] });
+            const buildH = doc.heightOfString(person.buildingName, { width: colWidths[5] }); // Building col index is 6 in X, but 5 in old logic... wait. It's index 6 in data text call.
+            // Actually building name index in colWidths is 6 (Wait, 0..8 indices).
+            // colWidths[6] is building width (50).
             
-            const rowHeight = Math.max(20, nameH, cityH, buildH) + 10; // +10 padding
+            // Let's check logic below in drawReportTableRow
+            
+            const rowHeight = Math.max(20, nameH, cityH, buildH) + 10; 
 
             // Check for page break
             if (currentY + rowHeight > 750) {
@@ -258,22 +275,27 @@ function drawReportTableHeader(doc, y, colX) {
     doc.text('Age', colX[2], y);
     doc.text('City', colX[3], y);
     doc.text('Contact', colX[4], y);
-    doc.text('Building', colX[5], y);
-    doc.text('Room', colX[6], y);
-    doc.text('Bed', colX[7], y);
+    doc.text('Stay', colX[5], y);
+    doc.text('Build', colX[6], y);
+    doc.text('Room', colX[7], y);
+    doc.text('Bed', colX[8], y);
 }
 
 function drawReportTableRow(doc, y, person, colX, colWidths, height) {
-    doc.fontSize(9).fillColor('black').font('Helvetica');
+    doc.fontSize(8).fillColor('black').font('Helvetica');
     
     doc.text(person.name, colX[0], y, { width: colWidths[0] });
-    doc.text(person.gender || '-', colX[1], y, { width: colWidths[1] });
+    doc.text(person.gender ? person.gender.substring(0, 1) : '-', colX[1], y, { width: colWidths[1] });
     doc.text(person.age || '-', colX[2], y, { width: colWidths[2] });
     doc.text(person.city, colX[3], y, { width: colWidths[3] });
     doc.text(person.contactNumber || '-', colX[4], y, { width: colWidths[4] });
-    doc.text(person.buildingName, colX[5], y, { width: colWidths[5] });
-    doc.text(person.roomNumber || '-', colX[6], y, { width: colWidths[6] });
-    doc.text(person.bedName || '-', colX[7], y, { width: colWidths[7] });
+    
+    const stayStr = `${formatShortDate(person.stayFrom)}-${formatShortDate(person.stayTo)}`;
+    doc.text(stayStr, colX[5], y, { width: colWidths[5] });
+
+    doc.text(person.buildingName, colX[6], y, { width: colWidths[6] });
+    doc.text(person.roomNumber || '-', colX[7], y, { width: colWidths[7] });
+    doc.text(person.bedName || '-', colX[8], y, { width: colWidths[8] });
 
     doc.rect(40, y + height - 5, 515, 0.5).stroke('#E2E8F0'); // Row separator
 }

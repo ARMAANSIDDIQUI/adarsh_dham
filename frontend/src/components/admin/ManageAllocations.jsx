@@ -361,7 +361,12 @@ const BookingCard = ({ booking, onAction, onEdit, allocations, handleAllocationC
 
                 <AccordionItem title="Members">
                     <div className="space-y-1 max-h-24 overflow-y-auto pr-2">
-                        {(formData?.people || []).map((p, i) => <div key={i} className="text-xs flex justify-between"><span>{i + 1}. {p?.name || 'Unknown'}</span><span>Age: {p?.age ?? 'N/A'}</span></div>)}
+                        {(formData?.people || []).map((p, i) => (
+                            <div key={i} className="text-xs flex flex-col border-b border-gray-100 last:border-0 py-1">
+                                <div className="flex justify-between font-semibold"><span>{i + 1}. {p?.name || 'Unknown'}</span><span>Age: {p?.age ?? 'N/A'}</span></div>
+                                <div className="text-gray-500 text-[10px] pl-3">Stay: {formatDate(p.stayFrom)} - {formatDate(p.stayTo)}</div>
+                            </div>
+                        ))}
                     </div>
                 </AccordionItem>
 
@@ -399,7 +404,10 @@ const BookingCard = ({ booking, onAction, onEdit, allocations, handleAllocationC
 
                             return (
                                 <div key={index} className={`p-3 bg-gray-50 rounded-lg border relative z-[${zIndex}]`}>
-                                    <p className="font-semibold text-gray-700 mb-2">{person?.name || `Person ${index + 1}`} <span className="text-xs text-pink-500 capitalize">({person?.gender || 'N/A'})</span></p>
+                                    <div className="mb-2">
+                                        <p className="font-semibold text-gray-700">{person?.name || `Person ${index + 1}`} <span className="text-xs text-pink-500 capitalize">({person?.gender || 'N/A'})</span></p>
+                                        <p className="text-xs text-gray-500">Stay: {formatDate(person.stayFrom)} - {formatDate(person.stayTo)}</p>
+                                    </div>
                                     <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4">
                                         <SearchableSelect
                                             options={buildingOptions}
