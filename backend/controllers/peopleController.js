@@ -67,7 +67,7 @@ exports.getPeoplePaginated = async (req, res) => {
         }
 
         if (gender) {
-            matchStage.gender = gender;
+            matchStage.gender = { $regex: new RegExp(`^${gender}$`, 'i') };
         }
 
         let pipeline = [
@@ -174,7 +174,7 @@ exports.exportPeopleCsv = async (req, res) => {
         }
 
         if (gender) {
-            matchStage.gender = gender;
+            matchStage.gender = { $regex: new RegExp(`^${gender}$`, 'i') };
         }
 
         let pipeline = [
@@ -310,7 +310,7 @@ exports.exportPeoplePdf = async (req, res) => {
         }
 
         if (gender) {
-            matchStage.gender = gender;
+            matchStage.gender = { $regex: new RegExp(`^${gender}$`, 'i') };
         }
 
         let pipeline = [

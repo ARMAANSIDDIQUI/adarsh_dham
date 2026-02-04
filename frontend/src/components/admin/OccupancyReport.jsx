@@ -260,9 +260,9 @@ const OccupancyReport = () => {
             {error && <p className="text-red-600 bg-red-100 p-3 rounded-md mb-6">{error}</p>}
             
             <div className="bg-card p-4 rounded-2xl shadow-soft mb-8">
-                <div className="flex justify-between items-center mb-4">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
                     <h3 className="font-semibold font-heading text-lg flex items-center text-primaryDark"><FaFilter className="mr-2 text-primary"/>Filters</h3>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                         <Button onClick={handleDownloadCsv} disabled={isDownloading} className="flex items-center gap-2">
                             {isDownloading ? <span className="loading loading-spinner loading-sm"></span> : <FaFileCsv />}
                             Download CSV
