@@ -75,7 +75,7 @@ const ManageBuildings = () => {
 
     const filteredBuildings = useMemo(() => {
         return buildings.filter(b =>
-            b.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+            (b.name || '').toLowerCase().includes(searchTerm.toLowerCase()) &&
             (genderFilter ? b.gender === genderFilter : true)
         );
     }, [buildings, searchTerm, genderFilter]);

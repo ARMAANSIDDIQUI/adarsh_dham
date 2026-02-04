@@ -163,7 +163,7 @@ const StructureView = () => {
     // Apply Filters to Buildings
     const filteredBuildings = useMemo(() => {
         return buildings.filter(building => {
-            const matchesSearch = building.name.toLowerCase().includes(buildingSearch.toLowerCase());
+            const matchesSearch = (building.name || '').toLowerCase().includes(buildingSearch.toLowerCase());
             
             const buildingGenderLower = normalizeGender(building.gender);
 

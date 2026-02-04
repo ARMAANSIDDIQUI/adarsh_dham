@@ -248,7 +248,7 @@ const ManageRooms = () => {
     const filteredRooms = useMemo(() => {
         if (!Array.isArray(rooms)) return [];
         return rooms.filter(room => {
-            const matchesSearch = room.roomNumber.toLowerCase().includes(searchQuery.toLowerCase());
+            const matchesSearch = (room.roomNumber || '').toLowerCase().includes(searchQuery.toLowerCase());
             const matchesBuilding = selectedBuilding ? room.buildingId?._id === selectedBuilding : true;
             return matchesSearch && matchesBuilding;
         });

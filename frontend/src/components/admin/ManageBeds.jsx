@@ -302,7 +302,7 @@ const ManageBeds = () => {
         if (!beds || !Array.isArray(beds)) return [];
         return beds.filter(bed => {
             const roomOfBed = roomMap.get(bed.roomId);
-            const matchesName = filters.name ? bed.name?.toLowerCase().includes(filters.name.toLowerCase()) : true;
+            const matchesName = filters.name ? (bed.name || '').toLowerCase().includes(filters.name.toLowerCase()) : true;
             const matchesBuilding = filters.buildingId ? roomOfBed?.buildingId?._id === filters.buildingId : true;
             const matchesRoom = filters.roomId ? bed.roomId === filters.roomId : true;
             const matchesType = filters.type ? bed.type === filters.type : true;

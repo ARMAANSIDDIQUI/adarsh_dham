@@ -300,9 +300,9 @@ const AdminUserManagement = () => {
     );
 
     const filteredUsers = Array.isArray(users) ? users.filter(user =>
-        user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (user.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (user.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (user.phone || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (user.roles && user.roles.join(', ').toLowerCase().includes(searchTerm.toLowerCase()))
     ) : [];
 

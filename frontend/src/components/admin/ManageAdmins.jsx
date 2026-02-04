@@ -260,8 +260,8 @@ const ManageAdmins = () => {
   };
 
   const filteredUsers = Array.isArray(users) ? users.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.phone.includes(searchQuery);
+    const matchesSearch = (user.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (user.phone || '').includes(searchQuery);
     const matchesRole = roleFilter ? user.roles.includes(roleFilter) : true;
     return matchesSearch && matchesRole;
   }) : [];

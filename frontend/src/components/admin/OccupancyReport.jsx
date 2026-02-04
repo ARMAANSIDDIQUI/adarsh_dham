@@ -321,13 +321,13 @@ const OccupancyReport = () => {
                     <SearchableSelect
                         options={[{ value: '', label: 'All Events' }, ...events.map(e => ({ value: e._id, label: e.name }))]}
                         value={filters.eventId}
-                        onChange={(e) => handleFilterChange(e)}
+                        onChange={(e) => handleFilterChange({ target: { name: 'eventId', value: e.target.value } })}
                         placeholder="All Events"
                     />
                      <SearchableSelect
                         options={[{ value: '', label: 'All Buildings' }, ...buildings.map(b => ({ value: b._id, label: b.name }))]}
                         value={filters.buildingId}
-                        onChange={(e) => handleFilterChange(e)}
+                        onChange={(e) => handleFilterChange({ target: { name: 'buildingId', value: e.target.value } })}
                         placeholder="All Buildings"
                     />
                     <select name="gender" value={filters.gender} onChange={handleFilterChange} className="p-2 border rounded-lg bg-white">
