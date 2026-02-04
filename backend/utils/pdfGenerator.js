@@ -82,7 +82,7 @@ function generateBookingPdf(booking) {
         doc.moveDown(2);
 
         // Allocation Table
-        doc.fillColor(secondaryColor).fontSize(14).font('Helvetica-Bold').text('Accommodation Details', { align: 'center' });
+        doc.fillColor(secondaryColor).fontSize(12).font('Helvetica-Bold').text('Accommodation Details', { align: 'center', width: 360 });
         doc.moveDown();
 
         const tableTop = doc.y;
