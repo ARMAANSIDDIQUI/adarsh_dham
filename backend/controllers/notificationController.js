@@ -14,7 +14,7 @@
 // //         if (isNaN(sendDate.getTime())) {
 // //             return res.status(400).json({ message: 'Invalid sendAt date format.' });
 // //         }
-        
+
 // //         const isScheduled = sendAt && sendDate > new Date();
 
 // //         let targetUsers = [];
@@ -50,7 +50,7 @@
 // //         const successMessage = isScheduled
 // //             ? `Notification successfully scheduled for ${targetUsers.length} user(s).`
 // //             : `Notification sent immediately to ${targetUsers.length} user(s).`;
-            
+
 // //         if (!isScheduled) {
 // //             const pushSubscriptions = targetUsers.filter(user => user.pushSubscription).map(user => user.pushSubscription);
 // //             if (pushSubscriptions.length > 0) {
@@ -81,7 +81,7 @@
 // //             userId,
 // //             ttl: { $gt: new Date() } 
 // //         }).sort({ createdAt: -1 });
-        
+
 // //         res.status(200).json(notifications || []);
 // //     } catch (error) {
 // //         console.error("Error fetching user notifications:", error);
@@ -320,7 +320,7 @@ exports.sendNotification = async (req, res) => {
     }
 
     const isScheduled = sendAt && sendDate > new Date();
-    
+
     // --- DEDUPLICATION MAP ---
     // Key: User ID (string), Value: User Object
     const uniqueUsersMap = new Map();
@@ -334,8 +334,8 @@ exports.sendNotification = async (req, res) => {
     // 2. Find by Phone Numbers
     if (phones && phones.length > 0) {
       const phoneList = Array.isArray(phones) ? phones : [phones];
-      const trimmedPhoneList = phoneList.map(p => typeof p === 'string' ? p.trim() : p).filter(p => p); 
-      
+      const trimmedPhoneList = phoneList.map(p => typeof p === 'string' ? p.trim() : p).filter(p => p);
+
       if (trimmedPhoneList.length > 0) {
         const usersByPhone = await User.find({ phone: { $in: trimmedPhoneList } });
         usersByPhone.forEach(u => uniqueUsersMap.set(u._id.toString(), u));
@@ -344,15 +344,15 @@ exports.sendNotification = async (req, res) => {
 
     // 3. Find by Roles
     if (roles && roles.length > 0) {
-        // The frontend sends an array of roles. We want users who have ANY of these roles.
-        const usersByRole = await User.find({ roles: { $in: roles } });
-        usersByRole.forEach(u => uniqueUsersMap.set(u._id.toString(), u));
-    } 
+      // The frontend sends an array of roles. We want users who have ANY of these roles.
+      const usersByRole = await User.find({ roles: { $in: roles } });
+      usersByRole.forEach(u => uniqueUsersMap.set(u._id.toString(), u));
+    }
     // Fallback legacy "targetGroup" handling if "roles" array is not provided but "targetGroup" is a specific role
     else if (targetGroup && targetGroup !== 'all' && targetGroup !== 'phones' && targetGroup !== 'user' && targetGroup !== 'allAdmins') {
-       // If targetGroup is something like 'operator' (single string role)
-       const usersByGroup = await User.find({ roles: targetGroup });
-       usersByGroup.forEach(u => uniqueUsersMap.set(u._id.toString(), u));
+      // If targetGroup is something like 'operator' (single string role)
+      const usersByGroup = await User.find({ roles: targetGroup });
+      usersByGroup.forEach(u => uniqueUsersMap.set(u._id.toString(), u));
     }
 
     // 4. Find All Users
@@ -365,10 +365,10 @@ exports.sendNotification = async (req, res) => {
     // If the map is empty AND we haven't explicitly asked for something that yielded 0 results (like a specific ID that doesn't exist),
     // we default to admins. However, let's be strict: only default if NO targeting criteria were provided.
     const isExplicitTargeting = userId || (phones && phones.length > 0) || (roles && roles.length > 0) || targetGroup;
-    
+
     if (!isExplicitTargeting || targetGroup === 'allAdmins') {
-       const admins = await User.find({ roles: { $in: ['admin', 'super-admin'] } });
-       admins.forEach(u => uniqueUsersMap.set(String(u._id), u));
+      const admins = await User.find({ roles: { $in: ['admin', 'super-admin'] } });
+      admins.forEach(u => uniqueUsersMap.set(String(u._id), u));
     }
 
     // Convert Map values to Array - This ensures each user is listed only ONCE
@@ -386,7 +386,7 @@ exports.sendNotification = async (req, res) => {
       message,
       userId: user._id,
       read: false,
-      target: 'user', 
+      target: 'user',
       ttl: new Date(sendDate.getTime() + ttlMinutes * 60 * 1000),
       sendAt: isScheduled ? sendDate : null,
       status: isScheduled ? 'scheduled' : 'sent',
@@ -409,14 +409,15 @@ exports.sendNotification = async (req, res) => {
           title: 'Adarsh Dham: New Update',
           body: message,
           icon: '/VM401196.png',
+          image: '/VM401196.png', // Use favicon as the thumbnail image
           url: '/notifications'
         });
-        
+
         const sendPromises = pushSubscriptions.map(sub =>
           webpush.sendNotification(sub, payload).catch(err => {
             // Suppress 410 Gone errors (expired subscriptions) to keep logs clean
             if (err.statusCode !== 410) {
-                 console.error(`Push notification failed: ${err.message}`);
+              console.error(`Push notification failed: ${err.message}`);
             }
           })
         );
@@ -437,14 +438,14 @@ exports.sendNotification = async (req, res) => {
  */
 exports.getUserNotifications = async (req, res) => {
   const userId = req.user.id;
-  const userRoles = req.user.roles || []; 
+  const userRoles = req.user.roles || [];
 
   try {
     // The helper function now correctly filters roles
-    const query = getUnifiedNotificationQuery(userId, userRoles); 
+    const query = getUnifiedNotificationQuery(userId, userRoles);
     query.ttl = { $gt: new Date() };
     query.status = 'sent';
-    
+
     const notifications = await Notification.find(query)
       .sort({ createdAt: -1 });
 
@@ -466,10 +467,10 @@ exports.getUnreadCount = async (req, res) => {
     const query = getUnifiedNotificationQuery(userId, userRoles);
     query.ttl = { $gt: new Date() };
     query.status = 'sent';
-    query.read = false; 
+    query.read = false;
 
     const count = await Notification.countDocuments(query);
-    
+
     res.status(200).json({ count });
   } catch (error) {
     console.error('Error fetching unread notification count:', error);
@@ -482,7 +483,7 @@ exports.getUnreadCount = async (req, res) => {
  */
 exports.markAllAsRead = async (req, res) => {
   const userId = req.user.id;
-  const userRoles = req.user.roles || []; 
+  const userRoles = req.user.roles || [];
 
   try {
     const query = getUnifiedNotificationQuery(userId, userRoles);
@@ -490,10 +491,10 @@ exports.markAllAsRead = async (req, res) => {
     query.ttl = { $gt: new Date() };
     query.status = 'sent';
 
-    const result = await Notification.updateMany(query, { $set: { read: true } }); 
-    
+    const result = await Notification.updateMany(query, { $set: { read: true } });
+
     console.log(`[markAllAsRead] User ${userId} | Roles: ${userRoles.join(', ')} | Modified ${result.modifiedCount} documents.`);
-    
+
     res.status(200).json({ message: 'All notifications marked as read.', modifiedCount: result.modifiedCount });
   } catch (error) {
     console.error('Error marking notifications as read:', error);
@@ -526,7 +527,7 @@ exports.markOneAsRead = async (req, res) => {
       console.warn(`[markOneAsRead] Failed to find notification ${id} for user ${userId}. Query failed.`);
       return res.status(404).json({ message: 'Notification not found or you do not have permission to update it.' });
     }
-    
+
     console.log(`[markOneAsRead] User ${userId} marked notification ${id} as read.`);
     res.status(200).json({ message: 'Notification marked as read.', notification: updatedNotification });
 

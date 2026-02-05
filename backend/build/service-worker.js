@@ -1,11 +1,11 @@
 self.addEventListener('push', event => {
     const data = event.data.json();
-    
+
     const options = {
         body: data.body,
         icon: data.icon || '/VM401196.png', // Default icon with corrected casing
         badge: '/VM401196.png', // Small icon for the status bar
-        image: data.image, // Big image content if provided
+        image: data.image || '/VM401196.png', // Big image content (defaults to favicon)
         vibrate: [200, 100, 200], // Vibration pattern
         tag: 'adarsh-dham-notification', // Grouping tag
         renotify: true, // Vibrate/sound even if replacing an old notification
