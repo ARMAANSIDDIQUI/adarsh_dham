@@ -36,12 +36,26 @@ const datesRoughlyMatch = (stayFrom, stayTo, filterFrom, filterTo) => {
     if (!filterFrom && !filterTo) return true;
     if (!stayFrom || !stayTo) return false;
     try {
-        const from = new Date(stayFrom);
-        const to = new Date(stayTo);
-        const filterStart = filterFrom ? new Date(filterFrom) : null;
-        const filterEnd = filterTo ? new Date(filterTo) : null;
-        if (filterStart && to < filterStart) return false;
-        if (filterEnd && from > filterEnd) return false;
+        const bStart = new Date(stayFrom);
+        const bEnd = new Date(stayTo);
+        // Normalize booking dates to midnight
+        bStart.setHours(0, 0, 0, 0);
+        bEnd.setHours(0, 0, 0, 0);
+
+        if (filterFrom) {
+            const fStart = new Date(filterFrom);
+            fStart.setHours(0, 0, 0, 0);
+            // Filter "From" means booking must start on or after this date
+            if (bStart < fStart) return false;
+        }
+
+        if (filterTo) {
+             const fEnd = new Date(filterTo);
+             fEnd.setHours(0, 0, 0, 0);
+             // Filter "To" means booking must end on or before this date
+             if (bEnd > fEnd) return false;
+        }
+
         return true;
     } catch {
         return false;
@@ -254,7 +268,7 @@ const BookingCard = ({ booking, onAction, onEdit, allocations, handleAllocationC
         onAction(bookingId, action, payload);
     };
 
-    const getStatusBorderColor = s => s === 'pending' ? 'border-pink-500' : s === 'approved' ? 'border-emerald-500' : 'border-rose-500';
+    const getStatusBorderColor = s => s === 'pending' ? 'border-yellow-500' : s === 'approved' ? 'border-emerald-500' : 'border-rose-500';
 
     const getRoomOccupancyForBooking = (roomId, currentBooking) => {
         const room = (rooms || []).find(r => String(r._id) === String(roomId));
@@ -351,7 +365,7 @@ const BookingCard = ({ booking, onAction, onEdit, allocations, handleAllocationC
                     </div>
                     <span className={`text-xs font-semibold uppercase px-2 py-1 rounded-full border ${
                         status === 'approved' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' :
-                        status === 'pending' ? 'bg-pink-100 text-pink-700 border-pink-200' :
+                        status === 'pending' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
                         'bg-rose-100 text-rose-700 border-rose-200'
                     }`}>
                         {status}
@@ -554,6 +568,7 @@ const BookingSection = ({ title, color = 'pink', bookings, readOnly, ...props })
     const safeBookings = Array.isArray(bookings) ? bookings : [];
     const colorMap = {
         pink: { border: 'border-pink-500', text: 'text-pink-700' },
+        yellow: { border: 'border-yellow-500', text: 'text-yellow-700' },
         emerald: { border: 'border-emerald-500', text: 'text-emerald-700' },
         rose: { border: 'border-rose-500', text: 'text-rose-700' },
     };
@@ -788,7 +803,7 @@ const ManageAllocations = () => {
             {error && <p className="text-red-600 bg-red-100 p-3 rounded-md mb-6">{error}</p>}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <BookingSection title="Pending" color="pink" bookings={pendingBookings} onAction={handleAction} onEdit={handleEditBooking} allocations={allocations} handleAllocationChange={handleAllocationChange} buildings={buildings} rooms={rooms} people={people} onShowRoomDetails={handleShowRoomDetails} setError={setError} readOnly={showOldAllocations} />
+                <BookingSection title="Pending" color="yellow" bookings={pendingBookings} onAction={handleAction} onEdit={handleEditBooking} allocations={allocations} handleAllocationChange={handleAllocationChange} buildings={buildings} rooms={rooms} people={people} onShowRoomDetails={handleShowRoomDetails} setError={setError} readOnly={showOldAllocations} />
                 <BookingSection title="Approved" color="emerald" bookings={approvedBookings} onAction={handleAction} onEdit={handleEditBooking} allocations={allocations} handleAllocationChange={handleAllocationChange} buildings={buildings} rooms={rooms} people={people} onShowRoomDetails={handleShowRoomDetails} setError={setError} readOnly={showOldAllocations} />
                 <BookingSection title="Declined" color="rose" bookings={declinedBookings} onAction={handleAction} onEdit={handleEditBooking} allocations={allocations} handleAllocationChange={handleAllocationChange} buildings={buildings} rooms={rooms} people={people} onShowRoomDetails={handleShowRoomDetails} setError={setError} readOnly={showOldAllocations} />
             </div>
