@@ -47,37 +47,37 @@ function generateBookingPdf(booking) {
         const printField = (label, value, xLabel, xValue, y, width) => {
             doc.fillColor(secondaryColor).fontSize(10).font('Helvetica-Bold');
             doc.text(label, xLabel, y);
-            
+
             doc.fillColor('black').font('Helvetica');
             const options = { width: width, align: 'left' };
             const height = doc.heightOfString(value, options);
             doc.text(value, xValue, y, options);
-            
+
             return Math.max(20, height + 5); // Return height used (min 20px step)
         };
 
         // --- Left Column ---
         let currentLeftY = infoTop;
-        
+
         currentLeftY += printField('Booked By:', booking.userId.name, leftColX, leftColValueX, currentLeftY, colWidthLeft);
         currentLeftY += printField('Contact:', booking.formData.contactNumber, leftColX, leftColValueX, currentLeftY, colWidthLeft);
-        currentLeftY += printField('Ashram:', booking.formData.ashramName, leftColX, leftColValueX, currentLeftY, colWidthLeft);
+
         currentLeftY += printField('City:', booking.formData.city, leftColX, leftColValueX, currentLeftY, colWidthLeft);
 
         // --- Right Column ---
         let currentRightY = infoTop;
-        
+
         currentRightY += printField('Booking ID:', booking.bookingNumber, rightColX, rightColValueX, currentRightY, colWidthRight);
         currentRightY += printField('Event:', booking.eventId.name, rightColX, rightColValueX, currentRightY, colWidthRight);
-        
+
         const stayFrom = formatDate(booking.formData.stayFrom);
         const stayTo = formatDate(booking.formData.stayTo);
-        
+
         currentRightY += printField('Group Stay:', `${stayFrom} - ${stayTo}`, rightColX, rightColValueX, currentRightY, colWidthRight);
 
         // Determine where to start the next section
         const sectionBottom = Math.max(currentLeftY, currentRightY) + 10;
-        
+
         doc.y = sectionBottom;
         doc.rect(30, doc.y, 360, 1).fill(lightGray).stroke(); // A5 width adjustment
         doc.moveDown(2);
@@ -146,7 +146,7 @@ function generateTableHeader(doc, y) {
 
     doc.rect(headerX, y, headerWidth, headerHeight).fill('#F7FAFC').stroke('#E2E8F0');
     doc.fontSize(8).fillColor('#2D3748').font('Helvetica-Bold'); // Smaller font
-    
+
     // Layout: Name(35), Gen(105), Stay(135), Build(220), Room(285), Bed(325)
     doc.text('Name', 35, y + 6);
     doc.text('Gen', 105, y + 6);
@@ -159,11 +159,11 @@ function generateTableHeader(doc, y) {
 // Helper function to draw a single table row
 function generateTableRow(doc, y, person, alloc, height) {
     doc.fontSize(8).fillColor('black').font('Helvetica');
-    
+
     // Layout: Name(35), Gen(105), Stay(135), Build(220), Room(285), Bed(325)
     doc.text(person.name, 35, y, { width: 70 });
     doc.text(person.gender?.substring(0, 1) || '-', 105, y, { width: 25 }); // Short gender
-    
+
     const stayStr = `${formatShortDate(person.stayFrom)}-${formatShortDate(person.stayTo)}`;
     doc.text(stayStr, 135, y, { width: 80 });
 
@@ -179,6 +179,7 @@ function generateOccupancyReportPdf(people, filters) {
     return new Promise((resolve, reject) => {
         const doc = new PDFDocument({
             size: 'A4',
+            bufferPages: true,
             margin: 40,
             info: {
                 Title: 'Occupancy Report',
@@ -192,7 +193,7 @@ function generateOccupancyReportPdf(people, filters) {
         doc.on('error', reject);
 
         // --- PDF Content ---
-        const primaryColor = '#C5306C'; 
+        const primaryColor = '#C5306C';
         const secondaryColor = '#4A5568';
 
         // Header
@@ -207,7 +208,7 @@ function generateOccupancyReportPdf(people, filters) {
         if (filters.startDate) filterText.push(`From: ${new Date(filters.startDate).toLocaleDateString()}`);
         if (filters.endDate) filterText.push(`To: ${new Date(filters.endDate).toLocaleDateString()}`);
         if (filters.gender) filterText.push(`Gender: ${filters.gender}`);
-        
+
         if (filterText.length > 0) {
             doc.text(filterText.join(' | '), { align: 'center' });
         }
@@ -217,14 +218,14 @@ function generateOccupancyReportPdf(people, filters) {
         const tableTop = doc.y;
         // Updated Columns: Name, Gen, Age, City, Contact, Stay, Building, Room, Bed
         // X positions
-        const colX = [40, 130, 160, 190, 250, 315, 390, 445, 485]; 
+        const colX = [40, 130, 160, 190, 250, 315, 390, 445, 485];
         // Widths: Name, Gen, Age, City, Contact, Stay, Building, Room, Bed
-        const colWidths = [85, 25, 25, 55, 60, 70, 50, 35, 35]; 
-        
+        const colWidths = [85, 25, 25, 55, 60, 70, 50, 35, 35];
+
         // Header Row
         drawReportTableHeader(doc, doc.y, colX);
         doc.moveDown();
-        
+
         let currentY = doc.y;
 
         people.forEach((person, index) => {
@@ -235,10 +236,10 @@ function generateOccupancyReportPdf(people, filters) {
             const buildH = doc.heightOfString(person.buildingName, { width: colWidths[5] }); // Building col index is 6 in X, but 5 in old logic... wait. It's index 6 in data text call.
             // Actually building name index in colWidths is 6 (Wait, 0..8 indices).
             // colWidths[6] is building width (50).
-            
+
             // Let's check logic below in drawReportTableRow
-            
-            const rowHeight = Math.max(20, nameH, cityH, buildH) + 10; 
+
+            const rowHeight = Math.max(20, nameH, cityH, buildH) + 10;
 
             // Check for page break
             if (currentY + rowHeight > 750) {
@@ -258,7 +259,7 @@ function generateOccupancyReportPdf(people, filters) {
             doc.fontSize(8).fillColor(secondaryColor).text(
                 `Generated on: ${formatDate(new Date())}`,
                 40,
-                doc.page.height - 30, 
+                doc.page.height - 30,
                 { align: 'left' }
             );
         }
@@ -270,7 +271,7 @@ function generateOccupancyReportPdf(people, filters) {
 function drawReportTableHeader(doc, y, colX) {
     doc.fontSize(9).fillColor('#2D3748').font('Helvetica-Bold');
     doc.rect(40, y - 5, 515, 20).fill('#F7FAFC').stroke('#E2E8F0'); // Header background
-    
+
     doc.fillColor('#2D3748');
     doc.text('Name', colX[0], y);
     doc.text('Gen', colX[1], y);
@@ -285,13 +286,13 @@ function drawReportTableHeader(doc, y, colX) {
 
 function drawReportTableRow(doc, y, person, colX, colWidths, height) {
     doc.fontSize(8).fillColor('black').font('Helvetica');
-    
+
     doc.text(person.name, colX[0], y, { width: colWidths[0] });
     doc.text(person.gender ? person.gender.substring(0, 1) : '-', colX[1], y, { width: colWidths[1] });
     doc.text(person.age || '-', colX[2], y, { width: colWidths[2] });
     doc.text(person.city, colX[3], y, { width: colWidths[3] });
     doc.text(person.contactNumber || '-', colX[4], y, { width: colWidths[4] });
-    
+
     const stayStr = `${formatShortDate(person.stayFrom)}-${formatShortDate(person.stayTo)}`;
     doc.text(stayStr, colX[5], y, { width: colWidths[5] });
 
