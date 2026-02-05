@@ -749,11 +749,35 @@ const ManageAllocations = () => {
         });
     }, [bookings, filters, showOldAllocations]);
 
+    const sortedBookings = useMemo(() => {
+        const list = [...(filteredBookings || [])];
+        list.sort((a, b) => {
+            const aFrom = new Date(a?.formData?.stayFrom);
+            const bFrom = new Date(b?.formData?.stayFrom);
+            const aFromTime = isNaN(aFrom) ? Number.POSITIVE_INFINITY : aFrom.getTime();
+            const bFromTime = isNaN(bFrom) ? Number.POSITIVE_INFINITY : bFrom.getTime();
+            if (aFromTime !== bFromTime) return aFromTime - bFromTime;
+
+            const aTo = new Date(a?.formData?.stayTo);
+            const bTo = new Date(b?.formData?.stayTo);
+            const aToTime = isNaN(aTo) ? Number.POSITIVE_INFINITY : aTo.getTime();
+            const bToTime = isNaN(bTo) ? Number.POSITIVE_INFINITY : bTo.getTime();
+            if (aToTime !== bToTime) return aToTime - bToTime;
+
+            const aCreated = new Date(a?.createdAt);
+            const bCreated = new Date(b?.createdAt);
+            const aCreatedTime = isNaN(aCreated) ? Number.POSITIVE_INFINITY : aCreated.getTime();
+            const bCreatedTime = isNaN(bCreated) ? Number.POSITIVE_INFINITY : bCreated.getTime();
+            return aCreatedTime - bCreatedTime;
+        });
+        return list;
+    }, [filteredBookings]);
+
     if (loading) return <div className="flex justify-center items-center h-screen"><FaSpinner className="animate-spin text-primary text-4xl" /></div>;
 
-    const pendingBookings = (filteredBookings || []).filter(b => b.status === 'pending');
-    const approvedBookings = (filteredBookings || []).filter(b => b.status === 'approved');
-    const declinedBookings = (filteredBookings || []).filter(b => b.status === 'declined');
+    const pendingBookings = (sortedBookings || []).filter(b => b.status === 'pending');
+    const approvedBookings = (sortedBookings || []).filter(b => b.status === 'approved');
+    const declinedBookings = (sortedBookings || []).filter(b => b.status === 'declined');
 
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-8 bg-neutral min-h-screen font-body">
