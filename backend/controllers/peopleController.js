@@ -38,6 +38,7 @@ exports.getPeoplePaginated = async (req, res) => {
     try {
         const {
             page = 1, limit = 25, eventId = '', buildingId = '', gender = '',
+            roomId = '', bedId = '',
             startDate = '', endDate = '', searchTerm = '', sortBy = 'stayFrom',
             sortOrder = 'asc', dateFilterType = 'stayRange'
         } = req.query;
@@ -66,6 +67,10 @@ exports.getPeoplePaginated = async (req, res) => {
             matchStage.eventId = new mongoose.Types.ObjectId(eventId);
         }
 
+        if (bedId && mongoose.Types.ObjectId.isValid(bedId)) {
+            matchStage.bedId = new mongoose.Types.ObjectId(bedId);
+        }
+
         if (gender) {
             matchStage.gender = { $regex: new RegExp(`^${gender}$`, 'i') };
         }
@@ -87,6 +92,9 @@ exports.getPeoplePaginated = async (req, res) => {
         const secondMatchStage = {};
         if (buildingId && mongoose.Types.ObjectId.isValid(buildingId)) {
             secondMatchStage['building._id'] = new mongoose.Types.ObjectId(buildingId);
+        }
+        if (roomId && mongoose.Types.ObjectId.isValid(roomId)) {
+            secondMatchStage['room._id'] = new mongoose.Types.ObjectId(roomId);
         }
         if (searchTerm) {
             secondMatchStage.$or = [
@@ -148,6 +156,7 @@ exports.exportPeopleCsv = async (req, res) => {
     try {
         const {
              eventId = '', buildingId = '', gender = '',
+            roomId = '', bedId = '',
             startDate = '', endDate = '', searchTerm = '', sortBy = 'stayFrom',
             sortOrder = 'asc', dateFilterType = 'stayRange'
         } = req.query;
@@ -173,6 +182,10 @@ exports.exportPeopleCsv = async (req, res) => {
             matchStage.eventId = new mongoose.Types.ObjectId(eventId);
         }
 
+        if (bedId && mongoose.Types.ObjectId.isValid(bedId)) {
+            matchStage.bedId = new mongoose.Types.ObjectId(bedId);
+        }
+
         if (gender) {
             matchStage.gender = { $regex: new RegExp(`^${gender}$`, 'i') };
         }
@@ -194,6 +207,9 @@ exports.exportPeopleCsv = async (req, res) => {
         const secondMatchStage = {};
         if (buildingId && mongoose.Types.ObjectId.isValid(buildingId)) {
             secondMatchStage['building._id'] = new mongoose.Types.ObjectId(buildingId);
+        }
+        if (roomId && mongoose.Types.ObjectId.isValid(roomId)) {
+            secondMatchStage['room._id'] = new mongoose.Types.ObjectId(roomId);
         }
         if (searchTerm) {
              secondMatchStage.$or = [
@@ -284,6 +300,7 @@ exports.exportPeoplePdf = async (req, res) => {
     try {
         const {
              eventId = '', buildingId = '', gender = '',
+            roomId = '', bedId = '',
             startDate = '', endDate = '', searchTerm = '', sortBy = 'stayFrom',
             sortOrder = 'asc', dateFilterType = 'stayRange'
         } = req.query;
@@ -309,6 +326,10 @@ exports.exportPeoplePdf = async (req, res) => {
             matchStage.eventId = new mongoose.Types.ObjectId(eventId);
         }
 
+        if (bedId && mongoose.Types.ObjectId.isValid(bedId)) {
+            matchStage.bedId = new mongoose.Types.ObjectId(bedId);
+        }
+
         if (gender) {
             matchStage.gender = { $regex: new RegExp(`^${gender}$`, 'i') };
         }
@@ -330,6 +351,9 @@ exports.exportPeoplePdf = async (req, res) => {
         const secondMatchStage = {};
         if (buildingId && mongoose.Types.ObjectId.isValid(buildingId)) {
             secondMatchStage['building._id'] = new mongoose.Types.ObjectId(buildingId);
+        }
+        if (roomId && mongoose.Types.ObjectId.isValid(roomId)) {
+            secondMatchStage['room._id'] = new mongoose.Types.ObjectId(roomId);
         }
         if (searchTerm) {
              secondMatchStage.$or = [

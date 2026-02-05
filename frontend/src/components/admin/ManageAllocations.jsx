@@ -281,7 +281,8 @@ const BookingCard = ({ booking, onAction, onEdit, allocations, handleAllocationC
             const bedInRoom = beds.some(bed => String(bed._id) === String(person.bedId?._id || person.bedId));
             return bedInRoom && person.stayFrom && person.stayTo && datesOverlap(currentBooking.formData.stayFrom, currentBooking.formData.stayTo, person.stayFrom, person.stayTo);
         }).length;
-        return { capacity, occupied: occupiedCount, vacant: capacity - occupiedCount };
+        const rawVacant = capacity - occupiedCount;
+        return { capacity, occupied: occupiedCount, vacant: Math.max(0, rawVacant) };
     };
 
     const getAvailableBedsForRoom = (roomId, currentBooking, currentPersonIndex) => {

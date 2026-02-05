@@ -24,6 +24,7 @@ function generateBookingPdf(booking) {
         const lightGray = '#E2E8F0';
 
         // Header
+        doc.fillColor(primaryColor).fontSize(20).font('Helvetica-Bold').text('SSDN', { align: 'center' });
         doc.fillColor(primaryColor).fontSize(24).font('Helvetica-Bold').text('Shri Adarsh Dham', { align: 'center' });
         doc.fontSize(16).font('Helvetica').text('Accommodation Pass', { align: 'center' });
         doc.moveDown(2);
@@ -195,6 +196,7 @@ function generateOccupancyReportPdf(people, filters) {
         const secondaryColor = '#4A5568';
 
         // Header
+        doc.fillColor(primaryColor).fontSize(18).font('Helvetica-Bold').text('SSDN', { align: 'center' });
         doc.fillColor(primaryColor).fontSize(20).font('Helvetica-Bold').text('Shri Adarsh Dham', { align: 'center' });
         doc.fontSize(14).fillColor(secondaryColor).font('Helvetica').text('Occupancy Report', { align: 'center' });
         doc.moveDown(0.5);

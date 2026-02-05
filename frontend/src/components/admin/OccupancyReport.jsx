@@ -108,6 +108,8 @@ const SearchableSelect = ({ options, value, onChange, placeholder, disabled = fa
 const OccupancyReport = () => {
     const [events, setEvents] = useState([]);
     const [buildings, setBuildings] = useState([]);
+    const [rooms, setRooms] = useState([]);
+    const [beds, setBeds] = useState([]);
     const [error, setError] = useState(null);
     const [dateFilterType, setDateFilterType] = useState('stayRange');
     const [isDownloading, setIsDownloading] = useState(false);
@@ -118,6 +120,8 @@ const OccupancyReport = () => {
     const [filters, setFilters] = useState({
         eventId: '',
         buildingId: '',
+        roomId: '',
+        bedId: '',
         gender: '',
         startDate: formatDateForInput(firstDayOfMonth),
         endDate: formatDateForInput(lastDayOfMonth),
@@ -135,12 +139,16 @@ const OccupancyReport = () => {
     useEffect(() => {
         const fetchDropdownData = async () => {
             try {
-                const [eventsRes, buildingsRes] = await Promise.all([
+                const [eventsRes, buildingsRes, roomsRes, bedsRes] = await Promise.all([
                     api.get('/events'),
-                    api.get('/buildings')
+                    api.get('/buildings'),
+                    api.get('/rooms'),
+                    api.get('/beds')
                 ]);
                 setEvents(eventsRes.data || []);
                 setBuildings(buildingsRes.data || []);
+                setRooms(roomsRes.data || []);
+                setBeds(bedsRes.data || []);
             } catch (err) {
                 setError('Failed to fetch filter options.');
                 console.error(err);
@@ -165,6 +173,40 @@ const OccupancyReport = () => {
         setFilters(prev => ({ ...prev, [name]: value })); // Changed setFilterDates to setFilters
     };
 
+    const handleBuildingChange = (value) => {
+        setFilters(prev => ({
+            ...prev,
+            buildingId: value,
+            roomId: '',
+            bedId: ''
+        }));
+    };
+
+    const handleRoomChange = (value) => {
+        setFilters(prev => ({
+            ...prev,
+            roomId: value,
+            bedId: ''
+        }));
+    };
+
+    useEffect(() => {
+        setPagination(prev => ({
+            ...prev,
+            currentPage: 1
+        }));
+    }, [
+        filters.eventId,
+        filters.buildingId,
+        filters.roomId,
+        filters.bedId,
+        filters.gender,
+        filters.startDate,
+        filters.endDate,
+        dateFilterType,
+        debouncedSearchTerm
+    ]);
+
     const handlePageChange = (newPage) => {
         if (newPage > 0 && newPage <= pagination.totalPages) {
             setPagination(prev => ({ ...prev, currentPage: newPage }));
@@ -187,6 +229,8 @@ const OccupancyReport = () => {
                 endDate: filters.endDate,
                 eventId: filters.eventId,
                 buildingId: filters.buildingId,
+                roomId: filters.roomId,
+                bedId: filters.bedId,
                 gender: filters.gender,
                 dateFilterType: dateFilterType,
                 searchTerm: debouncedSearchTerm,
@@ -219,6 +263,8 @@ const OccupancyReport = () => {
                 endDate: filters.endDate,
                 eventId: filters.eventId,
                 buildingId: filters.buildingId,
+                roomId: filters.roomId,
+                bedId: filters.bedId,
                 gender: filters.gender,
                 dateFilterType: dateFilterType,
                 searchTerm: debouncedSearchTerm,
@@ -324,11 +370,47 @@ const OccupancyReport = () => {
                         onChange={(e) => handleFilterChange({ target: { name: 'eventId', value: e.target.value } })}
                         placeholder="All Events"
                     />
-                     <SearchableSelect
+                    <SearchableSelect
                         options={[{ value: '', label: 'All Buildings' }, ...buildings.map(b => ({ value: b._id, label: b.name }))]}
                         value={filters.buildingId}
-                        onChange={(e) => handleFilterChange({ target: { name: 'buildingId', value: e.target.value } })}
+                        onChange={(e) => handleBuildingChange(e.target.value)}
                         placeholder="All Buildings"
+                    />
+                    <SearchableSelect
+                        options={[
+                            { value: '', label: 'All Rooms' },
+                            ...(filters.buildingId
+                                ? rooms
+                                    .filter(r => {
+                                        // Safely handle both populated object and string ID
+                                        const bId = r.buildingId?._id || r.buildingId;
+                                        return bId && String(bId) === String(filters.buildingId);
+                                    })
+                                    .map(r => ({ value: r._id, label: `Room ${r.roomNumber}` }))
+                                : [])
+                        ]}
+                        value={filters.roomId}
+                        onChange={(e) => handleRoomChange(e.target.value)}
+                        placeholder="All Rooms"
+                        disabled={!filters.buildingId}
+                    />
+                    <SearchableSelect
+                        options={[
+                            { value: '', label: 'All Beds' },
+                            ...(filters.roomId
+                                ? beds
+                                    .filter(b => {
+                                        // Safely handle both populated object and string ID
+                                        const rId = b.roomId?._id || b.roomId;
+                                        return rId && String(rId) === String(filters.roomId);
+                                    })
+                                    .map(b => ({ value: b._id, label: b.name || 'Bed' }))
+                                : [])
+                        ]}
+                        value={filters.bedId}
+                        onChange={(e) => handleFilterChange({ target: { name: 'bedId', value: e.target.value } })}
+                        placeholder="All Beds"
+                        disabled={!filters.roomId}
                     />
                     <select name="gender" value={filters.gender} onChange={handleFilterChange} className="p-2 border rounded-lg bg-white">
                         <option value="">All Genders</option>

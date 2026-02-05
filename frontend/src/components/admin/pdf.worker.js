@@ -48,8 +48,12 @@ self.onmessage = (event) => {
 function generateAllPdf(peopleData, jsPDF) {
     const doc = new jsPDF();
 
+    doc.setFontSize(16);
+    doc.text("SSDN", 105, 14, { align: 'center' });
+    doc.setFontSize(14);
+    doc.text("Shri Adarsh Dham", 105, 20, { align: 'center' });
     doc.setFontSize(18);
-    doc.text("Occupancy Report", 14, 22);
+    doc.text("Occupancy Report", 14, 30);
     doc.setFontSize(11);
     doc.setTextColor(100);
 
@@ -72,7 +76,7 @@ function generateAllPdf(peopleData, jsPDF) {
     doc.autoTable({
         head: [tableColumn],
         body: tableRows,
-        startY: 30,
+        startY: 38,
         theme: 'grid',
         headStyles: { fillColor: [255, 192, 203] } // Light pink for header
     });
@@ -87,9 +91,13 @@ function generateSinglePdf(person, jsPDF) {
     const doc = new jsPDF();
 
     // Header
-    doc.setFontSize(22);
+    doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
-    doc.text("Occupancy Record", 105, 20, { align: 'center' });
+    doc.text("SSDN", 105, 12, { align: 'center' });
+    doc.setFontSize(14);
+    doc.text("Shri Adarsh Dham", 105, 18, { align: 'center' });
+    doc.setFontSize(22);
+    doc.text("Occupancy Record", 105, 28, { align: 'center' });
 
     // Person Details
     doc.setFontSize(16);

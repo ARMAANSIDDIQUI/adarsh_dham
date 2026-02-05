@@ -5,6 +5,11 @@ const Person = require('../models/peopleModel');
 
 exports.getBuildings = async (req, res) => {
     try {
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+        const startOfTomorrow = new Date(startOfToday);
+        startOfTomorrow.setDate(startOfToday.getDate() + 1);
+
         const buildings = await Building.aggregate([
             {
                 $lookup: {
@@ -31,8 +36,20 @@ exports.getBuildings = async (req, res) => {
             {
                 $lookup: {
                     from: 'people',
-                    localField: 'bedDetails._id',
-                    foreignField: 'bedId',
+                    let: { bed_id: '$bedDetails._id' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ['$bedId', '$$bed_id'] },
+                                        { $lt: ['$stayFrom', startOfTomorrow] },
+                                        { $gte: ['$stayTo', startOfToday] }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
                     as: 'occupants'
                 }
             },

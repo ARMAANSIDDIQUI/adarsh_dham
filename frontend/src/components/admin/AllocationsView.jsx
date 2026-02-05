@@ -18,6 +18,8 @@ const AllocationsView = ({ filters, dateFilterType, debouncedSearchTerm, paginat
                     endDate: filters.endDate,
                     eventId: filters.eventId,
                     buildingId: filters.buildingId,
+                    roomId: filters.roomId,
+                    bedId: filters.bedId,
                     gender: filters.gender,
                     dateFilterType: dateFilterType,
                     searchTerm: debouncedSearchTerm,
@@ -34,7 +36,7 @@ const AllocationsView = ({ filters, dateFilterType, debouncedSearchTerm, paginat
         };
         fetchPeople();
     }, [
-        filters.startDate, filters.endDate, filters.eventId, filters.buildingId, filters.gender,
+        filters.startDate, filters.endDate, filters.eventId, filters.buildingId, filters.roomId, filters.bedId, filters.gender,
         dateFilterType, debouncedSearchTerm, pagination.currentPage, pagination.limit
     ]);
 

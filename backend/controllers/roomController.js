@@ -8,6 +8,11 @@ const Person = require('../models/peopleModel');
 exports.getRooms = async (req, res) => {
     try {
         // We use an aggregation pipeline to calculate occupancy dynamically.
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+        const startOfTomorrow = new Date(startOfToday);
+        startOfTomorrow.setDate(startOfToday.getDate() + 1);
+
         const rooms = await Room.aggregate([
             {
                 $lookup: {
@@ -20,8 +25,20 @@ exports.getRooms = async (req, res) => {
             {
                 $lookup: {
                     from: 'people',
-                    localField: 'bedDetails._id',
-                    foreignField: 'bedId',
+                    let: { bed_ids: '$bedDetails._id' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $in: ['$bedId', '$$bed_ids'] },
+                                        { $lt: ['$stayFrom', startOfTomorrow] },
+                                        { $gte: ['$stayTo', startOfToday] }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
                     as: 'occupants'
                 }
             },
