@@ -222,6 +222,7 @@ const BookingCard = ({ booking, onAction, onEdit, allocations, handleAllocationC
     const [notificationOption, setNotificationOption] = useState('sendNow');
     const [scheduleDelay, setScheduleDelay] = useState({ days: 0, hours: 0, minutes: 5, seconds: 0 });
     const [notificationTtlMinutes, setNotificationTtlMinutes] = useState(10080);
+    const [isExpanded, setIsExpanded] = useState(false);
 
     const calculateFutureDate = useMemo(() => {
         const now = new Date();
@@ -337,179 +338,214 @@ const BookingCard = ({ booking, onAction, onEdit, allocations, handleAllocationC
     };
 
     return (
-        <div className={`bg-card p-5 rounded-2xl shadow-soft border-l-4 ${getStatusBorderColor(status)}`}>
-            <div className="flex justify-between items-start border-b pb-3 mb-4">
-                <div>
-                    <h4 className="text-xl font-bold font-heading text-primaryDark">{userId?.name || 'Unknown'}</h4>
-                    <p className="text-xs font-mono text-gray-500 mt-1">{bookingNumber || bookingId}</p>
-                </div>
-                <span className="text-sm font-semibold capitalize bg-gray-100 px-3 py-1 rounded-full">{status}</span>
-                {!readOnly && (
-                    <button onClick={() => onEdit(booking)} className="ml-2 text-primary hover:text-primaryDark p-1" title="Edit Booking Details">
-                        <FaEdit />
-                    </button>
-                )}
-            </div>
-
-            <div className="space-y-2 text-sm">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 mb-2">
-                    <p><strong>Booked On:</strong> {formatDate(booking.createdAt)}</p>
-                    <p><strong>Group:</strong> {(formData?.people?.length) || 0} People</p>
-                    <p className="col-span-full"><strong>Stay:</strong> {formatDate(formData?.stayFrom)} to {formatDate(formData?.stayTo)}</p>
-                    <p className="col-span-full"><strong>Event:</strong> {booking.eventId?.name || 'N/A'}</p>
-                </div>
-
-                <AccordionItem title="Members">
-                    <div className="space-y-1 max-h-24 overflow-y-auto pr-2">
-                        {(formData?.people || []).map((p, i) => (
-                            <div key={i} className="text-xs flex flex-col border-b border-gray-100 last:border-0 py-1">
-                                <div className="flex justify-between font-semibold"><span>{i + 1}. {p?.name || 'Unknown'}</span><span>Age: {p?.age ?? 'N/A'}</span></div>
-                                <div className="text-gray-500 text-[10px] pl-3">Stay: {formatDate(p.stayFrom)} - {formatDate(p.stayTo)}</div>
-                            </div>
-                        ))}
+        <div className={`bg-card rounded-2xl shadow-soft border-l-4 ${getStatusBorderColor(status)} overflow-hidden`}>
+            {/* Summary / Header Row */}
+            <div 
+                className="p-4 flex flex-wrap items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
+                onClick={() => setIsExpanded(!isExpanded)}
+            >
+                 <div className="flex items-center space-x-4">
+                    <div>
+                        <h4 className="text-lg font-bold font-heading text-primaryDark">{userId?.name || 'Unknown'}</h4>
+                        <p className="text-xs font-mono text-gray-500">{bookingNumber || bookingId}</p>
                     </div>
-                </AccordionItem>
+                    <span className={`text-xs font-semibold uppercase px-2 py-1 rounded-full border ${
+                        status === 'approved' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' :
+                        status === 'pending' ? 'bg-pink-100 text-pink-700 border-pink-200' :
+                        'bg-rose-100 text-rose-700 border-rose-200'
+                    }`}>
+                        {status}
+                    </span>
+                </div>
 
-                <AccordionItem title="Contact & Location">
-                    <p><strong>Phone:</strong> {formData?.contactNumber || 'N/A'}</p>
-                    <p><strong>Email:</strong> {formData?.email || 'N/A'}</p>
-                    <p><strong>Address:</strong> {formData?.address || 'N/A'}, {formData?.city || 'N/A'}</p>
-                </AccordionItem>
-
-                <AccordionItem title="Reference Details">
-                    <p><strong>Ashram:</strong> {formData?.ashramName || 'N/A'}</p>
-                    <p><strong>Baiji/Mahatmaji:</strong> {formData?.baijiMahatmaJi || 'N/A'}</p>
-                    <p><strong>Baiji/Mahatmaji Contact:</strong> {formData?.baijiContact || 'N/A'}</p>
-                </AccordionItem>
-
-                {formData?.notes && (
-                    <AccordionItem title="Notes">
-                        <p className="text-gray-700 whitespace-pre-wrap text-xs bg-gray-50 p-2 rounded">{formData.notes}</p>
-                    </AccordionItem>
-                )}
+                <div className="flex items-center space-x-3">
+                     {!readOnly && (
+                        <button 
+                            onClick={(e) => { e.stopPropagation(); onEdit(booking); }} 
+                            className="text-primary hover:text-primaryDark p-2 rounded-full hover:bg-pink-50 transition-colors flex items-center border border-transparent hover:border-pink-200"
+                            title="Edit Booking Details"
+                        >
+                            <FaEdit size={16} className="mr-1" /> <span className="text-xs font-semibold">Edit</span>
+                        </button>
+                    )}
+                    <button className="text-gray-400 p-2 transform transition-transform duration-200">
+                         <FaChevronDown className={`transform transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                    </button>
+                </div>
             </div>
 
-            {status === 'pending' && !readOnly && (
-                <div className="mt-4 pt-4 border-t border-gray-100">
-                    <h5 className="font-bold mb-3 text-pink-600 flex items-center font-heading"><FaEdit className="mr-2" /> Allocate ({formData?.people?.length || 0} People)</h5>
-                    <div className="space-y-4">
-                        {(formData?.people || []).map((person, index) => {
-                            const personAllocated = pendingAllocations[index] || {};
-                            const buildingOptions = getBuildingOptions(person);
-                            const roomOptions = getRoomOptions(personAllocated, booking);
-                            const bedOptions = getBedOptions(personAllocated, booking, index);
+            {/* Expanded Content */}
+            <AnimatePresence>
+                {isExpanded && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                    >
+                        <div className="p-5 pt-0 border-t border-gray-100">
+                            <div className="space-y-2 text-sm mt-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 mb-2">
+                                    <p><strong>Booked On:</strong> {formatDate(booking.createdAt)}</p>
+                                    <p><strong>Group:</strong> {(formData?.people?.length) || 0} People</p>
+                                    <p className="col-span-full"><strong>Stay:</strong> {formatDate(formData?.stayFrom)} to {formatDate(formData?.stayTo)}</p>
+                                    <p className="col-span-full"><strong>Event:</strong> {booking.eventId?.name || 'N/A'}</p>
+                                </div>
 
-                            // The zIndex is calculated to ensure each row stacks correctly
-                            const zIndex = (formData?.people?.length || 0) - index + 10;
-
-                            return (
-                                <div key={index} className={`p-3 bg-gray-50 rounded-lg border relative z-[${zIndex}]`}>
-                                    <div className="mb-2">
-                                        <p className="font-semibold text-gray-700">{person?.name || `Person ${index + 1}`} <span className="text-xs text-pink-500 capitalize">({person?.gender || 'N/A'})</span></p>
-                                        <p className="text-xs text-gray-500">Stay: {formatDate(person.stayFrom)} - {formatDate(person.stayTo)}</p>
-                                    </div>
-                                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4">
-                                        <SearchableSelect
-                                            options={buildingOptions}
-                                            value={personAllocated.buildingId || ''}
-                                            onChange={(e) => handleAllocationChange(bookingId, index, 'buildingId', e.target.value)}
-                                            placeholder="Select Building"
-                                        />
-                                        <div className="flex items-center space-x-2">
-                                            {/* FIX START: This wrapper allows the dropdown to shrink and make space for the icon */}
-                                            <div className="flex-1 min-w-0">
-                                                <SearchableSelect
-                                                    options={roomOptions}
-                                                    value={personAllocated.roomId || ''}
-                                                    onChange={(e) => handleAllocationChange(bookingId, index, 'roomId', e.target.value)}
-                                                    placeholder="Select Room"
-                                                    disabled={!personAllocated.buildingId}
-                                                />
+                                <AccordionItem title="Members">
+                                    <div className="space-y-1 max-h-24 overflow-y-auto pr-2">
+                                        {(formData?.people || []).map((p, i) => (
+                                            <div key={i} className="text-xs flex flex-col border-b border-gray-100 last:border-0 py-1">
+                                                <div className="flex justify-between font-semibold"><span>{i + 1}. {p?.name || 'Unknown'}</span><span>Age: {p?.age ?? 'N/A'}</span></div>
+                                                <div className="text-gray-500 text-[10px] pl-3">Stay: {formatDate(p.stayFrom)} - {formatDate(p.stayTo)}</div>
                                             </div>
-                                            {/* FIX END */}
-                                            {personAllocated.roomId && (
-                                                <button type="button" onClick={() => onShowRoomDetails(personAllocated.roomId, booking)} className="text-blue-500 hover:text-blue-700 p-1" title="Show room occupants">
-                                                    <FaInfoCircle />
-                                                </button>
-                                            )}
+                                        ))}
+                                    </div>
+                                </AccordionItem>
+
+                                <AccordionItem title="Contact & Location">
+                                    <p><strong>Phone:</strong> {formData?.contactNumber || 'N/A'}</p>
+                                    <p><strong>Email:</strong> {formData?.email || 'N/A'}</p>
+                                    <p><strong>Address:</strong> {formData?.address || 'N/A'}, {formData?.city || 'N/A'}</p>
+                                </AccordionItem>
+
+                                <AccordionItem title="Reference Details">
+                                    <p><strong>Ashram:</strong> {formData?.ashramName || 'N/A'}</p>
+                                    <p><strong>Baiji/Mahatmaji:</strong> {formData?.baijiMahatmaJi || 'N/A'}</p>
+                                    <p><strong>Baiji/Mahatmaji Contact:</strong> {formData?.baijiContact || 'N/A'}</p>
+                                </AccordionItem>
+
+                                {formData?.notes && (
+                                    <AccordionItem title="Notes">
+                                        <p className="text-gray-700 whitespace-pre-wrap text-xs bg-gray-50 p-2 rounded">{formData.notes}</p>
+                                    </AccordionItem>
+                                )}
+                            </div>
+
+                            {status === 'pending' && !readOnly && (
+                                <div className="mt-4 pt-4 border-t border-gray-100">
+                                    <h5 className="font-bold mb-3 text-pink-600 flex items-center font-heading"><FaEdit className="mr-2" /> Allocate ({formData?.people?.length || 0} People)</h5>
+                                    <div className="space-y-4">
+                                        {(formData?.people || []).map((person, index) => {
+                                            const personAllocated = pendingAllocations[index] || {};
+                                            const buildingOptions = getBuildingOptions(person);
+                                            const roomOptions = getRoomOptions(personAllocated, booking);
+                                            const bedOptions = getBedOptions(personAllocated, booking, index);
+
+                                            // The zIndex is calculated to ensure each row stacks correctly
+                                            const zIndex = (formData?.people?.length || 0) - index + 10;
+
+                                            return (
+                                                <div key={index} className={`p-3 bg-gray-50 rounded-lg border relative z-[${zIndex}]`}>
+                                                    <div className="mb-2">
+                                                        <p className="font-semibold text-gray-700">{person?.name || `Person ${index + 1}`} <span className="text-xs text-pink-500 capitalize">({person?.gender || 'N/A'})</span></p>
+                                                        <p className="text-xs text-gray-500">Stay: {formatDate(person.stayFrom)} - {formatDate(person.stayTo)}</p>
+                                                    </div>
+                                                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4">
+                                                        <SearchableSelect
+                                                            options={buildingOptions}
+                                                            value={personAllocated.buildingId || ''}
+                                                            onChange={(e) => handleAllocationChange(bookingId, index, 'buildingId', e.target.value)}
+                                                            placeholder="Select Building"
+                                                        />
+                                                        <div className="flex items-center space-x-2">
+                                                            {/* FIX START: This wrapper allows the dropdown to shrink and make space for the icon */}
+                                                            <div className="flex-1 min-w-0">
+                                                                <SearchableSelect
+                                                                    options={roomOptions}
+                                                                    value={personAllocated.roomId || ''}
+                                                                    onChange={(e) => handleAllocationChange(bookingId, index, 'roomId', e.target.value)}
+                                                                    placeholder="Select Room"
+                                                                    disabled={!personAllocated.buildingId}
+                                                                />
+                                                            </div>
+                                                            {/* FIX END */}
+                                                            {personAllocated.roomId && (
+                                                                <button type="button" onClick={() => onShowRoomDetails(personAllocated.roomId, booking)} className="text-blue-500 hover:text-blue-700 p-1" title="Show room occupants">
+                                                                    <FaInfoCircle />
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                        <SearchableSelect
+                                                            options={bedOptions}
+                                                            value={personAllocated.bedId || ''}
+                                                            onChange={(e) => handleAllocationChange(bookingId, index, 'bedId', e.target.value)}
+                                                            placeholder="Select Bed"
+                                                            disabled={!personAllocated.roomId}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                    <div className="space-y-3 mt-6 pt-4 border-t">
+                                        <h5 className="font-bold text-gray-700">Notification Options</h5>
+                                        <div className="flex flex-wrap gap-x-6 gap-y-2">
+                                            <label className="flex items-center space-x-2 cursor-pointer"><input type="radio" value="sendNow" checked={notificationOption === 'sendNow'} onChange={(e) => setNotificationOption(e.target.value)} /><span>Send Now</span></label>
+                                            <label className="flex items-center space-x-2 cursor-pointer"><input type="radio" value="schedule" checked={notificationOption === 'schedule'} onChange={(e) => setNotificationOption(e.target.value)} /><span>Schedule</span></label>
+                                            <label className="flex items-center space-x-2 cursor-pointer"><input type="radio" value="dontSend" checked={notificationOption === 'dontSend'} onChange={(e) => setNotificationOption(e.target.value)} /><span>Don't Send</span></label>
                                         </div>
-                                        <SearchableSelect
-                                            options={bedOptions}
-                                            value={personAllocated.bedId || ''}
-                                            onChange={(e) => handleAllocationChange(bookingId, index, 'bedId', e.target.value)}
-                                            placeholder="Select Bed"
-                                            disabled={!personAllocated.roomId}
-                                        />
+                                        <AnimatePresence>
+                                            {notificationOption === 'schedule' && (
+                                                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="pt-2">
+                                                    <div className='grid grid-cols-2 md:grid-cols-4 gap-3'>
+                                                        <div><label className="block text-xs font-medium text-gray-600">Days</label><input type="number" min="0" value={scheduleDelay.days} onChange={(e) => handleDelayChange('days', e.target.value)} className="mt-1 w-full p-2 border rounded-md text-sm" /></div>
+                                                        <div><label className="block text-xs font-medium text-gray-600">Hours</label><input type="number" min="0" max="23" value={scheduleDelay.hours} onChange={(e) => handleDelayChange('hours', e.target.value)} className="mt-1 w-full p-2 border rounded-md text-sm" /></div>
+                                                        <div><label className="block text-xs font-medium text-gray-600">Minutes</label><input type="number" min="0" max="59" value={scheduleDelay.minutes} onChange={(e) => handleDelayChange('minutes', e.target.value)} className="mt-1 w-full p-2 border rounded-md text-sm" /></div>
+                                                        <div><label className="block text-xs font-medium text-gray-600">Seconds</label><input type="number" min="0" max="59" value={scheduleDelay.seconds} onChange={(e) => handleDelayChange('seconds', e.target.value)} className="mt-1 w-full p-2 border rounded-md text-sm" /></div>
+                                                    </div>
+                                                    <div className="mt-2 text-xs text-blue-600 bg-blue-50 p-2 rounded-md">
+                                                        <strong>Will be sent on:</strong> {calculateFutureDate.toLocaleString('en-GB')}
+                                                    </div>
+                                                    <div className="mt-3">
+                                                        <label className="block text-xs font-medium text-gray-600">Notification Visibility (minutes from send time)</label>
+                                                        <input type="number" value={notificationTtlMinutes} onChange={(e) => setNotificationTtlMinutes(e.target.value)} className="mt-1 w-full p-2 border rounded-md text-sm" placeholder="e.g., 1440 for 1 day" />
+                                                    </div>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
+
+                                    <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 mt-6 pt-4 border-t">
+                                        <Button onClick={() => handleDecision('approved')} disabled={!allBedsAssigned} className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-lg disabled:bg-gray-400"><FaCheck className="inline mr-2" /> Approve</Button>
+                                        <Button onClick={() => handleDecision('declined')} className="w-full sm:w-auto bg-rose-500 hover:bg-rose-600 text-white font-medium rounded-lg"><FaTimes className="inline mr-2" /> Decline</Button>
                                     </div>
                                 </div>
-                            );
-                        })}
-                    </div>
-                    <div className="space-y-3 mt-6 pt-4 border-t">
-                        <h5 className="font-bold text-gray-700">Notification Options</h5>
-                        <div className="flex flex-wrap gap-x-6 gap-y-2">
-                            <label className="flex items-center space-x-2 cursor-pointer"><input type="radio" value="sendNow" checked={notificationOption === 'sendNow'} onChange={(e) => setNotificationOption(e.target.value)} /><span>Send Now</span></label>
-                            <label className="flex items-center space-x-2 cursor-pointer"><input type="radio" value="schedule" checked={notificationOption === 'schedule'} onChange={(e) => setNotificationOption(e.target.value)} /><span>Schedule</span></label>
-                            <label className="flex items-center space-x-2 cursor-pointer"><input type="radio" value="dontSend" checked={notificationOption === 'dontSend'} onChange={(e) => setNotificationOption(e.target.value)} /><span>Don't Send</span></label>
-                        </div>
-                        <AnimatePresence>
-                            {notificationOption === 'schedule' && (
-                                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="pt-2">
-                                    <div className='grid grid-cols-2 md:grid-cols-4 gap-3'>
-                                        <div><label className="block text-xs font-medium text-gray-600">Days</label><input type="number" min="0" value={scheduleDelay.days} onChange={(e) => handleDelayChange('days', e.target.value)} className="mt-1 w-full p-2 border rounded-md text-sm" /></div>
-                                        <div><label className="block text-xs font-medium text-gray-600">Hours</label><input type="number" min="0" max="23" value={scheduleDelay.hours} onChange={(e) => handleDelayChange('hours', e.target.value)} className="mt-1 w-full p-2 border rounded-md text-sm" /></div>
-                                        <div><label className="block text-xs font-medium text-gray-600">Minutes</label><input type="number" min="0" max="59" value={scheduleDelay.minutes} onChange={(e) => handleDelayChange('minutes', e.target.value)} className="mt-1 w-full p-2 border rounded-md text-sm" /></div>
-                                        <div><label className="block text-xs font-medium text-gray-600">Seconds</label><input type="number" min="0" max="59" value={scheduleDelay.seconds} onChange={(e) => handleDelayChange('seconds', e.target.value)} className="mt-1 w-full p-2 border rounded-md text-sm" /></div>
-                                    </div>
-                                    <div className="mt-2 text-xs text-blue-600 bg-blue-50 p-2 rounded-md">
-                                        <strong>Will be sent on:</strong> {calculateFutureDate.toLocaleString('en-GB')}
-                                    </div>
-                                    <div className="mt-3">
-                                        <label className="block text-xs font-medium text-gray-600">Notification Visibility (minutes from send time)</label>
-                                        <input type="number" value={notificationTtlMinutes} onChange={(e) => setNotificationTtlMinutes(e.target.value)} className="mt-1 w-full p-2 border rounded-md text-sm" placeholder="e.g., 1440 for 1 day" />
-                                    </div>
-                                </motion.div>
                             )}
-                        </AnimatePresence>
-                    </div>
 
-                    <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 mt-6 pt-4 border-t">
-                        <Button onClick={() => handleDecision('approved')} disabled={!allBedsAssigned} className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-lg disabled:bg-gray-400"><FaCheck className="inline mr-2" /> Approve</Button>
-                        <Button onClick={() => handleDecision('declined')} className="w-full sm:w-auto bg-rose-500 hover:bg-rose-600 text-white font-medium rounded-lg"><FaTimes className="inline mr-2" /> Decline</Button>
-                    </div>
-                </div>
-            )}
+                            {status === 'approved' && (
+                                <div className="mt-4 pt-4 border-t border-gray-100">
+                                    <h5 className="font-bold mb-3 text-emerald-600 flex items-center"><FaUserShield className="mr-2" /> Allocated Details</h5>
+                                    <div className="space-y-3">
+                                        {safeSavedAllocations.map((alloc, index) => (
+                                            <div key={index} className="text-sm bg-emerald-50 p-3 rounded-lg border border-emerald-200">
+                                                <span className="font-semibold text-gray-800 mr-2">{formData?.people?.[index]?.name || `Person ${index + 1}`}:</span>
+                                                <span className="text-gray-600 block sm:inline">
+                                                    Building {alloc?.buildingId?.name || 'N/A'}, Room {alloc?.roomId?.roomNumber || 'N/A'}, Bed {alloc?.bedId?.name || 'N/A'}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mt-4">
+                                        {!readOnly && (
+                                            <Button onClick={() => onAction(bookingId, 'pending')} className="bg-pink-500 hover:bg-pink-600"><FaEdit className="inline mr-2" /> Edit Allocation</Button>
+                                        )}
+                                        <Button onClick={handleDownloadPdf} className="bg-blue-500 hover:bg-blue-600"><FaFilePdf className="inline mr-2" /> Download Pass</Button>
+                                    </div>
+                                </div>
+                            )}
 
-            {status === 'approved' && (
-                <div className="mt-4 pt-4 border-t border-gray-100">
-                    <h5 className="font-bold mb-3 text-emerald-600 flex items-center"><FaUserShield className="mr-2" /> Allocated Details</h5>
-                    <div className="space-y-3">
-                        {safeSavedAllocations.map((alloc, index) => (
-                            <div key={index} className="text-sm bg-emerald-50 p-3 rounded-lg border border-emerald-200">
-                                <span className="font-semibold text-gray-800 mr-2">{formData?.people?.[index]?.name || `Person ${index + 1}`}:</span>
-                                <span className="text-gray-600 block sm:inline">
-                                    Building {alloc?.buildingId?.name || 'N/A'}, Room {alloc?.roomId?.roomNumber || 'N/A'}, Bed {alloc?.bedId?.name || 'N/A'}
-                                </span>
-                            </div>
-                        ))}
-                    </div>
-                    <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mt-4">
-                        {!readOnly && (
-                            <Button onClick={() => onAction(bookingId, 'pending')} className="bg-pink-500 hover:bg-pink-600"><FaEdit className="inline mr-2" /> Edit Allocation</Button>
-                        )}
-                        <Button onClick={handleDownloadPdf} className="bg-blue-500 hover:bg-blue-600"><FaFilePdf className="inline mr-2" /> Download Pass</Button>
-                    </div>
-                </div>
-            )}
-
-            {status === 'declined' && (
-                <div className="mt-4 pt-4 border-t border-gray-100">
-                    <div className="text-sm text-gray-600 italic mb-4">This booking was declined. You can reconsider it.</div>
-                    {!readOnly && (
-                        <Button onClick={() => onAction(bookingId, 'pending')} className="w-full sm:w-auto bg-pink-500 hover:bg-pink-600 text-white font-medium rounded-lg"><FaEdit className="inline mr-2" /> Reconsider</Button>
-                    )}
-                </div>
-            )}
+                            {status === 'declined' && (
+                                <div className="mt-4 pt-4 border-t border-gray-100">
+                                    <div className="text-sm text-gray-600 italic mb-4">This booking was declined. You can reconsider it.</div>
+                                    {!readOnly && (
+                                        <Button onClick={() => onAction(bookingId, 'pending')} className="w-full sm:w-auto bg-pink-500 hover:bg-pink-600 text-white font-medium rounded-lg"><FaEdit className="inline mr-2" /> Reconsider</Button>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

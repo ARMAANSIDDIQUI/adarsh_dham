@@ -261,8 +261,14 @@ exports.updateBooking = async (req, res) => {
 
         // --- UPDATED HELPER CALL ---
         const admins = await User.find({ roles: { $in: ['admin', 'super-admin'] } });
+        
+        let notificationMessage = `Booking #${booking.bookingNumber} was edited by the user and is now pending re-approval.`;
+        if (isAdmin && !isOwner) {
+             notificationMessage = `Booking #${booking.bookingNumber} was edited by an admin and is now pending re-approval.`;
+        }
+
         await createAndSaveNotification({
-            message: `Booking #${booking.bookingNumber} was edited by the user and is now pending re-approval.`,
+            message: notificationMessage,
             userIds: admins.map(admin => admin._id.toString()),
             targetGroup: 'admin'
         });
