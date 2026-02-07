@@ -87,7 +87,8 @@ function generateBookingPdf(booking) {
         doc.moveDown();
 
         const tableTop = doc.y;
-        generateTableHeader(doc, tableTop);
+        const showDetails = booking.showAllocationDetails === true;
+        generateTableHeader(doc, tableTop, showDetails);
 
         let currentY = tableTop + 25;
 
@@ -95,18 +96,18 @@ function generateBookingPdf(booking) {
             const alloc = booking.allocations[index];
             if (alloc) {
                 // Calculate dynamic row height for table
-                const nameHeight = doc.heightOfString(person.name, { width: 70 });
-                const buildHeight = doc.heightOfString(alloc.buildingId.name, { width: 65 });
+                const nameHeight = doc.heightOfString(person.name, { width: showDetails ? 60 : 70 });
+                const buildHeight = showDetails ? doc.heightOfString(alloc.buildingId?.name || '-', { width: 50 }) : 0;
                 const rowHeight = Math.max(20, nameHeight, buildHeight) + 10;
 
                 // Check page break
                 if (currentY + rowHeight > 550) { // Approx A5 height limit
                     doc.addPage();
-                    generateTableHeader(doc, 30);
+                    generateTableHeader(doc, 30, showDetails);
                     currentY = 55;
                 }
 
-                generateTableRow(doc, currentY, person, alloc, rowHeight);
+                generateTableRow(doc, currentY, person, alloc, rowHeight, showDetails);
                 currentY += rowHeight;
             }
         });
@@ -146,7 +147,7 @@ function formatShortDate(dateString) {
 }
 
 // Helper function to draw the table header
-function generateTableHeader(doc, y) {
+function generateTableHeader(doc, y, showDetails = false) {
     const headerX = 30; // Reduced X
     const headerWidth = 360; // A5 printable width
     const headerHeight = 20;
@@ -154,22 +155,42 @@ function generateTableHeader(doc, y) {
     doc.rect(headerX, y, headerWidth, headerHeight).fill('#F7FAFC').stroke('#E2E8F0');
     doc.fontSize(8).fillColor('#2D3748').font('Helvetica-Bold'); // Smaller font
 
-    // Layout: Name(35), Gen(165), Stay(220)
-    doc.text('Name', 35, y + 6);
-    doc.text('Gender', 165, y + 6);
-    doc.text('Stay Dates', 220, y + 6);
+    if (showDetails) {
+        // Layout with allocation: Name(35), Gen(95), Stay(135), Build(195), Room(260), Bed(310)
+        doc.text('Name', 35, y + 6);
+        doc.text('Gen', 95, y + 6);
+        doc.text('Stay', 135, y + 6);
+        doc.text('Building', 195, y + 6);
+        doc.text('Room', 270, y + 6);
+        doc.text('Bed', 320, y + 6);
+    } else {
+        // Layout without allocation: Name(35), Gen(165), Stay(220)
+        doc.text('Name', 35, y + 6);
+        doc.text('Gender', 165, y + 6);
+        doc.text('Stay Dates', 220, y + 6);
+    }
 }
 
 // Helper function to draw a single table row
-function generateTableRow(doc, y, person, alloc, height) {
+function generateTableRow(doc, y, person, alloc, height, showDetails = false) {
     doc.fontSize(8).fillColor('black').font('Helvetica');
 
-    // Layout: Name(35), Gen(165), Stay(220)
-    doc.text(person.name, 35, y, { width: 120 });
-    doc.text(person.gender || '-', 165, y, { width: 50 });
-
     const stayStr = `${formatShortDate(person.stayFrom)} - ${formatShortDate(person.stayTo)}`;
-    doc.text(stayStr, 220, y, { width: 120 });
+
+    if (showDetails) {
+        // Layout with allocation
+        doc.text(person.name, 35, y, { width: 55 });
+        doc.text(person.gender || '-', 95, y, { width: 35 });
+        doc.text(stayStr, 135, y, { width: 55 });
+        doc.text(alloc.buildingId?.name || '-', 195, y, { width: 70 });
+        doc.text(alloc.roomId?.roomNumber || '-', 270, y, { width: 45 });
+        doc.text(alloc.bedId?.name || '-', 320, y, { width: 60 });
+    } else {
+        // Layout without allocation: Name(35), Gen(165), Stay(220)
+        doc.text(person.name, 35, y, { width: 120 });
+        doc.text(person.gender || '-', 165, y, { width: 50 });
+        doc.text(stayStr, 220, y, { width: 120 });
+    }
 
     // Draw the line below the row based on dynamic height
     doc.rect(30, y + height - 5, 360, 0.5).stroke('#E2E8F0');
