@@ -43,10 +43,10 @@ const AllocationsView = ({ filters, dateFilterType, debouncedSearchTerm, paginat
     const handleDownloadBookingPdf = async (person) => {
         setIsDownloading(person._id);
         try {
-            const res = await api.get(`/bookings/pdf/${person.bookingId}`, { 
-                responseType: 'blob' 
+            const res = await api.get(`/bookings/pdf/${person.bookingId}`, {
+                responseType: 'blob'
             });
-            
+
             const url = window.URL.createObjectURL(
                 new Blob([res.data], { type: 'application/pdf' })
             );
@@ -55,10 +55,10 @@ const AllocationsView = ({ filters, dateFilterType, debouncedSearchTerm, paginat
             link.href = url;
             link.setAttribute('download', `Booking-Pass-${person.bookingNumber}.pdf`);
             document.body.appendChild(link);
-            
+
             link.click();
             link.remove();
-            
+
             window.URL.revokeObjectURL(url);
         } catch (error) {
             console.error("Failed to download PDF:", error);
@@ -94,20 +94,20 @@ const AllocationsView = ({ filters, dateFilterType, debouncedSearchTerm, paginat
                                     <p className="font-mono text-gray-700">{person.bookingNumber}</p>
                                     <p className="text-gray-700">{person.city}</p>
                                 </td>
-                                <td className="px-4 py-4 whitespace-now-wrap text-sm align-top text-gray-700">
+                                <td className="px-4 py-4 whitespace-nowrap text-sm align-top text-gray-700">
                                     {person.eventId?.name || 'N/A'}
                                 </td>
                                 <td className="px-4 py-4 whitespace-nowrap text-sm align-top text-gray-700">
-                                    {new Date(person.stayFrom).toLocaleDateString('en-GB')} - {new Date(person.stayTo).toLocaleDateString('en-GB')}
+                                    {new Date(person.stayFrom).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Asia/Kolkata' })} - {new Date(person.stayTo).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Asia/Kolkata' })}
                                 </td>
                                 <td className="px-4 py-4 whitespace-nowrap text-sm align-top text-gray-700">
                                     <p className="font-semibold text-gray-800">{person.bedId?.roomId?.buildingId?.name}</p>
                                     <p>Room {person.bedId?.roomId?.roomNumber} / Bed {person.bedId?.name}</p>
                                 </td>
                                 <td className="px-4 py-4 whitespace-nowrap text-sm align-top">
-                                    <button 
-                                        onClick={() => handleDownloadBookingPdf(person)} 
-                                        className="text-accent hover:text-primaryDark disabled:opacity-50 transition-colors" 
+                                    <button
+                                        onClick={() => handleDownloadBookingPdf(person)}
+                                        className="text-accent hover:text-primaryDark disabled:opacity-50 transition-colors"
                                         title="Download Full Booking PDF"
                                         disabled={isDownloading === person._id}
                                     >

@@ -10,6 +10,7 @@ const webpush = require('web-push');
 
 // Import the updated helper
 const { createAndSaveNotification } = require('../utils/notificationHelper');
+const { checkBedAvailability } = require('../utils/bedUtils');
 
 const generateBookingNumber = () => {
     const date = new Date();
@@ -24,7 +25,7 @@ const generateBookingNumber = () => {
 const validateDates = (formData, event) => {
     const eventStart = new Date(event.startDate);
     const eventEnd = new Date(event.endDate);
-    
+
     // Calculate allowed range (+/- 5 days)
     const minDate = new Date(eventStart);
     minDate.setDate(minDate.getDate() - 5);
@@ -122,6 +123,22 @@ exports.approveOrDeclineBooking = async (req, res) => {
                 return res.status(400).json({ message: 'Allocation details must be provided as an array for every person.' });
             }
 
+            for (let i = 0; i < booking.formData.people.length; i++) {
+                const personData = booking.formData.people[i];
+                const allocation = allocations[i];
+                const isAvailable = await checkBedAvailability(
+                    allocation.bedId,
+                    personData.stayFrom || booking.formData.stayFrom,
+                    personData.stayTo || booking.formData.stayTo,
+                    booking._id
+                );
+                if (!isAvailable) {
+                    return res.status(409).json({
+                        message: `Bed ${allocation.bedId} is already occupied for the selected dates for ${personData.name}. Please re-allocate.`
+                    });
+                }
+            }
+
             const peopleToCreate = booking.formData.people.map((personData, index) => {
                 const allocation = allocations[index];
                 return {
@@ -158,7 +175,7 @@ exports.approveOrDeclineBooking = async (req, res) => {
         await booking.save();
 
         // --- UPDATED HELPER CALL ---
-        if (booking.userId && previousStatus !== status && notificationOption !== 'dontSend') {
+        if (booking.userId && previousStatus !== status && notificationOption && notificationOption !== 'dontSend') {
             const notificationPayload = {
                 message,
                 userIds: [booking.userId._id.toString()], // Send to this one specific user
@@ -229,11 +246,11 @@ exports.getUserBookings = async (req, res) => {
 
 exports.updateBooking = async (req, res) => {
     const { bookingId } = req.params;
-    const { formData } = req.body;
+    const { formData, showAllocationDetails } = req.body;
     try {
         const booking = await Booking.findById(bookingId);
         if (!booking) return res.status(404).json({ message: 'Booking not found' });
-        
+
         // Allow if user is owner OR has admin privileges
         const isOwner = booking.userId.toString() === req.user.id;
         const isAdmin = req.user.roles && (req.user.roles.includes('admin') || req.user.roles.includes('super-admin'));
@@ -242,9 +259,16 @@ exports.updateBooking = async (req, res) => {
             return res.status(403).json({ message: 'Not authorized.' });
         }
 
+        // If only updating showAllocationDetails flag (admin toggle)
+        if (showAllocationDetails !== undefined && !formData) {
+            booking.showAllocationDetails = showAllocationDetails;
+            await booking.save();
+            return res.status(200).json({ message: 'Booking visibility updated.', booking });
+        }
+
         const event = await Event.findById(booking.eventId);
         if (event) {
-             try {
+            try {
                 validateDates(formData, event);
             } catch (validationError) {
                 return res.status(400).json({ message: validationError.message });
@@ -261,10 +285,10 @@ exports.updateBooking = async (req, res) => {
 
         // --- UPDATED HELPER CALL ---
         const admins = await User.find({ roles: { $in: ['admin', 'super-admin'] } });
-        
+
         let notificationMessage = `Booking #${booking.bookingNumber} was edited by the user and is now pending re-approval.`;
         if (isAdmin && !isOwner) {
-             notificationMessage = `Booking #${booking.bookingNumber} was edited by an admin and is now pending re-approval.`;
+            notificationMessage = `Booking #${booking.bookingNumber} was edited by an admin and is now pending re-approval.`;
         }
 
         await createAndSaveNotification({

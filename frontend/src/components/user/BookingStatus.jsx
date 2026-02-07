@@ -94,25 +94,34 @@ const BookingStatus = ({ bookings, onDelete }) => {
                             </div>
                         </div>
                         <span className="text-xs px-3 py-1 rounded-full bg-background/50 text-gray-700 shadow-inner">
-                            Requested: {new Date(booking.createdAt).toLocaleDateString('en-GB')}
+                            Requested: {new Date(booking.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Asia/Kolkata' })}
                         </span>                    </div>
 
                     {booking.status === 'approved' && (
-                        <div className="mt-4 space-y-3 p-4 bg-card rounded-lg shadow-inner">
-                            <h4 className="font-bold font-heading text-primary mb-2 text-md border-b border-background pb-2">Your Allocation Details:</h4>
-                            {(Array.isArray(booking.allocations) ? booking.allocations : []).map((alloc, index) => {
-                                const person = booking.formData.people[index];
-                                return (
-                                    <div key={index} className="p-3 bg-background/50 rounded-md text-sm border border-background">
-                                        <p className="font-bold text-gray-800 mb-2">{person?.name} ({person?.gender})</p>
-                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-y-1 text-gray-700">
-                                            <span className="flex items-center text-sm"><FaBuilding className="mr-2 text-primary" />{alloc.buildingId?.name || 'N/A'}</span>
-                                            <span className="flex items-center text-sm"><FaDoorOpen className="mr-2 text-primary" />Room {alloc.roomId?.roomNumber || 'N/A'}</span>
-                                            <span className="flex items-center text-sm"><FaBed className="mr-2 text-primary" />Bed {alloc.bedId?.name || 'N/A'}</span>
+                        <div className="mt-4 p-4 bg-white rounded-lg shadow-inner border border-green-200">
+                            <div className="flex items-center space-x-2 text-green-700 mb-2">
+                                <FaCheckCircle className="text-xl" />
+                                <h4 className="font-bold font-heading text-lg">Allocation Confirmed</h4>
+                            </div>
+                            {booking.showAllocationDetails && booking.allocations?.length > 0 ? (
+                                <div className="space-y-2">
+                                    {booking.allocations.map((alloc, index) => (
+                                        <div key={index} className="flex flex-wrap items-center gap-4 text-sm text-green-700 bg-green-50 p-2 rounded-md">
+                                            <span className="font-semibold">{booking.formData?.people?.[index]?.name || `Person ${index + 1}`}:</span>
+                                            <span className="flex items-center"><FaBuilding className="mr-1" /> {alloc.buildingId?.name || 'N/A'}</span>
+                                            <span className="flex items-center"><FaDoorOpen className="mr-1" /> Room {alloc.roomId?.roomNumber || 'N/A'}</span>
+                                            <span className="flex items-center"><FaBed className="mr-1" /> {alloc.bedId?.name || 'N/A'}</span>
                                         </div>
-                                    </div>
-                                );
-                            })}
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-md font-medium text-green-600">
+                                    Your accommodation has been confirmed!
+                                </p>
+                            )}
+                            <p className="mt-2 text-sm font-bold text-highlight bg-highlight/5 p-2 rounded-md border border-highlight/20">
+                                Note: Please report to reception/counter at the time of arrival!
+                            </p>
                         </div>
                     )}
 

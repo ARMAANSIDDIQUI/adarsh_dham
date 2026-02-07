@@ -55,6 +55,11 @@ const EditBookingModal = ({ isOpen, booking, onClose, onUpdate }) => {
         }));
     };
 
+    const handleRemovePerson = (index) => {
+        const updatedPeople = formData.people.filter((_, i) => i !== index);
+        setFormData(prev => ({ ...prev, people: updatedPeople }));
+    };
+
     const handlePersonChange = (index, field, value) => {
         const updatedPeople = [...formData.people];
         updatedPeople[index] = { ...updatedPeople[index], [field]: value };
@@ -169,7 +174,17 @@ const EditBookingModal = ({ isOpen, booking, onClose, onUpdate }) => {
                                 )}
                                 {formData.people && formData.people.map((person, index) => (
                                     <div key={index} className="p-4 border border-gray-200 rounded-lg bg-white relative">
-                                        <div className="absolute top-2 right-2 text-xs font-mono text-gray-400">#{index + 1}</div>
+                                        <div className="flex justify-between items-start mb-2">
+                                            <div className="text-xs font-mono text-gray-400">#{index + 1}</div>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleRemovePerson(index)}
+                                                className="text-white bg-red-500 hover:bg-red-600 rounded px-2 py-1 flex items-center shadow-sm"
+                                                title="Remove this member"
+                                            >
+                                                <FaTimes className="mr-1" size={10} /> <span className="text-[10px]">Remove</span>
+                                            </button>
+                                        </div>
                                         <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
                                             <div className="md:col-span-3">
                                                 <label className="block text-xs text-gray-500 mb-1">Name</label>

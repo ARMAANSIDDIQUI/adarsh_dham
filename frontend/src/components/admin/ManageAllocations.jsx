@@ -15,7 +15,7 @@ const datesOverlap = (startA, endA, startB, endB) => {
         const bStart = new Date(startB);
         const bEnd = new Date(endB);
         if (isNaN(aStart) || isNaN(aEnd) || isNaN(bStart) || isNaN(bEnd)) return false;
-        return (aStart <= bEnd) && (aEnd >= bStart);
+        return (aStart < bEnd) && (aEnd > bStart);
     } catch {
         return false;
     }
@@ -26,7 +26,7 @@ const formatDate = (dateString) => {
     try {
         const d = new Date(dateString);
         if (isNaN(d)) return 'Invalid Date';
-        return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+        return d.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
     } catch {
         return 'Invalid Date';
     }
@@ -50,10 +50,10 @@ const datesRoughlyMatch = (stayFrom, stayTo, filterFrom, filterTo) => {
         }
 
         if (filterTo) {
-             const fEnd = new Date(filterTo);
-             fEnd.setHours(0, 0, 0, 0);
-             // Filter "To" means booking must end on or before this date
-             if (bEnd > fEnd) return false;
+            const fEnd = new Date(filterTo);
+            fEnd.setHours(0, 0, 0, 0);
+            // Filter "To" means booking must end on or before this date
+            if (bEnd > fEnd) return false;
         }
 
         return true;
@@ -228,15 +228,15 @@ const AccordionItem = ({ title, children }) => {
         </div>
     );
 };
-
 const BookingCard = ({ booking, onAction, onEdit, allocations, handleAllocationChange, buildings, rooms, people, onShowRoomDetails, setError, readOnly = false }) => {
     const { formData = {}, userId = {}, status, _id: bookingId, bookingNumber, allocations: savedAllocations, eventId = {} } = booking || {};
     const pendingAllocations = allocations?.[bookingId] || [];
     const safeSavedAllocations = Array.isArray(savedAllocations) ? savedAllocations : [];
-    const [notificationOption, setNotificationOption] = useState('sendNow');
+    const [notificationOption, setNotificationOption] = useState('dontSend');
     const [scheduleDelay, setScheduleDelay] = useState({ days: 0, hours: 0, minutes: 5, seconds: 0 });
     const [notificationTtlMinutes, setNotificationTtlMinutes] = useState(10080);
     const [isExpanded, setIsExpanded] = useState(false);
+    const [showAllocationDetails, setShowAllocationDetails] = useState(booking?.showAllocationDetails ?? false);
 
     const calculateFutureDate = useMemo(() => {
         const now = new Date();
@@ -355,28 +355,27 @@ const BookingCard = ({ booking, onAction, onEdit, allocations, handleAllocationC
     return (
         <div className={`bg-card rounded-2xl shadow-soft border-l-4 ${getStatusBorderColor(status)} overflow-hidden`}>
             {/* Summary / Header Row */}
-            <div 
+            <div
                 className="p-4 flex flex-wrap items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
                 onClick={() => setIsExpanded(!isExpanded)}
             >
-                 <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-4">
                     <div>
                         <h4 className="text-lg font-bold font-heading text-primaryDark">{userId?.name || 'Unknown'}</h4>
                         <p className="text-xs font-mono text-gray-500">{bookingNumber || bookingId}</p>
                     </div>
-                    <span className={`text-xs font-semibold uppercase px-2 py-1 rounded-full border ${
-                        status === 'approved' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' :
+                    <span className={`text-xs font-semibold uppercase px-2 py-1 rounded-full border ${status === 'approved' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' :
                         status === 'pending' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
-                        'bg-rose-100 text-rose-700 border-rose-200'
-                    }`}>
+                            'bg-rose-100 text-rose-700 border-rose-200'
+                        }`}>
                         {status}
                     </span>
                 </div>
 
                 <div className="flex items-center space-x-3">
-                     {!readOnly && (
-                        <button 
-                            onClick={(e) => { e.stopPropagation(); onEdit(booking); }} 
+                    {!readOnly && (
+                        <button
+                            onClick={(e) => { e.stopPropagation(); onEdit(booking); }}
                             className="text-primary hover:text-primaryDark p-2 rounded-full hover:bg-pink-50 transition-colors flex items-center border border-transparent hover:border-pink-200"
                             title="Edit Booking Details"
                         >
@@ -384,7 +383,7 @@ const BookingCard = ({ booking, onAction, onEdit, allocations, handleAllocationC
                         </button>
                     )}
                     <button className="text-gray-400 p-2 transform transition-transform duration-200">
-                         <FaChevronDown className={`transform transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                        <FaChevronDown className={`transform transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
                     </button>
                 </div>
             </div>
@@ -540,9 +539,30 @@ const BookingCard = ({ booking, onAction, onEdit, allocations, handleAllocationC
                                             </div>
                                         ))}
                                     </div>
+                                    <div className="flex items-center mt-4 p-3 bg-gray-50 rounded-lg border">
+                                        <input
+                                            type="checkbox"
+                                            id={`showDetails-${bookingId}`}
+                                            checked={showAllocationDetails}
+                                            onChange={async (e) => {
+                                                const newValue = e.target.checked;
+                                                setShowAllocationDetails(newValue);
+                                                try {
+                                                    await api.put(`/bookings/update/${bookingId}`, { showAllocationDetails: newValue });
+                                                } catch (err) {
+                                                    console.error('Failed to update showAllocationDetails', err);
+                                                    setShowAllocationDetails(!newValue);
+                                                }
+                                            }}
+                                            className="w-4 h-4 text-primary rounded focus:ring-primary mr-2"
+                                        />
+                                        <label htmlFor={`showDetails-${bookingId}`} className="text-sm text-gray-700 select-none cursor-pointer">
+                                            Show allocation details to user (Room, Bed info)
+                                        </label>
+                                    </div>
                                     <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mt-4">
                                         {!readOnly && (
-                                            <Button onClick={() => onAction(bookingId, 'pending')} className="bg-pink-500 hover:bg-pink-600"><FaEdit className="inline mr-2" /> Edit Allocation</Button>
+                                            <Button onClick={() => onAction(bookingId, 'pending', { notificationOption })} className="bg-pink-500 hover:bg-pink-600"><FaEdit className="inline mr-2" /> Edit Allocation</Button>
                                         )}
                                         <Button onClick={handleDownloadPdf} className="bg-blue-500 hover:bg-blue-600"><FaFilePdf className="inline mr-2" /> Download Pass</Button>
                                     </div>
@@ -553,7 +573,7 @@ const BookingCard = ({ booking, onAction, onEdit, allocations, handleAllocationC
                                 <div className="mt-4 pt-4 border-t border-gray-100">
                                     <div className="text-sm text-gray-600 italic mb-4">This booking was declined. You can reconsider it.</div>
                                     {!readOnly && (
-                                        <Button onClick={() => onAction(bookingId, 'pending')} className="w-full sm:w-auto bg-pink-500 hover:bg-pink-600 text-white font-medium rounded-lg"><FaEdit className="inline mr-2" /> Reconsider</Button>
+                                        <Button onClick={() => onAction(bookingId, 'pending', { notificationOption })} className="w-full sm:w-auto bg-pink-500 hover:bg-pink-600 text-white font-medium rounded-lg"><FaEdit className="inline mr-2" /> Reconsider</Button>
                                     )}
                                 </div>
                             )}

@@ -51,28 +51,35 @@ const BookingCard = ({ booking, onEdit, onDelete, onDownloadPdf, navigateToEvent
                     </div>
                 </div>
                 <span className="text-xs px-3 py-1 rounded-full bg-background/50 text-gray-700 shadow-inner">
-                    {t.myBookings.card.requested} {new Date(booking.createdAt).toLocaleDateString('en-GB')}
+                    {t.myBookings.card.requested} {new Date(booking.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Asia/Kolkata' })}
                 </span>
             </div>
 
             {booking.status === 'approved' && (
-                <div className="mt-4 space-y-3 p-4 bg-green-50 rounded-lg shadow-inner">
-                    <h4 className="font-bold font-heading text-primary text-md border-b border-background pb-2">{t.myBookings.card.allocation}</h4>
-                    {(Array.isArray(booking.allocations) ? booking.allocations : []).map((alloc, i) => {
-                        const person = booking.formData.people[i];
-                        return (
-                            <div key={i} className="p-3 bg-green-100 rounded-md text-sm border border-green-200">
-                                <p className="font-bold text-gray-800 mb-2">
-                                    {person?.name} ({t.booking.genders[person?.gender] || person?.gender})
-                                </p>
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-y-1 text-gray-700">
-                                    <span className="flex items-center text-sm"><FaBuilding className="mr-2 text-green-500" />{alloc.buildingId?.name || 'N/A'}</span>
-                                    <span className="flex items-center text-sm"><FaDoorOpen className="mr-2 text-green-500" />{t.myBookings.card.room} {alloc.roomId?.roomNumber || 'N/A'}</span>
-                                    <span className="flex items-center text-sm"><FaBed className="mr-2 text-green-500" />{t.myBookings.card.bed} {alloc.bedId?.name || 'N/A'}</span>
+                <div className="mt-4 p-4 bg-green-50 rounded-lg shadow-inner border border-green-200">
+                    <div className="flex items-center space-x-2 text-green-800 mb-2">
+                        <FaCheckCircle className="text-xl" />
+                        <h4 className="font-bold font-heading text-lg">{t.myBookings.card.allocation}</h4>
+                    </div>
+                    {booking.showAllocationDetails && booking.allocations?.length > 0 ? (
+                        <div className="space-y-2">
+                            {booking.allocations.map((alloc, index) => (
+                                <div key={index} className="flex items-center space-x-4 text-sm text-green-700 bg-white/50 p-2 rounded-md">
+                                    <span className="font-semibold">{booking.formData?.people?.[index]?.name || `Person ${index + 1}`}:</span>
+                                    <span className="flex items-center"><FaBuilding className="mr-1" /> {alloc.buildingId?.name || 'N/A'}</span>
+                                    <span className="flex items-center"><FaDoorOpen className="mr-1" /> Room {alloc.roomId?.roomNumber || 'N/A'}</span>
+                                    <span className="flex items-center"><FaBed className="mr-1" /> {alloc.bedId?.name || 'N/A'}</span>
                                 </div>
-                            </div>
-                        );
-                    })}
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="text-md font-medium text-green-700">
+                            Your booking has been confirmed!
+                        </p>
+                    )}
+                    <p className="mt-2 text-sm font-bold text-highlight bg-highlight/10 p-2 rounded-md border border-highlight/20">
+                        Note: Please report to reception/counter at the time of arrival!
+                    </p>
                 </div>
             )}
 
@@ -171,7 +178,7 @@ const MyBookings = () => {
 
         // Sort new bookings: nearest start date first
         newBookings.sort((a, b) => new Date(a.eventId?.startDate) - new Date(b.eventId?.startDate));
-        
+
         // Sort old bookings: most recent start date first (descending)
         oldBookings.sort((a, b) => new Date(b.eventId?.startDate) - new Date(a.eventId?.startDate));
 

@@ -107,6 +107,23 @@ const EditBookingModal = ({ booking, onClose, onUpdate }) => {
     setFormData(prev => ({ ...prev, people: newPeople }));
   };
 
+  const handleRemovePerson = (index) => {
+    const personToRemove = formData.people[index];
+    if (!personToRemove) return;
+
+    const genderMap = { male: 'numMales', female: 'numFemales', boy: 'numBoys', girl: 'numGirls' };
+    const fieldToDecrement = genderMap[personToRemove.gender];
+
+    setFormData(prev => {
+      const newPeople = prev.people.filter((_, i) => i !== index);
+      return {
+        ...prev,
+        [fieldToDecrement]: Math.max(0, prev[fieldToDecrement] - 1),
+        people: newPeople
+      };
+    });
+  };
+
   const handleChange = e => {
     const { name, value, type, checked } = e.target;
     let newValue = type === 'checkbox' ? checked : value;
@@ -162,12 +179,12 @@ const EditBookingModal = ({ booking, onClose, onUpdate }) => {
       toast.error(msg);
       return;
     }
-    
+
     if (formData.baijiContact && formData.baijiContact.replace(/\D/g, '').length < 8) {
-        const msg = "Please enter a valid Baiji/MahatmaJi contact number.";
-        setValidationError(msg);
-        toast.error(msg);
-        return;
+      const msg = "Please enter a valid Baiji/MahatmaJi contact number.";
+      setValidationError(msg);
+      toast.error(msg);
+      return;
     }
 
     setSubmitLoading(true);
@@ -189,19 +206,31 @@ const EditBookingModal = ({ booking, onClose, onUpdate }) => {
     formData.people
       .map((p, i) => ({ p, i }))
       .filter(({ p }) => p.gender === gender)
-      .map(({ p, i }, idx) => (
-        <div key={i} className="grid grid-cols-2 gap-4 pt-4 border-b-2 border-background pb-4 last:border-b-0">
-          <h4 className="col-span-2 font-bold capitalize text-primaryDark">{t.booking.genders[gender] || gender} #{idx + 1}</h4>
-          <div>
-            <label className="block text-xs font-medium text-gray-600">{t.booking.fields.name}</label>
-            <input type="text" name="name" value={p.name} onChange={e => handlePersonChange(e, i)} className="mt-1 block w-full px-3 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary" required />
+      .map(({ p, i }, idx) => {
+        const todayIST = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+        return (
+          <div key={i} className="grid grid-cols-2 gap-4 pt-4 border-b-2 border-background pb-4 last:border-b-0 relative group">
+            <div className="col-span-2 flex justify-between items-center">
+              <h4 className="font-bold capitalize text-primaryDark">{t.booking.genders[gender] || gender} #{idx + 1}</h4>
+              <button
+                type="button"
+                onClick={() => handleRemovePerson(i)}
+                className="text-xs text-highlight hover:text-red-700 font-medium px-2 py-1 rounded hover:bg-highlight/10 transition-colors flex items-center"
+              >
+                <FaTimesCircle className="mr-1" /> {t.common?.remove || 'Remove'}
+              </button>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600">{t.booking.fields.name}</label>
+              <input type="text" name="name" value={p.name} onChange={e => handlePersonChange(e, i)} className="mt-1 block w-full px-3 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary" required />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600">{t.booking.fields.age}</label>
+              <input type="number" name="age" value={p.age} onChange={e => handlePersonChange(e, i)} className="mt-1 block w-full px-3 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary" required min="1" />
+            </div>
           </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-600">{t.booking.fields.age}</label>
-            <input type="number" name="age" value={p.age} onChange={e => handlePersonChange(e, i)} className="mt-1 block w-full px-3 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary" required min="1" />
-          </div>
-        </div>
-      ));
+        )
+      });
 
   if (!booking) return null;
 
@@ -227,8 +256,8 @@ const EditBookingModal = ({ booking, onClose, onUpdate }) => {
             <div>
               <h3 className="text-xl font-semibold font-heading text-primaryDark mb-4 border-b border-background pb-2">{t.booking.sections.stay}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <ThemedInput label={t.booking.fields.from} name="stayFrom" value={formData.stayFrom} onChange={handleChange} required type="date" icon={<FaCalendarAlt />} min={minStay} max={maxStay} />
-                <ThemedInput label={t.booking.fields.to} name="stayTo" value={formData.stayTo} onChange={handleChange} required type="date" icon={<FaCalendarAlt />} min={formData.stayFrom || minStay} max={maxStay} />
+                <ThemedInput label={t.booking.fields.from} name="stayFrom" value={formData.stayFrom} onChange={handleChange} required type="date" icon={<FaCalendarAlt />} min={new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }) || minStay} max={maxStay} />
+                <ThemedInput label={t.booking.fields.to} name="stayTo" value={formData.stayTo} onChange={handleChange} required type="date" icon={<FaCalendarAlt />} min={formData.stayFrom || new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }) || minStay} max={maxStay} />
               </div>
             </div>
 
@@ -238,11 +267,11 @@ const EditBookingModal = ({ booking, onClose, onUpdate }) => {
                 <ThemedInput label={t.booking.fields.ashramName} name="ashramName" value={formData.ashramName} onChange={handleChange} required icon={<FaUniversity />} colSpan="md:col-span-2" />
                 <ThemedInput label={t.booking.fields.baijiName} name="baijiMahatmaJi" value={formData.baijiMahatmaJi} onChange={handleChange} />
                 <div>
-                   <PhoneInput 
-                        label={t.booking.fields.baijiContact} 
-                        value={formData.baijiContact} 
-                        onChange={(val) => handlePhoneChange('baijiContact', val)} 
-                   />
+                  <PhoneInput
+                    label={t.booking.fields.baijiContact}
+                    value={formData.baijiContact}
+                    onChange={(val) => handlePhoneChange('baijiContact', val)}
+                  />
                 </div>
               </div>
             </div>
@@ -252,12 +281,12 @@ const EditBookingModal = ({ booking, onClose, onUpdate }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <ThemedInput label={t.booking.fields.email} name="email" type="email" value={formData.email} onChange={handleChange} icon={<FaEnvelope />} />
                 <div>
-                   <PhoneInput 
-                        label={t.booking.fields.contact} 
-                        value={formData.contactNumber} 
-                        onChange={(val) => handlePhoneChange('contactNumber', val)} 
-                        required 
-                   />
+                  <PhoneInput
+                    label={t.booking.fields.contact}
+                    value={formData.contactNumber}
+                    onChange={(val) => handlePhoneChange('contactNumber', val)}
+                    required
+                  />
                 </div>
                 <ThemedInput label={t.booking.fields.address} name="address" value={formData.address} onChange={handleChange} required icon={<FaMapMarkerAlt />} colSpan="md:col-span-2" />
                 <ThemedInput label={t.booking.fields.city} name="city" value={formData.city} onChange={handleChange} required icon={<FaMapMarkerAlt />} colSpan="md:col-span-2" />

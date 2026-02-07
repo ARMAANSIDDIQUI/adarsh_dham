@@ -30,7 +30,7 @@ const getIstDateBoundaries = () => {
     // Current date/time in IST
     const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
     const nowIst = new Date(new Date().getTime() + IST_OFFSET_MS);
-    
+
     // Get year and month based on IST
     const year = nowIst.getUTCFullYear();
     const month = nowIst.getUTCMonth();
@@ -38,7 +38,7 @@ const getIstDateBoundaries = () => {
     // First Day of Month (IST) -> 1st day of the current month
     // We create it as a UTC date to ensure correct formatting later
     const firstDayOfMonth = new Date(Date.UTC(year, month, 1));
-    
+
     // Last Day of Month (IST) -> Last day of the current month
     const lastDayOfMonth = new Date(Date.UTC(year, month + 1, 0));
 
@@ -126,7 +126,7 @@ const OccupancyReport = () => {
         startDate: formatDateForInput(firstDayOfMonth),
         endDate: formatDateForInput(lastDayOfMonth),
     });
-    
+
     const [searchTerm, setSearchTerm] = useState('');
     const debouncedSearchTerm = useDebounce(searchTerm, 500);
     const [pagination, setPagination] = useState({
@@ -212,7 +212,7 @@ const OccupancyReport = () => {
             setPagination(prev => ({ ...prev, currentPage: newPage }));
         }
     };
-    
+
     const handleLimitChange = (newLimit) => {
         setPagination(prev => ({
             ...prev,
@@ -289,25 +289,25 @@ const OccupancyReport = () => {
         }
     };
 
-        const adjustedFilters = useMemo(() => {
-            // If no adjustments are needed for the API, then adjustedFilters can simply be filters.
-            // However, if other adjustments are required in the future,
-            // it's good to keep the structure. For now, we pass the original dates.
-            return {
-                ...filters
-            };
-        }, [filters]);
+    const adjustedFilters = useMemo(() => {
+        // If no adjustments are needed for the API, then adjustedFilters can simply be filters.
+        // However, if other adjustments are required in the future,
+        // it's good to keep the structure. For now, we pass the original dates.
+        return {
+            ...filters
+        };
+    }, [filters]);
 
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-8 bg-neutral min-h-screen font-body">
             <h2 className="text-3xl md:text-4xl font-extrabold mb-8 text-primaryDark border-b-4 border-primary pb-2 inline-block font-heading">
-                <FaUsers className="inline mr-3 text-primary"/> Occupancy Report
+                <FaUsers className="inline mr-3 text-primary" /> Occupancy Report
             </h2>
             {error && <p className="text-red-600 bg-red-100 p-3 rounded-md mb-6">{error}</p>}
-            
+
             <div className="bg-card p-4 rounded-2xl shadow-soft mb-8">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-                    <h3 className="font-semibold font-heading text-lg flex items-center text-primaryDark"><FaFilter className="mr-2 text-primary"/>Filters</h3>
+                    <h3 className="font-semibold font-heading text-lg flex items-center text-primaryDark"><FaFilter className="mr-2 text-primary" />Filters</h3>
                     <div className="flex flex-wrap gap-2">
                         <Button onClick={handleDownloadCsv} disabled={isDownloading} className="flex items-center gap-2">
                             {isDownloading ? <span className="loading loading-spinner loading-sm"></span> : <FaFileCsv />}
@@ -319,7 +319,7 @@ const OccupancyReport = () => {
                         </Button>
                     </div>
                 </div>
-                
+
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pb-4 border-b border-background mb-4">
                     <label className="font-semibold sm:col-span-1">Date Range Applies To:</label>
                     <div className="flex items-center gap-4 sm:col-span-2">
@@ -345,9 +345,9 @@ const OccupancyReport = () => {
                         <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                         <input type="text" placeholder="Search by name, booking #, city..."
                             value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-pink-500 focus:border-pink-500"/>
+                            className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-pink-500 focus:border-pink-500" />
                     </div>
-                    
+
                     <DynamicDateInput
                         label="From"
                         name="startDate"
@@ -355,7 +355,7 @@ const OccupancyReport = () => {
                         onChange={handleFilterChange}
                         className="w-full"
                     />
-                    
+
                     <DynamicDateInput
                         label="To"
                         name="endDate"
@@ -363,7 +363,7 @@ const OccupancyReport = () => {
                         onChange={handleFilterChange}
                         className="w-full"
                     />
-                    
+
                     <SearchableSelect
                         options={[{ value: '', label: 'All Events' }, ...events.map(e => ({ value: e._id, label: e.name }))]}
                         value={filters.eventId}
@@ -423,12 +423,12 @@ const OccupancyReport = () => {
                 </div>
             </div>
 
-            <AllocationsView 
+            <AllocationsView
                 filters={adjustedFilters}
                 dateFilterType={dateFilterType}
-                debouncedSearchTerm={debouncedSearchTerm} 
-                pagination={pagination} 
-                setPagination={setPagination} 
+                debouncedSearchTerm={debouncedSearchTerm}
+                pagination={pagination}
+                setPagination={setPagination}
             />
 
             <Pagination pagination={pagination} onPageChange={handlePageChange} onLimitChange={handleLimitChange} />

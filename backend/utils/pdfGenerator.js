@@ -114,6 +114,13 @@ function generateBookingPdf(booking) {
         // Finalize table
         doc.rect(30, currentY - 5, 360, 0.5).stroke(secondaryColor);
 
+        // Reception Note
+        doc.moveDown(1.5);
+        doc.fillColor(primaryColor).fontSize(10).font('Helvetica-Bold');
+        doc.text('Important Note:', 30, currentY + 15);
+        doc.fillColor('black').font('Helvetica');
+        doc.text('Please report to reception/counter at the time of arrival!', 110, currentY + 15);
+
         // Footer
         const generatedDate = formatDate(new Date());
         doc.fontSize(8).fillColor(secondaryColor).text(
@@ -129,13 +136,13 @@ function generateBookingPdf(booking) {
 // Helper function to format dates
 function formatDate(dateString) {
     if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    return new Date(dateString).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Asia/Kolkata' });
 }
 
-// Helper for short dates (e.g. "04 Oct")
+// Helper for short dates (e.g. "04/10")
 function formatShortDate(dateString) {
     if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+    return new Date(dateString).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', timeZone: 'Asia/Kolkata' });
 }
 
 // Helper function to draw the table header
@@ -147,29 +154,22 @@ function generateTableHeader(doc, y) {
     doc.rect(headerX, y, headerWidth, headerHeight).fill('#F7FAFC').stroke('#E2E8F0');
     doc.fontSize(8).fillColor('#2D3748').font('Helvetica-Bold'); // Smaller font
 
-    // Layout: Name(35), Gen(105), Stay(135), Build(220), Room(285), Bed(325)
+    // Layout: Name(35), Gen(165), Stay(220)
     doc.text('Name', 35, y + 6);
-    doc.text('Gen', 105, y + 6);
-    doc.text('Stay', 135, y + 6);
-    doc.text('Building', 220, y + 6);
-    doc.text('Room', 285, y + 6);
-    doc.text('Bed', 325, y + 6);
+    doc.text('Gender', 165, y + 6);
+    doc.text('Stay Dates', 220, y + 6);
 }
 
 // Helper function to draw a single table row
 function generateTableRow(doc, y, person, alloc, height) {
     doc.fontSize(8).fillColor('black').font('Helvetica');
 
-    // Layout: Name(35), Gen(105), Stay(135), Build(220), Room(285), Bed(325)
-    doc.text(person.name, 35, y, { width: 70 });
-    doc.text(person.gender?.substring(0, 1) || '-', 105, y, { width: 25 }); // Short gender
+    // Layout: Name(35), Gen(165), Stay(220)
+    doc.text(person.name, 35, y, { width: 120 });
+    doc.text(person.gender || '-', 165, y, { width: 50 });
 
-    const stayStr = `${formatShortDate(person.stayFrom)}-${formatShortDate(person.stayTo)}`;
-    doc.text(stayStr, 135, y, { width: 80 });
-
-    doc.text(alloc.buildingId.name, 220, y, { width: 60 });
-    doc.text(alloc.roomId.roomNumber, 285, y, { width: 35 });
-    doc.text(alloc.bedId.name, 325, y, { width: 35 });
+    const stayStr = `${formatShortDate(person.stayFrom)} - ${formatShortDate(person.stayTo)}`;
+    doc.text(stayStr, 220, y, { width: 120 });
 
     // Draw the line below the row based on dynamic height
     doc.rect(30, y + height - 5, 360, 0.5).stroke('#E2E8F0');

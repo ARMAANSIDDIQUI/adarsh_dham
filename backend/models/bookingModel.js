@@ -59,6 +59,10 @@ const bookingSchema = new Schema({
         default: 'pending',
         index: true
     },
+    showAllocationDetails: {
+        type: Boolean,
+        default: false
+    },
     allocations: [allocationSchema]
 }, { timestamps: true });
 

@@ -26,12 +26,12 @@ const OccupantDetailsModal = ({ isOpen, person, onClose }) => {
 
     if (!isOpen || !person) return null;
 
-    const formatDate = (dateString) => new Date(dateString).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    const formatDate = (dateString) => new Date(dateString).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Asia/Kolkata' });
 
     return (
         <AnimatePresence>
             {isOpen && (
-                <div 
+                <div
                     className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4 font-body overflow-y-auto"
                     onClick={handleBackdropClick}
                 >
@@ -44,16 +44,16 @@ const OccupantDetailsModal = ({ isOpen, person, onClose }) => {
                         <button onClick={onClose} className="absolute top-3 right-3 text-primaryDark hover:text-accent">
                             <FaTimes size={20} />
                         </button>
-                        
+
                         <h3 className="text-2xl font-bold font-heading text-highlight mb-4 border-b border-background pb-2">{person.name}</h3>
-                        
+
                         <div className="space-y-3 text-gray-700">
-                            <p className="flex items-center"><FaHashtag className="mr-3 text-gray-400"/>Booking No: <span className="font-semibold ml-2">{person.bookingNumber}</span></p>
-                            <p className="flex items-center"><FaHome className="mr-3 text-gray-400"/>Ashram: <span className="font-semibold ml-2">{person.ashramName}</span></p>
-                            <p className="flex items-center"><FaCity className="mr-3 text-gray-400"/>City: <span className="font-semibold ml-2">{person.city}</span></p>
-                            <p className="flex items-center"><FaPhone className="mr-3 text-gray-400"/>Contact: <span className="font-semibold ml-2">{person.contactNumber}</span></p>
-                            <p className="flex items-center"><FaUserTag className="mr-3 text-gray-400"/>Reference: <span className="font-semibold ml-2">{person.baijiMahatmaJi || 'N/A'}</span></p>
-                            <p className="flex items-center"><FaUserTag className="mr-3 text-gray-400"/>Gender: <span className="font-semibold ml-2 capitalize">{person.gender || 'N/A'}</span></p>
+                            <p className="flex items-center"><FaHashtag className="mr-3 text-gray-400" />Booking No: <span className="font-semibold ml-2">{person.bookingNumber}</span></p>
+                            <p className="flex items-center"><FaHome className="mr-3 text-gray-400" />Ashram: <span className="font-semibold ml-2">{person.ashramName}</span></p>
+                            <p className="flex items-center"><FaCity className="mr-3 text-gray-400" />City: <span className="font-semibold ml-2">{person.city}</span></p>
+                            <p className="flex items-center"><FaPhone className="mr-3 text-gray-400" />Contact: <span className="font-semibold ml-2">{person.contactNumber}</span></p>
+                            <p className="flex items-center"><FaUserTag className="mr-3 text-gray-400" />Reference: <span className="font-semibold ml-2">{person.baijiMahatmaJi || 'N/A'}</span></p>
+                            <p className="flex items-center"><FaUserTag className="mr-3 text-gray-400" />Gender: <span className="font-semibold ml-2 capitalize">{person.gender || 'N/A'}</span></p>
                             <p className="mt-4 pt-4 border-t border-background text-sm text-center">Stay: {formatDate(person.stayFrom)} to {formatDate(person.stayTo)}</p>
                         </div>
                     </motion.div>
@@ -74,7 +74,7 @@ const getIstDateBoundaries = () => {
     // Current date/time in IST
     const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
     const nowIst = new Date(new Date().getTime() + IST_OFFSET_MS);
-    
+
     // Get year and month based on IST
     const year = nowIst.getUTCFullYear();
     const month = nowIst.getUTCMonth();
@@ -110,11 +110,11 @@ const StructureView = () => {
     const [people, setPeople] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    
+
     const { today } = useMemo(getIstDateBoundaries, []);
     const [selectedDate, setSelectedDate] = useState(formatDateForInput(today));
     const [modalData, setModalData] = useState({ isOpen: false, person: null });
-    
+
     // STATES for filtering
     const [buildingSearch, setBuildingSearch] = useState('');
     const [genderFilter, setGenderFilter] = useState(''); // 'Male', 'Female', or '' (All)
@@ -123,8 +123,8 @@ const StructureView = () => {
         const fetchStructureData = async () => {
             try {
                 setLoading(true);
-                const res = await api.get('/structure'); 
-                
+                const res = await api.get('/structure');
+
                 setBuildings(res.data.buildings || []);
                 setPeople(res.data.people || []);
                 setError(null);
@@ -140,19 +140,19 @@ const StructureView = () => {
 
     const occupancyMap = useMemo(() => {
         const map = new Map();
-        
+
         // --- IST CONVERSION LOGIC (UTC + 5:30) ---
         const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
-        
-        const selectedDayUTC = new Date(selectedDate + 'T00:00:00Z'); 
+
+        const selectedDayUTC = new Date(selectedDate + 'T00:00:00Z');
 
         const startOfISTDayUTC = new Date(selectedDayUTC.getTime() - IST_OFFSET_MS);
         const endOfISTDayUTC = new Date(startOfISTDayUTC.getTime() + 24 * 60 * 60 * 1000);
 
         people.forEach(person => {
-            const stayFrom = new Date(person.stayFrom); 
-            const stayTo = new Date(person.stayTo);     
-            
+            const stayFrom = new Date(person.stayFrom);
+            const stayTo = new Date(person.stayTo);
+
             if (stayFrom < endOfISTDayUTC && stayTo >= startOfISTDayUTC) {
                 map.set(person.bedId, person);
             }
@@ -164,15 +164,15 @@ const StructureView = () => {
     const filteredBuildings = useMemo(() => {
         return buildings.filter(building => {
             const matchesSearch = (building.name || '').toLowerCase().includes(buildingSearch.toLowerCase());
-            
+
             const buildingGenderLower = normalizeGender(building.gender);
 
             // 2. Gender filter: Filter by building gender directly
             if (genderFilter) {
                 const filterLower = genderFilter.toLowerCase();
-                
+
                 if (filterLower === 'male' && (buildingGenderLower !== 'male' && buildingGenderLower !== 'mixed')) return false;
-                
+
                 if (filterLower === 'female' && (buildingGenderLower !== 'female' && buildingGenderLower !== 'mixed')) return false;
             }
 
@@ -182,9 +182,9 @@ const StructureView = () => {
 
 
     const summaryStats = useMemo(() => {
-        const totalCapacity = buildings.reduce((bAcc, building) => 
+        const totalCapacity = buildings.reduce((bAcc, building) =>
             bAcc + building.rooms.reduce((rAcc, room) => rAcc + room.beds.length, 0), 0);
-        
+
         const totalOccupancy = occupancyMap.size;
         return { totalCapacity, totalOccupancy, totalVacancy: totalCapacity - totalOccupancy };
     }, [buildings, occupancyMap]);
@@ -226,17 +226,17 @@ const StructureView = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                 <div className="bg-card p-4 rounded-2xl shadow-soft text-center">
-                    <FaBed className="text-2xl text-accent mx-auto mb-2"/>
+                    <FaBed className="text-2xl text-accent mx-auto mb-2" />
                     <p className="text-3xl font-bold">{summaryStats.totalCapacity}</p>
                     <p className="text-sm text-gray-500">Total Capacity</p>
                 </div>
                 <div className="bg-card p-4 rounded-2xl shadow-soft text-center">
-                    <FaUserCheck className="text-2xl text-accent mx-auto mb-2"/>
+                    <FaUserCheck className="text-2xl text-accent mx-auto mb-2" />
                     <p className="text-3xl font-bold">{summaryStats.totalOccupancy}</p>
                     <p className="text-sm text-gray-500">Current Occupancy</p>
                 </div>
                 <div className="bg-card p-4 rounded-2xl shadow-soft text-center">
-                    <FaUserMinus className="text-2xl text-accent mx-auto mb-2"/>
+                    <FaUserMinus className="text-2xl text-accent mx-auto mb-2" />
                     <p className="text-3xl font-bold">{summaryStats.totalVacancy}</p>
                     <p className="text-sm text-gray-500">Current Vacancy</p>
                 </div>
@@ -271,14 +271,14 @@ const StructureView = () => {
                 {filteredBuildings.length > 0 ? filteredBuildings.map(building => {
                     const buildingCapacity = building.rooms.reduce((acc, room) => acc + room.beds.length, 0);
                     const buildingOccupancy = building.rooms.reduce((acc, room) => acc + room.beds.filter(bed => occupancyMap.has(bed._id)).length, 0);
-                    
+
                     const buildingGender = building.gender;
                     const roomGenderLower = normalizeGender(buildingGender);
                     const roomGenderDisplay = buildingGender ? buildingGender.replace('-', ' ') : 'N/A';
 
                     const genderStats = building.rooms.reduce((stats, room) => {
                         const occupiedBeds = room.beds.filter(bed => occupancyMap.has(bed._id));
-                        
+
                         stats.maleOccupants += occupiedBeds.filter(bed => {
                             const person = occupancyMap.get(bed._id);
                             return person && normalizeGender(person.gender) === 'male';
@@ -299,12 +299,12 @@ const StructureView = () => {
                             <div className="flex justify-between items-center mb-3 flex-wrap">
                                 {/* Display building name and gender tag */}
                                 <h3 className="text-xl font-bold font-heading text-primaryDark flex items-center mb-2">
-                                    <FaBuilding className="mr-3 text-primary"/>
+                                    <FaBuilding className="mr-3 text-primary" />
                                     {building.name}
                                     <span className={`ml-3 text-sm font-medium px-2 py-0.5 rounded-full capitalize 
-                                        ${roomGenderLower === 'male' ? 'bg-blue-100 text-blue-800' : 
-                                        roomGenderLower === 'female' ? 'bg-pink-100 text-pink-800' : 
-                                        'bg-yellow-100 text-yellow-800'}`
+                                        ${roomGenderLower === 'male' ? 'bg-blue-100 text-blue-800' :
+                                            roomGenderLower === 'female' ? 'bg-pink-100 text-pink-800' :
+                                                'bg-yellow-100 text-yellow-800'}`
                                     }>
                                         {roomGenderDisplay}
                                     </span>
@@ -313,11 +313,11 @@ const StructureView = () => {
                                     <span>Occupancy: {buildingOccupancy} / {buildingCapacity}</span>
                                     {/* FIX: Conditional display for Male Stats */}
                                     {shouldShowMaleStats && (
-                                        <span className="flex items-center text-blue-600"><FaMale className="mr-1"/> M: {genderStats.maleOccupants}</span>
+                                        <span className="flex items-center text-blue-600"><FaMale className="mr-1" /> M: {genderStats.maleOccupants}</span>
                                     )}
                                     {/* FIX: Conditional display for Female Stats */}
                                     {shouldShowFemaleStats && (
-                                        <span className="flex items-center text-pink-600"><FaFemale className="mr-1"/> F: {genderStats.femaleOccupants}</span>
+                                        <span className="flex items-center text-pink-600"><FaFemale className="mr-1" /> F: {genderStats.femaleOccupants}</span>
                                     )}
                                 </div>
                             </div>
@@ -326,14 +326,14 @@ const StructureView = () => {
                                     <div key={room._id} className="pl-4 border-l-2 ml-2 border-background">
                                         {/* Simplified Room Heading */}
                                         <h4 className="font-semibold text-gray-600">
-                                            Room {room.roomNumber} 
+                                            Room {room.roomNumber}
                                         </h4>
                                         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 mt-2">
                                             {room.beds.map(bed => {
                                                 const occupant = occupancyMap.get(bed._id);
                                                 const isOccupied = !!occupant;
                                                 const occupantGenderLower = normalizeGender(occupant?.gender);
-                                                
+
                                                 let bedStyle = 'border-green-300';
                                                 let bgColor = 'bg-green-100'; // Vacant default
                                                 let textColor = 'text-green-700';
@@ -364,7 +364,7 @@ const StructureView = () => {
                                                 } else {
                                                     bedStyle = 'border-green-300';
                                                 }
-                                                
+
                                                 // --- Filtering Logic (Final Check) ---
                                                 if (genderFilter && isOccupied && occupantGenderLower !== genderFilter.toLowerCase()) {
                                                     return null;
@@ -374,19 +374,19 @@ const StructureView = () => {
                                                 }
                                                 // ---------------------------------------
 
-                                                const bedTitle = isOccupied 
-                                                    ? `Occupied by: ${occupant.name} (${occupant.gender})` 
+                                                const bedTitle = isOccupied
+                                                    ? `Occupied by: ${occupant.name} (${occupant.gender})`
                                                     : `Available (${roomGenderDisplay})`;
 
                                                 return (
-                                                    <div 
+                                                    <div
                                                         key={bed._id}
                                                         title={bedTitle}
                                                         onClick={() => isOccupied && setModalData({ isOpen: true, person: occupant })}
                                                         className={`p-2 rounded-md text-center text-xs border transition-all duration-200 cursor-pointer ${bedStyle} ${bgColor}`}
                                                     >
                                                         <p className="font-bold text-gray-800 flex items-center justify-center">
-                                                            {bed.name} {genderIcon} 
+                                                            {bed.name} {genderIcon}
                                                         </p>
                                                         <p className={`truncate ${textColor}`}>
                                                             {isOccupied ? occupant.name : 'Available'}
@@ -407,7 +407,7 @@ const StructureView = () => {
                 )}
             </div>
 
-            <OccupantDetailsModal 
+            <OccupantDetailsModal
                 isOpen={modalData.isOpen}
                 person={modalData.person}
                 onClose={() => setModalData({ isOpen: false, person: null })}
