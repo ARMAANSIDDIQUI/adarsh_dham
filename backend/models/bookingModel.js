@@ -3,6 +3,7 @@ const { Schema } = mongoose;
 
 const allocationSchema = new Schema({
     personIndex: Number,
+    isChild: { type: Boolean, default: false },
     buildingId: { type: Schema.Types.ObjectId, ref: 'Building' },
     roomId: { type: Schema.Types.ObjectId, ref: 'Room' },
     bedId: { type: Schema.Types.ObjectId, ref: 'Bed' }

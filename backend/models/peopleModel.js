@@ -26,8 +26,11 @@ const personSchema = new Schema({
     bedId: {
         type: Schema.Types.ObjectId,
         ref: 'Bed',
-        required: true,
         index: true
+    },
+    isChild: {
+        type: Boolean,
+        default: false
     },
     name: {
         type: String,

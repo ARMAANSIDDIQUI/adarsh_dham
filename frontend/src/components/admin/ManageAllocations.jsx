@@ -251,9 +251,20 @@ const BookingCard = ({ booking, onAction, onEdit, allocations, handleAllocationC
         setScheduleDelay(prev => ({ ...prev, [unit]: value }));
     };
 
+    // Helper to check if person is a young child
+    const isYoungChild = (person) => {
+        return (person?.gender === 'boy' || person?.gender === 'girl') &&
+            parseInt(person?.age) <= 2;
+    };
+
     const allBedsAssigned = (formData.people?.length || 0) > 0 &&
         formData.people.length === (pendingAllocations.length || 0) &&
-        pendingAllocations.every(a => a && a.bedId);
+        pendingAllocations.every((a, index) => {
+            const person = formData.people[index];
+            // Young children don't require bed allocation
+            if (isYoungChild(person)) return true;
+            return a && a.bedId;
+        });
 
     const handleDecision = (action) => {
         setError('');
@@ -448,45 +459,68 @@ const BookingCard = ({ booking, onAction, onEdit, allocations, handleAllocationC
                                             // The zIndex is calculated to ensure each row stacks correctly
                                             const zIndex = (formData?.people?.length || 0) - index + 10;
 
+                                            // Check if person is a young child (≤2 years)
+                                            const isChildPerson = (person?.gender === 'boy' || person?.gender === 'girl') && parseInt(person?.age) <= 2;
+
                                             return (
                                                 <div key={index} className={`p-3 bg-gray-50 rounded-lg border relative z-[${zIndex}]`}>
                                                     <div className="mb-2">
-                                                        <p className="font-semibold text-gray-700">{person?.name || `Person ${index + 1}`} <span className="text-xs text-pink-500 capitalize">({person?.gender || 'N/A'})</span></p>
+                                                        <p className="font-semibold text-gray-700">
+                                                            {person?.name || `Person ${index + 1}`}
+                                                            <span className="text-xs text-pink-500 capitalize ml-1">({person?.gender || 'N/A'})</span>
+                                                            {isChildPerson && (
+                                                                <span className="ml-2 text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200">
+                                                                    Child ≤2
+                                                                </span>
+                                                            )}
+                                                        </p>
                                                         <p className="text-xs text-gray-500">Stay: {formatDate(person.stayFrom)} - {formatDate(person.stayTo)}</p>
                                                     </div>
-                                                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4">
-                                                        <SearchableSelect
-                                                            options={buildingOptions}
-                                                            value={personAllocated.buildingId || ''}
-                                                            onChange={(e) => handleAllocationChange(bookingId, index, 'buildingId', e.target.value)}
-                                                            placeholder="Select Building"
-                                                        />
-                                                        <div className="flex items-center space-x-2">
-                                                            {/* FIX START: This wrapper allows the dropdown to shrink and make space for the icon */}
-                                                            <div className="flex-1 min-w-0">
-                                                                <SearchableSelect
-                                                                    options={roomOptions}
-                                                                    value={personAllocated.roomId || ''}
-                                                                    onChange={(e) => handleAllocationChange(bookingId, index, 'roomId', e.target.value)}
-                                                                    placeholder="Select Room"
-                                                                    disabled={!personAllocated.buildingId}
-                                                                />
-                                                            </div>
-                                                            {/* FIX END */}
-                                                            {personAllocated.roomId && (
-                                                                <button type="button" onClick={() => onShowRoomDetails(personAllocated.roomId, booking)} className="text-blue-500 hover:text-blue-700 p-1" title="Show room occupants">
-                                                                    <FaInfoCircle />
-                                                                </button>
-                                                            )}
+
+                                                    {isChildPerson ? (
+                                                        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-center">
+                                                            <p className="text-amber-700 font-medium text-sm">
+                                                                No bed allocation needed for young child
+                                                            </p>
+                                                            <p className="text-amber-600 text-xs mt-1">
+                                                                Children aged 2 or below don't require a separate bed
+                                                            </p>
                                                         </div>
-                                                        <SearchableSelect
-                                                            options={bedOptions}
-                                                            value={personAllocated.bedId || ''}
-                                                            onChange={(e) => handleAllocationChange(bookingId, index, 'bedId', e.target.value)}
-                                                            placeholder="Select Bed"
-                                                            disabled={!personAllocated.roomId}
-                                                        />
-                                                    </div>
+                                                    ) : (
+                                                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4">
+                                                            <SearchableSelect
+                                                                options={buildingOptions}
+                                                                value={personAllocated.buildingId || ''}
+                                                                onChange={(e) => handleAllocationChange(bookingId, index, 'buildingId', e.target.value)}
+                                                                placeholder="Select Building"
+                                                            />
+                                                            <div className="flex items-center space-x-2">
+                                                                {/* FIX START: This wrapper allows the dropdown to shrink and make space for the icon */}
+                                                                <div className="flex-1 min-w-0">
+                                                                    <SearchableSelect
+                                                                        options={roomOptions}
+                                                                        value={personAllocated.roomId || ''}
+                                                                        onChange={(e) => handleAllocationChange(bookingId, index, 'roomId', e.target.value)}
+                                                                        placeholder="Select Room"
+                                                                        disabled={!personAllocated.buildingId}
+                                                                    />
+                                                                </div>
+                                                                {/* FIX END */}
+                                                                {personAllocated.roomId && (
+                                                                    <button type="button" onClick={() => onShowRoomDetails(personAllocated.roomId, booking)} className="text-blue-500 hover:text-blue-700 p-1" title="Show room occupants">
+                                                                        <FaInfoCircle />
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                            <SearchableSelect
+                                                                options={bedOptions}
+                                                                value={personAllocated.bedId || ''}
+                                                                onChange={(e) => handleAllocationChange(bookingId, index, 'bedId', e.target.value)}
+                                                                placeholder="Select Bed"
+                                                                disabled={!personAllocated.roomId}
+                                                            />
+                                                        </div>
+                                                    )}
                                                 </div>
                                             );
                                         })}
@@ -530,14 +564,30 @@ const BookingCard = ({ booking, onAction, onEdit, allocations, handleAllocationC
                                 <div className="mt-4 pt-4 border-t border-gray-100">
                                     <h5 className="font-bold mb-3 text-emerald-600 flex items-center"><FaUserShield className="mr-2" /> Allocated Details</h5>
                                     <div className="space-y-3">
-                                        {safeSavedAllocations.map((alloc, index) => (
-                                            <div key={index} className="text-sm bg-emerald-50 p-3 rounded-lg border border-emerald-200">
-                                                <span className="font-semibold text-gray-800 mr-2">{formData?.people?.[index]?.name || `Person ${index + 1}`}:</span>
-                                                <span className="text-gray-600 block sm:inline">
-                                                    Building {alloc?.buildingId?.name || 'N/A'}, Room {alloc?.roomId?.roomNumber || 'N/A'}, Bed {alloc?.bedId?.name || 'N/A'}
-                                                </span>
-                                            </div>
-                                        ))}
+                                        {safeSavedAllocations.map((alloc, index) => {
+                                            const person = formData?.people?.[index];
+                                            const isChildPerson = (person?.gender === 'boy' || person?.gender === 'girl') && parseInt(person?.age) <= 2;
+
+                                            return (
+                                                <div key={index} className={`text-sm p-3 rounded-lg border ${isChildPerson ? 'bg-amber-50 border-amber-200' : 'bg-emerald-50 border-emerald-200'}`}>
+                                                    <span className="font-semibold text-gray-800 mr-2">
+                                                        {person?.name || `Person ${index + 1}`}
+                                                        {isChildPerson && (
+                                                            <span className="ml-2 text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200">
+                                                                Child ≤2
+                                                            </span>
+                                                        )}:
+                                                    </span>
+                                                    {isChildPerson ? (
+                                                        <span className="text-amber-700 block sm:inline">No bed allocated (young child)</span>
+                                                    ) : (
+                                                        <span className="text-gray-600 block sm:inline">
+                                                            Building {alloc?.buildingId?.name || 'N/A'}, Room {alloc?.roomId?.roomNumber || 'N/A'}, Bed {alloc?.bedId?.name || 'N/A'}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                     <div className="flex items-center mt-4 p-3 bg-gray-50 rounded-lg border">
                                         <input

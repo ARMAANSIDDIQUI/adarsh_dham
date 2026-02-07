@@ -123,9 +123,29 @@ exports.approveOrDeclineBooking = async (req, res) => {
                 return res.status(400).json({ message: 'Allocation details must be provided as an array for every person.' });
             }
 
+            // Helper to check if person is a young child (age ≤ 2)
+            const isYoungChild = (person) => {
+                return (person.gender === 'boy' || person.gender === 'girl') &&
+                    parseInt(person.age) <= 2;
+            };
+
+            // Validate beds for non-children
             for (let i = 0; i < booking.formData.people.length; i++) {
                 const personData = booking.formData.people[i];
                 const allocation = allocations[i];
+
+                // Young children (≤2) don't require bed allocation
+                if (isYoungChild(personData)) {
+                    continue; // Skip bed validation for young children
+                }
+
+                // For non-children, bed is required
+                if (!allocation.bedId) {
+                    return res.status(400).json({
+                        message: `Bed allocation required for ${personData.name}.`
+                    });
+                }
+
                 const isAvailable = await checkBedAvailability(
                     allocation.bedId,
                     personData.stayFrom || booking.formData.stayFrom,
@@ -141,12 +161,14 @@ exports.approveOrDeclineBooking = async (req, res) => {
 
             const peopleToCreate = booking.formData.people.map((personData, index) => {
                 const allocation = allocations[index];
+                const isChildPerson = isYoungChild(personData);
                 return {
                     bookingId: booking._id,
                     bookingNumber: booking.bookingNumber,
                     userId: booking.userId._id,
                     eventId: booking.eventId._id,
-                    bedId: allocation.bedId,
+                    bedId: isChildPerson ? null : allocation.bedId, // No bed for young children
+                    isChild: isChildPerson,
                     name: personData.name,
                     age: personData.age,
                     gender: personData.gender,
@@ -160,7 +182,16 @@ exports.approveOrDeclineBooking = async (req, res) => {
             });
             await Person.insertMany(peopleToCreate);
 
-            booking.allocations = allocations;
+            // Update allocations with isChild flag
+            booking.allocations = allocations.map((alloc, index) => {
+                const personData = booking.formData.people[index];
+                const isChildPerson = isYoungChild(personData);
+                return {
+                    ...alloc,
+                    isChild: isChildPerson,
+                    bedId: isChildPerson ? null : alloc.bedId
+                };
+            });
             booking.status = 'approved';
             message = `Your booking for ${booking.eventId?.name} (#${booking.bookingNumber}) has been approved!`;
 
