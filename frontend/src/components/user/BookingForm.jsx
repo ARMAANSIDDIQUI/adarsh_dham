@@ -121,6 +121,8 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
   }, [eventId]);
 
   useEffect(() => {
+    if (!event) return; // Guard against null event
+
     const todayIST = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
     const today = new Date(todayIST);
 
