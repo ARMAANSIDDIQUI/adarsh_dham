@@ -1,14 +1,15 @@
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_BASE_URL || ''; 
+const API_URL = process.env.REACT_APP_API_BASE_URL || '';
 
 const api = axios.create({
-    baseURL: `${API_URL}/api`, 
+    baseURL: `${API_URL}/api`,
     headers: {
         'Content-Type': 'application/json',
     },
 });
 
+// Request interceptor - add token to requests
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('token');
@@ -18,6 +19,32 @@ api.interceptors.request.use(
         return config;
     },
     (error) => {
+        return Promise.reject(error);
+    }
+);
+
+// Response interceptor - handle expired tokens
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response) {
+            const status = error.response.status;
+            const message = error.response.data?.message || '';
+
+            // Auto-logout on token expiry or invalid token
+            if (status === 401 ||
+                (status === 403 && message.toLowerCase().includes('token'))) {
+
+                // Clear auth data
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+
+                // Redirect to login (only if not already on login page)
+                if (!window.location.pathname.includes('/login')) {
+                    window.location.href = '/login?expired=true';
+                }
+            }
+        }
         return Promise.reject(error);
     }
 );

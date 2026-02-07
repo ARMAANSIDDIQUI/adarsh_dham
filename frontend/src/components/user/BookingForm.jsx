@@ -186,10 +186,27 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
   }, [formData.numMales, formData.numFemales, formData.numBoys, formData.numGirls, isEditing]);
 
   const handleGroupChange = e => {
-    const { name, value, type, checked } = e.target;
-    // Handle checkbox for boolean values if needed, though for now using for group counts mostly
+    const { name, value } = e.target;
     const numValue = parseInt(value, 10);
-    setFormData(prev => ({ ...prev, [name]: numValue >= 0 ? numValue : 0 }));
+    const newValue = numValue >= 0 ? numValue : 0;
+
+    // Calculate what total would be after this change
+    const currentCounts = {
+      numMales: formData.numMales || 0,
+      numFemales: formData.numFemales || 0,
+      numBoys: formData.numBoys || 0,
+      numGirls: formData.numGirls || 0,
+    };
+    currentCounts[name] = newValue;
+    const totalAfterChange = currentCounts.numMales + currentCounts.numFemales +
+      currentCounts.numBoys + currentCounts.numGirls;
+
+    // Prevent removing last member
+    if (totalAfterChange < 1) {
+      return; // Don't allow change that would result in 0 members
+    }
+
+    setFormData(prev => ({ ...prev, [name]: newValue }));
   };
 
   const handlePersonChange = (e, index) => {
