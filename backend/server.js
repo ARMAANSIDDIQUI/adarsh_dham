@@ -235,14 +235,17 @@ app.use('/api/password-requests', passwordRequestRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/email', emailRoutes);
 
-// Original root route - Commented out so it doesn't block frontend serving
-// app.get('/', (req, res) => {
-//   res.send('Adarsh Dham Backend is running...');
-// });
+// Mount short link admin routes
+const shortLinkRoutes = require('./routes/shortLinkRoutes');
+app.use('/api/admin/short-links', shortLinkRoutes);
 
 // --- SERVE FRONTEND ---
 // 1. Serve static files from the 'build' folder
 app.use(express.static(path.join(__dirname, 'build')));
+
+// --- SHORT LINK REDIRECT HANDLER ---
+const { handleRedirect } = require('./controllers/shortLinkController');
+app.get('/:slug', handleRedirect);
 
 // 2. Handle React routing, return all non-API requests to index.html
 app.get('*', (req, res) => {

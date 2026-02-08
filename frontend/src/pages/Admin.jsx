@@ -14,9 +14,10 @@ import ExportData from '../components/admin/ExportData';
 import SendNotification from '../components/admin/SendNotification';
 import AdminUserManagement from '../components/admin/AdminUserManagement';
 import OccupancyReport from '../components/admin/OccupancyReport';
-import StructureView from '../components/admin/StructureView'; 
+import StructureView from '../components/admin/StructureView';
 import ManageComments from '../components/admin/ManageComments';
-import PasswordResetRequests from '../components/admin/PasswordResetRequests'; // ✨ NEW
+import PasswordResetRequests from '../components/admin/PasswordResetRequests';
+import ManageShortLinks from '../components/admin/ManageShortLinks'; // ✨ NEW
 
 const Admin = () => {
     return (
@@ -25,6 +26,7 @@ const Admin = () => {
                 <Route index element={<AdminDashboard />} />
                 <Route path="manage-admins" element={<ManageAdmins />} />
                 <Route path="user-management" element={<AdminUserManagement />} />
+                <Route path="manage-short-links" element={<ManageShortLinks />} /> {/* ✨ NEW */}
                 <Route path="password-requests" element={<PasswordResetRequests />} /> {/* ✨ NEW */}
                 <Route path="manage-comments" element={<ManageComments />} />
                 <Route path="manage-events" element={<ManageEvents />} />

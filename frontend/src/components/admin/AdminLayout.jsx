@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../redux/slices/authSlice.js';
-import { FaUserShield, FaCalendarAlt, FaBuilding, FaBed, FaWifi, FaUserCog, FaSignOutAlt, FaDoorOpen, FaUsers, FaBell, FaBars, FaTimes, FaListAlt, FaSitemap, FaComments, FaKey } from 'react-icons/fa';
+import { FaUserShield, FaCalendarAlt, FaBuilding, FaBed, FaWifi, FaUserCog, FaSignOutAlt, FaDoorOpen, FaUsers, FaBell, FaBars, FaTimes, FaListAlt, FaSitemap, FaComments, FaKey, FaExternalLinkAlt } from 'react-icons/fa';
 
 const AdminLayout = ({ children }) => {
     const dispatch = useDispatch();
@@ -10,7 +10,7 @@ const AdminLayout = ({ children }) => {
     const { user } = useSelector((state) => state.auth);
 
     const CUSTOM_BREAKPOINT = 1792;
-    
+
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth < CUSTOM_BREAKPOINT);
 
@@ -54,11 +54,12 @@ const AdminLayout = ({ children }) => {
         { name: 'Manage Comments', to: '/admin/manage-comments', icon: <FaComments />, roles: ['admin', 'super-admin'] },
         { name: 'Manage Events', to: '/admin/manage-events', icon: <FaCalendarAlt />, roles: ['admin'] },
         { name: 'Manage Buildings', to: '/admin/manage-buildings', icon: <FaBuilding />, roles: ['admin'] },
-        { name: 'Manage Rooms', to: '/admin/manage-rooms', icon: <FaDoorOpen/>, roles: ['admin'] },
+        { name: 'Manage Rooms', to: '/admin/manage-rooms', icon: <FaDoorOpen />, roles: ['admin'] },
         { name: 'Manage Beds', to: '/admin/manage-beds', icon: <FaBed />, roles: ['admin'] },
         { name: 'Manage Allocations', to: '/admin/manage-allocations', icon: <FaUserShield />, roles: ['super-operator', 'operator'] },
         { name: 'Occupancy Report', to: '/admin/occupancy-report', icon: <FaListAlt />, roles: ['admin', 'super-admin', 'operator', 'super-operator'] },
         { name: 'Live Structure View', to: '/admin/structure-view', icon: <FaSitemap />, roles: ['admin', 'super-admin', 'operator', 'super-operator'] },
+        { name: 'Short Links', to: '/admin/manage-short-links', icon: <FaExternalLinkAlt />, roles: ['admin', 'super-admin', 'operator', 'super-operator'] },
         { name: 'Manage Satsang', to: '/admin/manage-satsang', icon: <FaWifi />, roles: ['satsang-operator'] },
         { name: 'Send Notification', to: '/admin/send-notification', icon: <FaBell />, roles: ['admin', 'super-admin'] },
     ];
@@ -81,12 +82,12 @@ const AdminLayout = ({ children }) => {
         <div className={`flex flex-col ${getBreakpointClass('flex-row')} min-h-screen bg-neutral font-body`}>
             {/* Overlay for mobile view */}
             {isSidebarOpen && (
-                <div 
+                <div
                     className={`fixed inset-0 z-[590] bg-black opacity-50 ${getBreakpointClass('hidden')}`}
                     onClick={handleMenuToggle}
                 ></div>
             )}
-            
+
             {/* Sidebar */}
             <aside className={`bg-[#C9788A] text-white w-64 p-4 ${getBreakpointClass('p-6')} shadow-soft fixed ${getBreakpointClass('static')} top-0 bottom-0 left-0 z-[650] flex flex-col transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} ${getBreakpointClass('translate-x-0')} ${getBreakpointClass('flex')}`}>
                 <div className="flex justify-between items-center mb-6 pt-4">
