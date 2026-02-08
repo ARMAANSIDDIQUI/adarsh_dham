@@ -2,11 +2,11 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { FaUserShield, FaCalendarAlt, FaBuilding, FaDoorOpen, FaBed, FaWifi, FaUsers, FaBell, FaListAlt, FaSitemap, FaComments, FaKey} from 'react-icons/fa';
+import { FaUserShield, FaCalendarAlt, FaBuilding, FaDoorOpen, FaBed, FaWifi, FaUsers, FaBell, FaListAlt, FaSitemap, FaComments, FaKey, FaExternalLinkAlt } from 'react-icons/fa';
 
 const linkVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
 };
 
 const AdminDashboard = () => {
@@ -20,8 +20,9 @@ const AdminDashboard = () => {
     const hasRole = (role) => userRoles?.includes(role);
 
     const dashboardLinks = [
-        { to: "manage-admins", name: "Manage Admins", description: "Modify administrator roles and permissions.", icon: <FaUserShield  />, roles: ['super-admin'] },
+        { to: "manage-admins", name: "Manage Admins", description: "Modify administrator roles and permissions.", icon: <FaUserShield />, roles: ['super-admin'] },
         { to: "user-management", name: "User Management", description: "View all users and manage their accounts.", icon: <FaUsers />, roles: ['admin', 'super-admin'] },
+        { to: "manage-short-links", name: "Short Links", description: "Create and manage custom redirect links.", icon: <FaExternalLinkAlt />, roles: ['admin', 'super-admin', 'operator', 'super-operator'] }, // ✨ NEW
         { to: "password-requests", name: "Password Requests", description: "View user requests for password resets.", icon: <FaKey />, roles: ['admin', 'super-admin'] },
         { to: "manage-comments", name: "Manage Comments", description: "Approve or reject user-submitted comments.", icon: <FaComments />, roles: ['admin', 'super-admin'] },
         { to: "manage-events", name: "Manage Events", description: "Create, edit, and manage event details.", icon: <FaCalendarAlt />, roles: ['admin'] },

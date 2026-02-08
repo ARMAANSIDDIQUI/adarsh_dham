@@ -245,7 +245,7 @@ app.use(express.static(path.join(__dirname, 'build')));
 
 // --- SHORT LINK REDIRECT HANDLER ---
 const { handleRedirect } = require('./controllers/shortLinkController');
-app.get('/:slug', handleRedirect);
+app.get('/:slug', handleRedirect); // Server-side redirect
 
 // 2. Handle React routing, return all non-API requests to index.html
 app.get('*', (req, res) => {

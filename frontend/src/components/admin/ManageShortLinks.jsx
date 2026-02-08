@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import shortLinkService from '../../api/shortLinkService';
 import { toast } from 'react-toastify';
-import { FaTrash, FaEdit, FaCopy, FaExternalLinkAlt } from 'react-icons/fa';
+import { FaTrashAlt, FaEdit, FaCopy, FaExternalLinkAlt, FaPlus, FaSpinner } from 'react-icons/fa';
+import Button from '../common/Button';
 
 const ManageShortLinks = () => {
     const [links, setLinks] = useState([]);
@@ -84,24 +86,27 @@ const ManageShortLinks = () => {
         toast.success('Link copied to clipboard!');
     };
 
+    if (loading) return <div className="text-center mt-10 text-xl text-primary font-body"><FaSpinner className="animate-spin inline mr-2" /> Loading Links...</div>;
+
     return (
-        <div className="p-4 md:p-6 bg-white shadow-xl rounded-xl">
-            <h2 className="text-2xl font-bold font-heading mb-6 text-gray-800 border-b pb-2">Manage Short Links</h2>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-8 bg-neutral min-h-screen font-body">
+            <h2 className="text-3xl md:text-4xl font-bold text-primaryDark font-heading mb-6 border-b-2 border-primary pb-2">Manage Short Links</h2>
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="mb-8 bg-gray-50 p-6 rounded-lg shadow-inner">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-card p-6 rounded-2xl shadow-soft mb-8">
+                <h3 className="text-xl font-semibold font-heading text-primaryDark mb-4">{isEditing ? 'Edit Short Link' : 'Add New Short Link'}</h3>
+                <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label className="block text-gray-700 font-medium mb-1">Slug (e.g., is-live)</label>
                         <div className="flex items-center">
-                            <span className="bg-gray-200 px-3 py-2 rounded-l-md text-gray-600 border border-r-0 border-gray-300">/</span>
+                            <span className="bg-gray-200 px-3 py-2 rounded-l-lg text-gray-600 border border-gray-300 border-r-0">/</span>
                             <input
                                 type="text"
                                 name="slug"
                                 value={formData.slug}
                                 onChange={handleChange}
                                 placeholder="my-link"
-                                className="w-full px-4 py-2 border rounded-r-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-r-lg focus:ring-pink-300 focus:border-pink-500"
                                 required
                             />
                         </div>
@@ -114,111 +119,108 @@ const ManageShortLinks = () => {
                             value={formData.targetUrl}
                             onChange={handleChange}
                             placeholder="https://example.com"
-                            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-500"
                             required
                         />
                     </div>
-                </div>
-                <div className="mt-4">
-                    <label className="block text-gray-700 font-medium mb-1">Description (Optional)</label>
-                    <input
-                        type="text"
-                        name="description"
-                        value={formData.description}
-                        onChange={handleChange}
-                        placeholder="Link for live stream..."
-                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                </div>
-                <div className="mt-6 flex justify-end">
-                    {isEditing && (
-                        <button
-                            type="button"
-                            onClick={() => {
-                                setIsEditing(false);
-                                setFormData({ slug: '', targetUrl: '', description: '' });
-                            }}
-                            className="mr-3 px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                    <div className="md:col-span-2">
+                        <label className="block text-gray-700 font-medium mb-1">Description (Optional)</label>
+                        <input
+                            type="text"
+                            name="description"
+                            value={formData.description}
+                            onChange={handleChange}
+                            placeholder="Link for live stream..."
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-300 focus:border-pink-500"
+                        />
+                    </div>
+                    <div className="md:col-span-2 flex justify-end space-x-3 pt-2">
+                        {isEditing && (
+                            <Button
+                                type="button"
+                                onClick={() => {
+                                    setIsEditing(false);
+                                    setFormData({ slug: '', targetUrl: '', description: '' });
+                                }}
+                                className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium"
+                            >
+                                Cancel
+                            </Button>
+                        )}
+                        <Button
+                            type="submit"
+                            className="bg-pink-500 hover:bg-pink-600 text-white font-semibold shadow-md transition-colors"
                         >
-                            Cancel
-                        </button>
-                    )}
-                    <button
-                        type="submit"
-                        className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primaryDark transition-all shadow-md hover:shadow-lg"
-                    >
-                        {isEditing ? 'Update Link' : 'Create Link'}
-                    </button>
-                </div>
-            </form>
+                            {isEditing ? <><FaEdit className="inline mr-2" /> Update Link</> : <><FaPlus className="inline mr-2" /> Create Link</>}
+                        </Button>
+                    </div>
+                </form>
+            </div>
 
             {/* List */}
-            <div className="overflow-x-auto">
-                <table className="min-w-full bg-white border rounded-lg overflow-hidden">
-                    <thead className="bg-gray-100 text-gray-700 uppercase text-sm leading-normal">
+            <div className="bg-card shadow-soft rounded-2xl overflow-x-auto mb-6">
+                <h3 className="text-xl font-semibold font-heading p-4 text-primaryDark border-b border-background">Existing Links</h3>
+                <table className="min-w-full divide-y divide-background">
+                    <thead className="bg-background/50">
                         <tr>
-                            <th className="py-3 px-6 text-left">Slug</th>
-                            <th className="py-3 px-6 text-left">Target URL</th>
-                            <th className="py-3 px-6 text-center">Clicks</th>
-                            <th className="py-3 px-6 text-center">Actions</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium font-heading text-primaryDark uppercase tracking-wider">Slug</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium font-heading text-primaryDark uppercase tracking-wider">Target URL</th>
+                            <th className="px-4 py-3 text-center text-xs font-medium font-heading text-primaryDark uppercase tracking-wider">Clicks</th>
+                            <th className="px-4 py-3 text-center text-xs font-medium font-heading text-primaryDark uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="text-gray-600 text-sm font-light">
-                        {loading ? (
+                    <tbody className="bg-card divide-y divide-background">
+                        {links.length === 0 ? (
                             <tr>
-                                <td colSpan="4" className="text-center py-6">Loading...</td>
-                            </tr>
-                        ) : links.length === 0 ? (
-                            <tr>
-                                <td colSpan="4" className="text-center py-6">No custom links created yet.</td>
+                                <td colSpan="4" className="text-center py-6 text-gray-500">No custom links created yet.</td>
                             </tr>
                         ) : (
                             links.map((link) => (
-                                <tr key={link._id} className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
-                                    <td className="py-3 px-6 text-left whitespace-nowrap font-medium text-primaryDark">
+                                <tr key={link._id} className="hover:bg-background transition-colors">
+                                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-primaryDark">
                                         <div className="flex items-center space-x-2">
                                             <span>/{link.slug}</span>
                                             <button
                                                 onClick={() => copyToClipboard(link.slug)}
-                                                className="text-gray-400 hover:text-gray-600 focus:outline-none"
+                                                className="text-gray-400 hover:text-gray-600 focus:outline-none transition-colors"
                                                 title="Copy Link"
                                             >
                                                 <FaCopy />
                                             </button>
                                         </div>
                                     </td>
-                                    <td className="py-3 px-6 text-left">
-                                        <div className="flex items-center space-x-2 max-w-xs truncate">
-                                            <span className="truncate" title={link.targetUrl}>{link.targetUrl}</span>
+                                    <td className="px-4 py-3 text-sm text-gray-600">
+                                        <div className="flex items-center space-x-2 max-w-xs md:max-w-md">
+                                            <span className="truncate block" title={link.targetUrl}>{link.targetUrl}</span>
                                             <a
                                                 href={link.targetUrl}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="text-gray-400 hover:text-primary"
+                                                className="text-gray-400 hover:text-primary flex-shrink-0"
                                             >
                                                 <FaExternalLinkAlt size={12} />
                                             </a>
                                         </div>
                                         {link.description && <div className="text-xs text-gray-400 mt-1">{link.description}</div>}
                                     </td>
-                                    <td className="py-3 px-6 text-center bg-gray-50 font-bold">
+                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-center font-bold text-gray-700">
                                         {link.clicks}
                                     </td>
-                                    <td className="py-3 px-6 text-center">
-                                        <div className="flex item-center justify-center">
+                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-center">
+                                        <div className="flex items-center justify-center space-x-3">
                                             <button
                                                 onClick={() => handleEdit(link)}
-                                                className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center hover:bg-blue-200 mr-2 transition-colors"
+                                                className="text-pink-500 hover:text-pink-700 transition-colors"
                                                 title="Edit"
                                             >
-                                                <FaEdit />
+                                                <FaEdit size={18} />
                                             </button>
                                             <button
                                                 onClick={() => handleDelete(link._id)}
-                                                className="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center hover:bg-red-200 transition-colors"
+                                                className="text-red-500 hover:text-red-700 transition-colors"
                                                 title="Delete"
                                             >
-                                                <FaTrash />
+                                                <FaTrashAlt size={18} />
                                             </button>
                                         </div>
                                     </td>
@@ -228,7 +230,7 @@ const ManageShortLinks = () => {
                     </tbody>
                 </table>
             </div>
-        </div>
+        </motion.div>
     );
 };
 

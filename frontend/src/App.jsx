@@ -17,7 +17,7 @@ import EventsPage from './pages/EventsPage';
 import ForgotPassword from './pages/ForgotPassword.jsx';
 
 // User Component Imports
-import MyBookings from './components/user/MyBookings.jsx'; 
+import MyBookings from './components/user/MyBookings.jsx';
 import UserNotifications from './components/user/UserNotifications.jsx';
 import CommentsPage from './components/user/CommentsPage.jsx';
 import UserProfile from './components/user/UserProfile.jsx';
@@ -26,26 +26,26 @@ import UserProfile from './components/user/UserProfile.jsx';
 import Header from './components/common/Header.jsx';
 import Footer from './components/common/Footer.jsx';
 import ProtectedRoute from './components/common/ProtectedRoute.jsx';
-import ScrollToTopButton from './components/common/ScrollToTopButton.jsx'; 
+import ScrollToTopButton from './components/common/ScrollToTopButton.jsx';
 import ScrollToTopOnMount from './components/common/ScrollToTopOnMount.jsx';
 import NetworkStatusModal from './components/common/NetworkStatusModal.jsx';
 import InstallPWAPrompt from './components/common/InstallPWAPrompt.jsx';
 
 const PageTransition = ({ children }) => {
-    const location = useLocation();
-    return (
-        <AnimatePresence mode="wait">
-            <motion.div
-                key={location.pathname}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-            >
-                {children}
-            </motion.div>
-        </AnimatePresence>
-    );
+  const location = useLocation();
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={location.pathname}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        transition={{ duration: 0.3 }}
+      >
+        {children}
+      </motion.div>
+    </AnimatePresence>
+  );
 };
 
 // NEW: This component wraps the layout and can access useLocation
@@ -69,32 +69,32 @@ const AppLayout = () => {
           <Route path="/events/:date?" element={<EventsPage />} />
           <Route path="/comments" element={<CommentsPage />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          
+
           {/* Protected User Routes */}
           <Route path="/booking/:eventId" element={<ProtectedRoute component={BookingPage} />} />
           <Route path="/my-bookings" element={<ProtectedRoute component={MyBookings} />} />
           <Route path="/notifications" element={<ProtectedRoute component={UserNotifications} />} />
           <Route path="/profile" element={<ProtectedRoute component={UserProfile} />} />
-          
+
           {/* Protected Admin Route */}
-          <Route 
-            path="/admin/*" 
-           element={<ProtectedRoute roles={['admin', 'super-admin', 'super-operator', 'operator', 'satsang-operator']} component={Admin} />} 
+          <Route
+            path="/admin/*"
+            element={<ProtectedRoute roles={['admin', 'super-admin', 'super-operator', 'operator', 'satsang-operator']} component={Admin} />}
           />
-          
+
           {/* 404 Not Found Route */}
           <Route path="*" element={
             <div className="text-center p-10 min-h-screen flex flex-col justify-center items-center">
-                <h1 className="text-4xl font-bold font-heading text-primaryDark">404 - Page Not Found</h1>
-                <p className="text-gray-700 mt-2">The page you're looking for does not exist.</p>
+              <h1 className="text-4xl font-bold font-heading text-primaryDark">404 - Page Not Found</h1>
+              <p className="text-gray-700 mt-2">The page you're looking for does not exist.</p>
             </div>
           } />
         </Routes>
       </main>
-      
+
       {/* Only show the global footer if it's NOT the home page */}
       {!isHomePage && <Footer />}
-      
+
       {/* MANUAL SCROLL BUTTON: Appears when the user scrolls down */}
       <ScrollToTopButton />
     </div>
@@ -102,16 +102,16 @@ const AppLayout = () => {
 };
 
 function App() {
-    return (
-        <Router>
-            <ScrollToTopOnMount /> 
-            <NetworkStatusModal />
-            <InstallPWAPrompt />
-            <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} />            
-            <AppLayout />
-            
-        </Router>
-    );
+  return (
+    <Router>
+      <ScrollToTopOnMount />
+      <NetworkStatusModal />
+      <InstallPWAPrompt />
+      <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} />
+      <AppLayout />
+
+    </Router>
+  );
 }
 
 export default App;
