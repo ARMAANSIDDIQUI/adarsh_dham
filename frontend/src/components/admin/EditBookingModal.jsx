@@ -111,7 +111,11 @@ const EditBookingModal = ({ isOpen, booking, onClose, onUpdate }) => {
 
 
             const res = await api.put(`/bookings/update/${booking._id}`, { formData: payload });
-            toast.success("Booking updated successfully!");
+            const wasApproved = booking.status === 'approved';
+            const successMsg = wasApproved
+                ? 'Booking updated. Status remains Approved — allocations preserved.'
+                : 'Booking updated successfully!';
+            toast.success(successMsg);
             onUpdate(res.data.booking); // Pass back updated booking
             onClose();
         } catch (error) {

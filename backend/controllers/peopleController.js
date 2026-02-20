@@ -3,6 +3,153 @@ const Person = require('../models/peopleModel');
 const exceljs = require('exceljs');
 const pdfGenerator = require('../utils/pdfGenerator');
 
+// ──────────────────────────────────────────────────────────────
+// CHECK-IN
+// ──────────────────────────────────────────────────────────────
+exports.checkIn = async (req, res) => {
+    try {
+        const { personId } = req.params;
+        const person = await Person.findById(personId);
+        if (!person) return res.status(404).json({ message: 'Person not found' });
+
+        person.checkInTime = new Date();
+        person.checkInBy = req.user.id;
+        // Clear checkout if re-checking-in
+        person.checkOutTime = null;
+        person.checkOutBy = null;
+        await person.save();
+
+        res.status(200).json({ message: 'Checked in successfully', person });
+    } catch (error) {
+        console.error('Check-in error:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+// ──────────────────────────────────────────────────────────────
+// CHECK-OUT
+// ──────────────────────────────────────────────────────────────
+exports.checkOut = async (req, res) => {
+    try {
+        const { personId } = req.params;
+        const person = await Person.findById(personId);
+        if (!person) return res.status(404).json({ message: 'Person not found' });
+        if (!person.checkInTime) {
+            return res.status(400).json({ message: 'Person has not been checked in yet.' });
+        }
+
+        person.checkOutTime = new Date();
+        person.checkOutBy = req.user.id;
+        await person.save();
+
+        res.status(200).json({ message: 'Checked out successfully', person });
+    } catch (error) {
+        console.error('Check-out error:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+// ──────────────────────────────────────────────────────────────
+// UNDO CHECK-IN (reset)
+// ──────────────────────────────────────────────────────────────
+exports.undoCheckIn = async (req, res) => {
+    try {
+        const { personId } = req.params;
+        const person = await Person.findById(personId);
+        if (!person) return res.status(404).json({ message: 'Person not found' });
+
+        person.checkInTime = null;
+        person.checkInBy = null;
+        person.checkOutTime = null;
+        person.checkOutBy = null;
+        await person.save();
+
+        res.status(200).json({ message: 'Check-in reset successfully', person });
+    } catch (error) {
+        console.error('Undo check-in error:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+// ──────────────────────────────────────────────────────────────
+// GET CHECK-IN DATA (by date, grouped by booking)
+// ──────────────────────────────────────────────────────────────
+exports.getCheckInData = async (req, res) => {
+    try {
+        const { date, searchTerm = '', eventId = '' } = req.query;
+
+        // Default to today if no date supplied
+        const targetDate = date ? new Date(date) : new Date();
+        const dayStart = new Date(targetDate);
+        dayStart.setUTCHours(0, 0, 0, 0);
+        const dayEnd = new Date(targetDate);
+        dayEnd.setUTCHours(23, 59, 59, 999);
+
+        // Guests whose stay overlaps with the selected date
+        const matchStage = {
+            stayFrom: { $lte: dayEnd },
+            stayTo: { $gte: dayStart },
+        };
+
+        if (eventId && mongoose.Types.ObjectId.isValid(eventId)) {
+            matchStage.eventId = new mongoose.Types.ObjectId(eventId);
+        }
+
+        if (searchTerm) {
+            matchStage.$or = [
+                { name: { $regex: searchTerm, $options: 'i' } },
+                { bookingNumber: { $regex: searchTerm, $options: 'i' } },
+                { ashramName: { $regex: searchTerm, $options: 'i' } },
+                { city: { $regex: searchTerm, $options: 'i' } },
+            ];
+        }
+
+        const people = await Person.find(matchStage)
+            .populate({
+                path: 'bedId',
+                select: 'name',
+                populate: {
+                    path: 'roomId',
+                    select: 'roomNumber gender',
+                    populate: { path: 'buildingId', select: 'name' }
+                }
+            })
+            .populate('eventId', 'name')
+            .populate('checkInBy', 'name')
+            .populate('checkOutBy', 'name')
+            .sort({ bookingId: 1, name: 1 })
+            .lean();
+
+        // Group by bookingId
+        const grouped = {};
+        for (const person of people) {
+            const key = String(person.bookingId);
+            if (!grouped[key]) {
+                grouped[key] = {
+                    bookingId: person.bookingId,
+                    bookingNumber: person.bookingNumber,
+                    ashramName: person.ashramName,
+                    contactNumber: person.contactNumber,
+                    city: person.city,
+                    eventName: person.eventId?.name || '',
+                    stayFrom: person.stayFrom,
+                    stayTo: person.stayTo,
+                    members: []
+                };
+            }
+            grouped[key].members.push(person);
+        }
+
+        res.status(200).json({ bookings: Object.values(grouped) });
+    } catch (error) {
+        console.error('Get check-in data error:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+// ──────────────────────────────────────────────────────────────
+// GET ALL PEOPLE
+// ──────────────────────────────────────────────────────────────
 exports.getPeople = async (req, res) => {
     try {
         const { eventId } = req.query;
@@ -49,7 +196,7 @@ exports.getPeoplePaginated = async (req, res) => {
         const sort = { [sortBy]: sortOrder === 'asc' ? 1 : -1 };
 
         const matchStage = {};
-        
+
         if (startDate && endDate) {
             const start = new Date(startDate);
             const end = new Date(endDate);
@@ -136,11 +283,11 @@ exports.getPeoplePaginated = async (req, res) => {
                 ]
             }
         });
-        
+
         const result = await Person.aggregate(pipeline);
         const data = result[0]?.data || [];
         const totalRecords = result[0]?.metadata[0]?.totalRecords || 0;
-        
+
         res.status(200).json({
             data,
             pagination: { totalRecords, totalPages: Math.ceil(totalRecords / limitNum), currentPage: pageNum, limit: limitNum }
@@ -155,7 +302,7 @@ exports.getPeoplePaginated = async (req, res) => {
 exports.exportPeopleCsv = async (req, res) => {
     try {
         const {
-             eventId = '', buildingId = '', gender = '',
+            eventId = '', buildingId = '', gender = '',
             roomId = '', bedId = '',
             startDate = '', endDate = '', searchTerm = '', sortBy = 'stayFrom',
             sortOrder = 'asc', dateFilterType = 'stayRange'
@@ -164,7 +311,7 @@ exports.exportPeopleCsv = async (req, res) => {
         const sort = { [sortBy]: sortOrder === 'asc' ? 1 : -1 };
 
         const matchStage = {};
-        
+
         if (startDate && endDate) {
             const start = new Date(startDate);
             const end = new Date(endDate);
@@ -212,7 +359,7 @@ exports.exportPeopleCsv = async (req, res) => {
             secondMatchStage['room._id'] = new mongoose.Types.ObjectId(roomId);
         }
         if (searchTerm) {
-             secondMatchStage.$or = [
+            secondMatchStage.$or = [
                 { name: { $regex: searchTerm, $options: 'i' } },
                 { bookingNumber: { $regex: searchTerm, $options: 'i' } },
                 { city: { $regex: searchTerm, $options: 'i' } },
@@ -226,10 +373,8 @@ exports.exportPeopleCsv = async (req, res) => {
             pipeline.push({ $match: secondMatchStage });
         }
 
-        // Add sort
         pipeline.push({ $sort: sort });
 
-        // Project necessary fields
         pipeline.push({
             $project: {
                 _id: 1, name: 1, age: 1, gender: 1, bookingNumber: 1, stayFrom: 1,
@@ -299,7 +444,7 @@ exports.exportPeopleCsv = async (req, res) => {
 exports.exportPeoplePdf = async (req, res) => {
     try {
         const {
-             eventId = '', buildingId = '', gender = '',
+            eventId = '', buildingId = '', gender = '',
             roomId = '', bedId = '',
             startDate = '', endDate = '', searchTerm = '', sortBy = 'stayFrom',
             sortOrder = 'asc', dateFilterType = 'stayRange'
@@ -308,7 +453,7 @@ exports.exportPeoplePdf = async (req, res) => {
         const sort = { [sortBy]: sortOrder === 'asc' ? 1 : -1 };
 
         const matchStage = {};
-        
+
         if (startDate && endDate) {
             const start = new Date(startDate);
             const end = new Date(endDate);
@@ -356,7 +501,7 @@ exports.exportPeoplePdf = async (req, res) => {
             secondMatchStage['room._id'] = new mongoose.Types.ObjectId(roomId);
         }
         if (searchTerm) {
-             secondMatchStage.$or = [
+            secondMatchStage.$or = [
                 { name: { $regex: searchTerm, $options: 'i' } },
                 { bookingNumber: { $regex: searchTerm, $options: 'i' } },
                 { city: { $regex: searchTerm, $options: 'i' } },
@@ -370,10 +515,8 @@ exports.exportPeoplePdf = async (req, res) => {
             pipeline.push({ $match: secondMatchStage });
         }
 
-        // Add sort
         pipeline.push({ $sort: sort });
 
-        // Project necessary fields
         pipeline.push({
             $project: {
                 _id: 1, name: 1, age: 1, gender: 1, bookingNumber: 1, stayFrom: 1,
@@ -389,7 +532,6 @@ exports.exportPeoplePdf = async (req, res) => {
 
         const people = await Person.aggregate(pipeline);
 
-        // Generate PDF
         const pdfBuffer = await pdfGenerator.generateOccupancyReportPdf(people, {
             startDate, endDate, gender
         });

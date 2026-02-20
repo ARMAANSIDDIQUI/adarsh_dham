@@ -62,6 +62,25 @@ const personSchema = new Schema({
     baijiMahatmaJi: {
         type: String
     },
+    // ── Check-in / Check-out ─────────────────────────────────
+    checkInTime: {
+        type: Date,
+        default: null
+    },
+    checkOutTime: {
+        type: Date,
+        default: null
+    },
+    checkInBy: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        default: null
+    },
+    checkOutBy: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        default: null
+    }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Person', personSchema);

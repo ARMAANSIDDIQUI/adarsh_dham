@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import api from '../../api/api.js';
-import { FaSpinner, FaDownload } from 'react-icons/fa';
+import { FaSpinner, FaDownload, FaSort, FaSortUp, FaSortDown } from 'react-icons/fa';
 
 const AllocationsView = ({ filters, dateFilterType, debouncedSearchTerm, pagination, setPagination }) => {
     const [people, setPeople] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isDownloading, setIsDownloading] = useState(null);
+    const [sortBy, setSortBy] = useState('stayFrom'); // 'name' | 'room' | 'stayFrom'
+    const [sortDir, setSortDir] = useState('asc');   // 'asc' | 'desc'
 
     useEffect(() => {
         const fetchPeople = async () => {
@@ -67,24 +69,87 @@ const AllocationsView = ({ filters, dateFilterType, debouncedSearchTerm, paginat
         }
     };
 
+    const toggleSort = (column) => {
+        if (sortBy === column) {
+            setSortDir(prev => prev === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortBy(column);
+            setSortDir('asc');
+        }
+    };
+
+    const sortedPeople = useMemo(() => {
+        if (!people || people.length === 0) return people;
+        const sorted = [...people];
+        sorted.sort((a, b) => {
+            let aVal = '';
+            let bVal = '';
+            if (sortBy === 'name') {
+                aVal = (a.name || '').toLowerCase();
+                bVal = (b.name || '').toLowerCase();
+            } else if (sortBy === 'room') {
+                const aRoom = a.bedId?.roomId?.roomNumber || '';
+                const bRoom = b.bedId?.roomId?.roomNumber || '';
+                aVal = String(aRoom).padStart(10, '0');
+                bVal = String(bRoom).padStart(10, '0');
+            } else if (sortBy === 'stayFrom') {
+                aVal = a.stayFrom ? new Date(a.stayFrom).getTime() : 0;
+                bVal = b.stayFrom ? new Date(b.stayFrom).getTime() : 0;
+                return sortDir === 'asc' ? aVal - bVal : bVal - aVal;
+            }
+            if (aVal < bVal) return sortDir === 'asc' ? -1 : 1;
+            if (aVal > bVal) return sortDir === 'asc' ? 1 : -1;
+            return 0;
+        });
+        return sorted;
+    }, [people, sortBy, sortDir]);
+
+    const SortIcon = ({ col }) => {
+        if (sortBy !== col) return <FaSort className="inline ml-1 text-gray-400 opacity-60" />;
+        return sortDir === 'asc'
+            ? <FaSortUp className="inline ml-1 text-primary" />
+            : <FaSortDown className="inline ml-1 text-primary" />;
+    };
+
+    const thClass = "px-4 py-3 text-left text-xs font-semibold font-heading text-primaryDark uppercase select-none";
+    const sortableThClass = `${thClass} cursor-pointer hover:text-primary transition-colors`;
+
     return (
         <div className="bg-card shadow-soft rounded-2xl overflow-x-auto font-body">
             <table className="min-w-full divide-y divide-background">
                 <thead className="bg-background/50">
                     <tr>
-                        <th className="px-4 py-3 text-left text-xs font-semibold font-heading text-primaryDark uppercase">Person Details</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold font-heading text-primaryDark uppercase">Booking Details</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold font-heading text-primaryDark uppercase">Event</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold font-heading text-primaryDark uppercase">Stay Dates</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold font-heading text-primaryDark uppercase">Allocation</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold font-heading text-primaryDark uppercase">Actions</th>
+                        <th
+                            className={sortableThClass}
+                            onClick={() => toggleSort('name')}
+                            title="Sort by name"
+                        >
+                            Person Details <SortIcon col="name" />
+                        </th>
+                        <th className={thClass}>Booking Details</th>
+                        <th className={thClass}>Event</th>
+                        <th
+                            className={sortableThClass}
+                            onClick={() => toggleSort('stayFrom')}
+                            title="Sort by stay from date"
+                        >
+                            Stay Dates <SortIcon col="stayFrom" />
+                        </th>
+                        <th
+                            className={sortableThClass}
+                            onClick={() => toggleSort('room')}
+                            title="Sort by room number"
+                        >
+                            Allocation <SortIcon col="room" />
+                        </th>
+                        <th className={thClass}>Actions</th>
                     </tr>
                 </thead>
                 <tbody className="bg-card divide-y divide-background">
                     {loading ? (
                         <tr><td colSpan="6" className="text-center py-8"><FaSpinner className="animate-spin text-primary text-3xl mx-auto" /></td></tr>
-                    ) : people.length > 0 ? (
-                        people.map(person => (
+                    ) : sortedPeople.length > 0 ? (
+                        sortedPeople.map(person => (
                             <tr key={person._id} className="hover:bg-background transition-colors">
                                 <td className="px-4 py-4 whitespace-nowrap text-sm align-top">
                                     <p className="font-semibold text-gray-800">{person.name}</p>

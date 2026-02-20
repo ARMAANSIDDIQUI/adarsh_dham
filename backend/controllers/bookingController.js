@@ -290,6 +290,11 @@ exports.updateBooking = async (req, res) => {
             return res.status(403).json({ message: 'Not authorized.' });
         }
 
+        // --- GUARD: Non-admins cannot edit an approved booking ---
+        if (booking.status === 'approved' && !isAdmin) {
+            return res.status(403).json({ message: 'You cannot edit an approved booking. Please contact the admin.' });
+        }
+
         // If only updating showAllocationDetails flag (admin toggle)
         if (showAllocationDetails !== undefined && !formData) {
             booking.showAllocationDetails = showAllocationDetails;
@@ -316,31 +321,37 @@ exports.updateBooking = async (req, res) => {
                 parseInt(person.age) <= 2;
         };
 
-        // Check if member structure changed (count or gender/name changes requiring re-allocation)
-        const memberStructureChanged = oldPeople.length !== newPeople.length ||
-            oldPeople.some((oldP, i) => {
-                const newP = newPeople[i];
-                if (!newP) return true;
-                // If name or gender changed significantly, consider it a structural change
-                return oldP.name !== newP.name || oldP.gender !== newP.gender;
-            });
+        // -------------------------------------------------------
+        // ADMIN EDIT ON APPROVED BOOKING — keep status = 'approved'
+        // -------------------------------------------------------
+        if (wasApproved && isAdmin) {
+            const currentAllocations = Array.isArray(booking.allocations) ? booking.allocations : [];
 
-        if (wasApproved && !memberStructureChanged && booking.allocations.length > 0) {
-            // SMART EDIT: Only dates changed, try to preserve allocations
+            // Determine removed people (by index — people removed from the end or middle)
+            const removedIndices = [];
+            for (let i = newPeople.length; i < oldPeople.length; i++) {
+                removedIndices.push(i);
+            }
 
-            // Re-verify bed availability for new dates (excluding current booking)
-            const allocations = booking.allocations;
-            let allBedsStillAvailable = true;
+            // Delete Person records for removed people (by their old bedId + bookingId)
+            for (const removedIdx of removedIndices) {
+                const removedAlloc = currentAllocations[removedIdx];
+                await Person.findOneAndDelete({
+                    bookingId: booking._id,
+                    ...(removedAlloc?.bedId ? { bedId: removedAlloc.bedId } : { bedId: null }),
+                });
+            }
+
+            // Remove allocations for removed people
+            const newAllocations = currentAllocations.slice(0, newPeople.length);
+
+            // Validate beds for date changes on remaining people
             const unavailableBeds = [];
-
             for (let i = 0; i < newPeople.length; i++) {
                 const personData = newPeople[i];
-                const allocation = allocations[i];
+                const allocation = newAllocations[i];
 
-                // Skip children who don't have beds
-                if (isYoungChild(personData) || !allocation?.bedId) {
-                    continue;
-                }
+                if (isYoungChild(personData) || !allocation?.bedId) continue;
 
                 const newStayFrom = personData.stayFrom || formData.stayFrom;
                 const newStayTo = personData.stayTo || formData.stayTo;
@@ -349,7 +360,105 @@ exports.updateBooking = async (req, res) => {
                     allocation.bedId,
                     newStayFrom,
                     newStayTo,
-                    booking._id // Exclude this booking from conflict check
+                    booking._id
+                );
+
+                if (!isAvailable) {
+                    unavailableBeds.push(personData.name);
+                }
+            }
+
+            if (unavailableBeds.length > 0) {
+                return res.status(409).json({
+                    message: `Beds for ${unavailableBeds.join(', ')} are not available for the updated dates. Please adjust the dates or re-allocate via the allocations panel.`,
+                    unavailableBeds
+                });
+            }
+
+            // Update each remaining Person record by index
+            for (let i = 0; i < newPeople.length; i++) {
+                const personData = newPeople[i];
+                const allocation = newAllocations[i];
+
+                const newStayFrom = personData.stayFrom || formData.stayFrom;
+                const newStayTo = personData.stayTo || formData.stayTo;
+
+                // Try to find by bookingId + index position (using old bedId as anchor)
+                const oldAlloc = currentAllocations[i];
+                const filterQuery = {
+                    bookingId: booking._id,
+                    ...(oldAlloc?.bedId ? { bedId: oldAlloc.bedId } : { bedId: null }),
+                };
+
+                await Person.findOneAndUpdate(
+                    filterQuery,
+                    {
+                        $set: {
+                            name: personData.name,
+                            age: personData.age,
+                            gender: personData.gender,
+                            stayFrom: newStayFrom,
+                            stayTo: newStayTo,
+                            ashramName: formData.ashramName,
+                            contactNumber: formData.contactNumber,
+                            city: formData.city,
+                            baijiMahatmaJi: formData.baijiMahatmaJi
+                        }
+                    }
+                );
+            }
+
+            // Save updated formData + trimmed allocations, status stays 'approved'
+            booking.formData = formData;
+            booking.allocations = newAllocations;
+            await booking.save();
+
+            const updatedBooking = await Booking.findById(bookingId)
+                .populate('userId', 'name')
+                .populate('eventId', 'name')
+                .populate('allocations.buildingId', 'name')
+                .populate('allocations.roomId', 'roomNumber')
+                .populate('allocations.bedId', 'name');
+
+            return res.status(200).json({
+                message: 'Booking updated by admin. Status remains approved.',
+                booking: updatedBooking,
+                preservedAllocations: true
+            });
+        }
+
+        // -------------------------------------------------------
+        // USER EDIT ON PENDING/DECLINED BOOKING (or admin on non-approved)
+        // -------------------------------------------------------
+
+        // Check if member structure changed (count or gender/name changes requiring re-allocation)
+        const memberStructureChanged = oldPeople.length !== newPeople.length ||
+            oldPeople.some((oldP, i) => {
+                const newP = newPeople[i];
+                if (!newP) return true;
+                return oldP.name !== newP.name || oldP.gender !== newP.gender;
+            });
+
+        if (wasApproved && !memberStructureChanged && booking.allocations.length > 0) {
+            // SMART EDIT: Only dates changed, try to preserve allocations
+            const allocations = booking.allocations;
+            let allBedsStillAvailable = true;
+            const unavailableBeds = [];
+
+            for (let i = 0; i < newPeople.length; i++) {
+                const personData = newPeople[i];
+                const allocation = allocations[i];
+
+                if (isYoungChild(personData) || !allocation?.bedId) continue;
+
+                const newStayFrom = personData.stayFrom || formData.stayFrom;
+                const newStayTo = personData.stayTo || formData.stayTo;
+
+                const isAvailable = await checkBedAvailability(
+                    allocation.bedId,
+                    newStayFrom,
+                    newStayTo,
+                    booking._id
                 );
 
                 if (!isAvailable) {
@@ -359,7 +468,6 @@ exports.updateBooking = async (req, res) => {
             }
 
             if (allBedsStillAvailable) {
-                // Update Person records with new dates in place
                 for (let i = 0; i < newPeople.length; i++) {
                     const personData = newPeople[i];
                     const allocation = allocations[i];
@@ -367,7 +475,6 @@ exports.updateBooking = async (req, res) => {
                     const newStayFrom = personData.stayFrom || formData.stayFrom;
                     const newStayTo = personData.stayTo || formData.stayTo;
 
-                    // Update existing Person record
                     await Person.findOneAndUpdate(
                         {
                             bookingId: booking._id,
@@ -388,7 +495,6 @@ exports.updateBooking = async (req, res) => {
                     );
                 }
 
-                // Update booking formData but keep status as approved
                 booking.formData = formData;
                 await booking.save();
 
@@ -405,7 +511,6 @@ exports.updateBooking = async (req, res) => {
                     preservedAllocations: true
                 });
             } else {
-                // Beds not available for new dates - require re-allocation
                 await Person.deleteMany({ bookingId: booking._id });
 
                 const updatedBooking = await Booking.findByIdAndUpdate(
@@ -441,7 +546,6 @@ exports.updateBooking = async (req, res) => {
             { new: true, runValidators: true }
         );
 
-        // Notify admins
         const admins = await User.find({ roles: { $in: ['admin', 'super-admin'] } });
         let notificationMessage = `Booking #${booking.bookingNumber} was edited by the user and is now pending re-approval.`;
         if (isAdmin && !isOwner) {

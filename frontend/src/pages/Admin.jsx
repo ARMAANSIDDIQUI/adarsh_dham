@@ -18,6 +18,7 @@ import StructureView from '../components/admin/StructureView';
 import ManageComments from '../components/admin/ManageComments';
 import PasswordResetRequests from '../components/admin/PasswordResetRequests';
 import ManageShortLinks from '../components/admin/ManageShortLinks'; // ✨ NEW
+import CheckInPage from '../components/admin/CheckInPage';
 
 const Admin = () => {
     return (
@@ -36,6 +37,7 @@ const Admin = () => {
                 <Route path="manage-beds" element={<ManageBeds />} />
                 <Route path="manage-allocations" element={<ManageAllocations />} />
                 <Route path="occupancy-report" element={<OccupancyReport />} />
+                <Route path="check-in" element={<CheckInPage />} />
                 <Route path="manage-satsang" element={<ManageSatsang />} />
                 <Route path="export-data" element={<ExportData />} />
                 <Route path="send-notification" element={<SendNotification />} />

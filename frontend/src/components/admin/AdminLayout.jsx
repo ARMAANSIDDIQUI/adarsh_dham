@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../redux/slices/authSlice.js';
-import { FaUserShield, FaCalendarAlt, FaBuilding, FaBed, FaWifi, FaUserCog, FaSignOutAlt, FaDoorOpen, FaUsers, FaBell, FaBars, FaTimes, FaListAlt, FaSitemap, FaComments, FaKey, FaExternalLinkAlt } from 'react-icons/fa';
+import { FaUserShield, FaCalendarAlt, FaBuilding, FaBed, FaWifi, FaUserCog, FaSignOutAlt, FaDoorOpen, FaUsers, FaBell, FaBars, FaTimes, FaListAlt, FaSitemap, FaComments, FaKey, FaExternalLinkAlt, FaClipboardCheck } from 'react-icons/fa';
 
 const AdminLayout = ({ children }) => {
     const dispatch = useDispatch();
@@ -58,6 +58,7 @@ const AdminLayout = ({ children }) => {
         { name: 'Manage Beds', to: '/admin/manage-beds', icon: <FaBed />, roles: ['admin'] },
         { name: 'Manage Allocations', to: '/admin/manage-allocations', icon: <FaUserShield />, roles: ['super-operator', 'operator'] },
         { name: 'Occupancy Report', to: '/admin/occupancy-report', icon: <FaListAlt />, roles: ['admin', 'super-admin', 'operator', 'super-operator'] },
+        { name: 'Check-in / Check-out', to: '/admin/check-in', icon: <FaClipboardCheck />, roles: ['admin', 'super-admin', 'operator', 'super-operator'] },
         { name: 'Live Structure View', to: '/admin/structure-view', icon: <FaSitemap />, roles: ['admin', 'super-admin', 'operator', 'super-operator'] },
         { name: 'Short Links', to: '/admin/manage-short-links', icon: <FaExternalLinkAlt />, roles: ['admin', 'super-admin', 'operator', 'super-operator'] },
         { name: 'Manage Satsang', to: '/admin/manage-satsang', icon: <FaWifi />, roles: ['satsang-operator'] },

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../api/api.js';
 import DynamicDateInput from '../common/DynamicDateInput.jsx';
 import Button from '../common/Button.jsx';
-import { FaCheck, FaTimes, FaSpinner, FaEdit, FaUserShield, FaFilter, FaFilePdf, FaInfoCircle, FaChevronDown, FaSearch } from 'react-icons/fa';
+import { FaCheck, FaTimes, FaSpinner, FaEdit, FaUserShield, FaFilter, FaFilePdf, FaInfoCircle, FaChevronDown, FaSearch, FaSortAmountDown, FaSortAmountUp } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import EditBookingModal from './EditBookingModal.jsx';
 
@@ -671,6 +671,8 @@ const ManageAllocations = () => {
     const [filters, setFilters] = useState({ userName: '', email: '', phone: '', memberName: '', event: '', bookingDate: '', stayFrom: '', stayTo: '' });
     const [showOldAllocations, setShowOldAllocations] = useState(false);
     const [editModal, setEditModal] = useState({ isOpen: false, booking: null });
+    const [sortBy, setSortBy] = useState('stayFrom');   // 'stayFrom' | 'name'
+    const [sortDir, setSortDir] = useState('asc');      // 'asc' | 'desc'
 
     const fetchAllData = async () => {
         try {
@@ -823,17 +825,26 @@ const ManageAllocations = () => {
     const sortedBookings = useMemo(() => {
         const list = [...(filteredBookings || [])];
         list.sort((a, b) => {
+            if (sortBy === 'name') {
+                const aName = (a.userId?.name || '').toLowerCase();
+                const bName = (b.userId?.name || '').toLowerCase();
+                if (aName < bName) return sortDir === 'asc' ? -1 : 1;
+                if (aName > bName) return sortDir === 'asc' ? 1 : -1;
+                return 0;
+            }
+            // default: stayFrom
             const aFrom = new Date(a?.formData?.stayFrom);
             const bFrom = new Date(b?.formData?.stayFrom);
             const aFromTime = isNaN(aFrom) ? Number.POSITIVE_INFINITY : aFrom.getTime();
             const bFromTime = isNaN(bFrom) ? Number.POSITIVE_INFINITY : bFrom.getTime();
-            if (aFromTime !== bFromTime) return aFromTime - bFromTime;
+            const factor = sortDir === 'asc' ? 1 : -1;
+            if (aFromTime !== bFromTime) return factor * (aFromTime - bFromTime);
 
             const aTo = new Date(a?.formData?.stayTo);
             const bTo = new Date(b?.formData?.stayTo);
             const aToTime = isNaN(aTo) ? Number.POSITIVE_INFINITY : aTo.getTime();
             const bToTime = isNaN(bTo) ? Number.POSITIVE_INFINITY : bTo.getTime();
-            if (aToTime !== bToTime) return aToTime - bToTime;
+            if (aToTime !== bToTime) return factor * (aToTime - bToTime);
 
             const aCreated = new Date(a?.createdAt);
             const bCreated = new Date(b?.createdAt);
@@ -842,7 +853,7 @@ const ManageAllocations = () => {
             return aCreatedTime - bCreatedTime;
         });
         return list;
-    }, [filteredBookings]);
+    }, [filteredBookings, sortBy, sortDir]);
 
     if (loading) return <div className="flex justify-center items-center h-screen"><FaSpinner className="animate-spin text-primary text-4xl" /></div>;
 
@@ -891,6 +902,26 @@ const ManageAllocations = () => {
                     <div className="flex items-center rounded-lg p-1">
                         <Button onClick={() => setShowOldAllocations(false)} className={`px-4 mr-4 py-1 text-sm rounded-md transition-colors ${!showOldAllocations ? 'bg-primary text-white shadow' : 'text-gray-600 hover:bg-gray-300'}`}>Current</Button>
                         <Button onClick={() => setShowOldAllocations(true)} className={`px-4 py-1 text-sm rounded-md transition-colors ${showOldAllocations ? 'bg-primary text-white shadow' : 'text-gray-600 hover:bg-gray-300'}`}>Old</Button>
+                    </div>
+                    {/* Sort Controls */}
+                    <div className="flex items-center gap-2 ml-auto">
+                        <span className="text-sm text-gray-600 font-medium">Sort:</span>
+                        <button
+                            onClick={() => { setSortBy('stayFrom'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}
+                            className={`flex items-center gap-1 px-3 py-1.5 text-sm rounded-lg border transition-colors ${sortBy === 'stayFrom' ? 'bg-primary text-white border-primary' : 'bg-white text-gray-700 border-gray-300 hover:border-primary'
+                                }`}
+                        >
+                            {sortBy === 'stayFrom' && sortDir === 'desc' ? <FaSortAmountDown size={12} /> : <FaSortAmountUp size={12} />}
+                            Date
+                        </button>
+                        <button
+                            onClick={() => { setSortBy('name'); setSortDir(d => sortBy === 'name' ? (d === 'asc' ? 'desc' : 'asc') : 'asc'); }}
+                            className={`flex items-center gap-1 px-3 py-1.5 text-sm rounded-lg border transition-colors ${sortBy === 'name' ? 'bg-primary text-white border-primary' : 'bg-white text-gray-700 border-gray-300 hover:border-primary'
+                                }`}
+                        >
+                            {sortBy === 'name' && sortDir === 'desc' ? <FaSortAmountDown size={12} /> : <FaSortAmountUp size={12} />}
+                            Name
+                        </button>
                     </div>
                 </div>
             </div>

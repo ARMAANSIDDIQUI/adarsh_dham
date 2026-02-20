@@ -93,7 +93,7 @@ const BookingCard = ({ booking, onEdit, onDelete, onDownloadPdf, navigateToEvent
                         <FaFilePdf className="inline mr-1" /> {t.myBookings.card.downloadPass}
                     </Button>
                 )}
-                {(booking.status === 'pending' || booking.status === 'approved') && new Date(booking.eventId?.bookingEndDate) >= new Date() && (
+                {booking.status === 'pending' && new Date(booking.eventId?.bookingEndDate) >= new Date() && (
                     <Button onClick={() => onEdit(booking)} className="w-full sm:w-auto bg-blue-500 hover:bg-blue-600 text-white text-sm py-2">
                         <FaEdit className="inline mr-1" /> {t.myBookings.card.edit}
                     </Button>

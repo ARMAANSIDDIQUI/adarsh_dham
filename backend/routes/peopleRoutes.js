@@ -32,4 +32,33 @@ router.get(
     peopleController.exportPeoplePdf
 );
 
+// ── Check-in / Check-out ──────────────────────────────────────
+router.get(
+    '/checkin-data',
+    authMiddleware,
+    roleMiddleware(['admin', 'super-admin', 'operator', 'super-operator']),
+    peopleController.getCheckInData
+);
+
+router.post(
+    '/:personId/checkin',
+    authMiddleware,
+    roleMiddleware(['admin', 'super-admin', 'operator', 'super-operator']),
+    peopleController.checkIn
+);
+
+router.post(
+    '/:personId/checkout',
+    authMiddleware,
+    roleMiddleware(['admin', 'super-admin', 'operator', 'super-operator']),
+    peopleController.checkOut
+);
+
+router.post(
+    '/:personId/undo-checkin',
+    authMiddleware,
+    roleMiddleware(['admin', 'super-admin', 'operator', 'super-operator']),
+    peopleController.undoCheckIn
+);
+
 module.exports = router;
