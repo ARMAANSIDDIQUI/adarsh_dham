@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { FaUserShield, FaCalendarAlt, FaBuilding, FaDoorOpen, FaBed, FaWifi, FaUsers, FaBell, FaListAlt, FaSitemap, FaComments, FaKey, FaExternalLinkAlt } from 'react-icons/fa';
+import { FaUserShield, FaCalendarAlt, FaBuilding, FaDoorOpen, FaBed, FaWifi, FaUsers, FaBell, FaListAlt, FaSitemap, FaComments, FaKey, FaExternalLinkAlt, FaClipboardCheck } from 'react-icons/fa';
 
 const linkVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -31,6 +31,7 @@ const AdminDashboard = () => {
         { to: "manage-beds", name: "Manage Beds", description: "Add individual beds to specific rooms.", icon: <FaBed />, roles: ['admin'] },
         { to: "manage-allocations", name: "Manage Allocations", description: "Allocate bookings to rooms and beds.", icon: <FaUserShield />, roles: ['super-operator', 'operator'] },
         { to: "occupancy-report", name: "Occupancy Report", description: "View and filter all guest stays.", icon: <FaListAlt />, roles: ['admin', 'super-admin', 'operator', 'super-operator'] },
+        { to: "check-in", name: "Check-in / Check-out", description: "Manage person-wise arrivals and departures.", icon: <FaClipboardCheck />, roles: ['admin', 'super-admin', 'operator', 'super-operator'] },
         { to: "structure-view", name: "Live Structure View", description: "Visualize building and room occupancy.", icon: <FaSitemap />, roles: ['admin', 'super-admin', 'operator', 'super-operator'] },
         { to: "manage-satsang", name: "Manage Satsang Links", description: "Update and manage live stream links.", icon: <FaWifi />, roles: ['satsang-operator'] },
         { to: "send-notification", name: "Send Notification", description: "Send notifications to users or groups.", icon: <FaBell />, roles: ['admin', 'super-admin'] },

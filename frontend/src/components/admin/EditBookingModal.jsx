@@ -11,6 +11,7 @@ const EditBookingModal = ({ isOpen, booking, onClose, onUpdate }) => {
     const [formData, setFormData] = useState({});
     const [loading, setLoading] = useState(false);
     const [dateLimits, setDateLimits] = useState({ min: '', max: '' });
+    const isApproved = booking?.status === 'approved';
 
     useEffect(() => {
         if (booking) {
@@ -58,6 +59,17 @@ const EditBookingModal = ({ isOpen, booking, onClose, onUpdate }) => {
     const handleRemovePerson = (index) => {
         const updatedPeople = formData.people.filter((_, i) => i !== index);
         setFormData(prev => ({ ...prev, people: updatedPeople }));
+    };
+
+    const handleAddPerson = () => {
+        if (isApproved) {
+            toast.error("You cannot add new guests to an approved booking.");
+            return;
+        }
+        setFormData(prev => ({
+            ...prev,
+            people: [...(prev.people || []), { name: '', age: '', gender: 'male', stayFrom: prev.stayFrom || '', stayTo: prev.stayTo || '' }]
+        }));
     };
 
     const handlePersonChange = (index, field, value) => {
@@ -170,7 +182,29 @@ const EditBookingModal = ({ isOpen, booking, onClose, onUpdate }) => {
 
                             {/* Members Editor */}
                             <div className="space-y-4">
-                                <h3 className="font-semibold text-lg text-primaryDark flex items-center"><FaUser className="mr-2" /> Member Details</h3>
+                                <div className="flex justify-between items-center">
+                                    <h3 className="font-semibold text-lg text-primaryDark flex items-center"><FaUser className="mr-2" /> Member Details</h3>
+                                    {!isApproved && (
+                                        <button
+                                            type="button"
+                                            onClick={handleAddPerson}
+                                            className="text-xs font-bold text-primary hover:text-primaryDark flex items-center bg-primary/10 px-3 py-1 rounded-full transition-colors"
+                                        >
+                                            + Add Member
+                                        </button>
+                                    )}
+                                </div>
+
+                                {isApproved && (
+                                    <div className="bg-amber-50 border border-amber-100 p-3 rounded-xl flex items-start gap-3 text-amber-800 text-sm">
+                                        <span className="text-xl">⚠️</span>
+                                        <p>
+                                            <strong>Booking is Approved:</strong> Adding new guests is not allowed.
+                                            You can still edit existing details or remove guests. For new guests, please create a separate booking.
+                                        </p>
+                                    </div>
+                                )}
+
                                 {!formData.hasSameStayDuration && (
                                     <p className="text-xs text-gray-500 italic bg-blue-50 p-2 rounded border border-blue-100 mb-2">
                                         Please specify stay dates for each member below.
@@ -180,14 +214,16 @@ const EditBookingModal = ({ isOpen, booking, onClose, onUpdate }) => {
                                     <div key={index} className="p-4 border border-gray-200 rounded-lg bg-white relative">
                                         <div className="flex justify-between items-start mb-2">
                                             <div className="text-xs font-mono text-gray-400">#{index + 1}</div>
-                                            <button
-                                                type="button"
-                                                onClick={() => handleRemovePerson(index)}
-                                                className="text-white bg-red-500 hover:bg-red-600 rounded px-2 py-1 flex items-center shadow-sm"
-                                                title="Remove this member"
-                                            >
-                                                <FaTimes className="mr-1" size={10} /> <span className="text-[10px]">Remove</span>
-                                            </button>
+                                            {!isApproved && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleRemovePerson(index)}
+                                                    className="text-white bg-red-500 hover:bg-red-600 rounded px-2 py-1 flex items-center shadow-sm"
+                                                    title="Remove this member"
+                                                >
+                                                    <FaTimes className="mr-1" size={10} /> <span className="text-[10px]">Remove</span>
+                                                </button>
+                                            )}
                                         </div>
                                         <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
                                             <div className="md:col-span-3">

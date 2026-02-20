@@ -324,25 +324,41 @@ exports.updateBooking = async (req, res) => {
         // -------------------------------------------------------
         // ADMIN EDIT ON APPROVED BOOKING — keep status = 'approved'
         // -------------------------------------------------------
+        // -------------------------------------------------------
+        // ADMIN EDIT ON APPROVED BOOKING — keep status = 'approved'
+        // -------------------------------------------------------
         if (wasApproved && isAdmin) {
+            // CRITICAL: Prohibit adding new guests to an approved booking
+            if (newPeople.length > oldPeople.length) {
+                return res.status(403).json({
+                    message: `Adding new guests to an approved booking is not permitted. Please create a new booking for the additional ${newPeople.length - oldPeople.length} guest(s).`
+                });
+            }
+
             const currentAllocations = Array.isArray(booking.allocations) ? booking.allocations : [];
 
-            // Determine removed people (by index — people removed from the end or middle)
+            // Determine removed people (indices that no longer exist in newPeople)
             const removedIndices = [];
             for (let i = newPeople.length; i < oldPeople.length; i++) {
                 removedIndices.push(i);
             }
 
-            // Delete Person records for removed people (by their old bedId + bookingId)
+            // Delete Person records for removed people
             for (const removedIdx of removedIndices) {
                 const removedAlloc = currentAllocations[removedIdx];
+                const removedPersonData = oldPeople[removedIdx];
+
+                // Match by booking and either bedId OR name (if bed was null)
                 await Person.findOneAndDelete({
                     bookingId: booking._id,
-                    ...(removedAlloc?.bedId ? { bedId: removedAlloc.bedId } : { bedId: null }),
+                    $or: [
+                        { bedId: removedAlloc?.bedId || null },
+                        { name: removedPersonData.name }
+                    ]
                 });
             }
 
-            // Remove allocations for removed people
+            // Trim allocations to match new count
             const newAllocations = currentAllocations.slice(0, newPeople.length);
 
             // Validate beds for date changes on remaining people
@@ -375,23 +391,24 @@ exports.updateBooking = async (req, res) => {
                 });
             }
 
-            // Update each remaining Person record by index
+            // Update each remaining Person record
             for (let i = 0; i < newPeople.length; i++) {
                 const personData = newPeople[i];
-                const allocation = newAllocations[i];
+                const oldPersonData = oldPeople[i];
+                const oldAlloc = currentAllocations[i];
 
                 const newStayFrom = personData.stayFrom || formData.stayFrom;
                 const newStayTo = personData.stayTo || formData.stayTo;
 
-                // Try to find by bookingId + index position (using old bedId as anchor)
-                const oldAlloc = currentAllocations[i];
-                const filterQuery = {
-                    bookingId: booking._id,
-                    ...(oldAlloc?.bedId ? { bedId: oldAlloc.bedId } : { bedId: null }),
-                };
-
+                // Match by booking and previous ID/Name anchor
                 await Person.findOneAndUpdate(
-                    filterQuery,
+                    {
+                        bookingId: booking._id,
+                        $or: [
+                            { bedId: oldAlloc?.bedId || null },
+                            { name: oldPersonData.name }
+                        ]
+                    },
                     {
                         $set: {
                             name: personData.name,
@@ -408,7 +425,7 @@ exports.updateBooking = async (req, res) => {
                 );
             }
 
-            // Save updated formData + trimmed allocations, status stays 'approved'
+            // Save updated formData + trimmed allocations
             booking.formData = formData;
             booking.allocations = newAllocations;
             await booking.save();
@@ -421,7 +438,7 @@ exports.updateBooking = async (req, res) => {
                 .populate('allocations.bedId', 'name');
 
             return res.status(200).json({
-                message: 'Booking updated by admin. Status remains approved.',
+                message: 'Booking updated by admin. Occupancy records synchronized.',
                 booking: updatedBooking,
                 preservedAllocations: true
             });

@@ -76,16 +76,19 @@ exports.undoCheckIn = async (req, res) => {
 // ──────────────────────────────────────────────────────────────
 exports.getCheckInData = async (req, res) => {
     try {
-        const { date, searchTerm = '', eventId = '' } = req.query;
+        const { startDate, endDate, searchTerm = '', eventId = '' } = req.query;
 
-        // Default to today if no date supplied
-        const targetDate = date ? new Date(date) : new Date();
-        const dayStart = new Date(targetDate);
+        // Default to today if no dates supplied
+        const today = new Date();
+        const start = startDate ? new Date(startDate) : today;
+        const end = endDate ? new Date(endDate) : start;
+
+        const dayStart = new Date(start);
         dayStart.setUTCHours(0, 0, 0, 0);
-        const dayEnd = new Date(targetDate);
+        const dayEnd = new Date(end);
         dayEnd.setUTCHours(23, 59, 59, 999);
 
-        // Guests whose stay overlaps with the selected date
+        // Guests whose stay overlaps with the selected date range
         const matchStage = {
             stayFrom: { $lte: dayEnd },
             stayTo: { $gte: dayStart },
@@ -117,7 +120,6 @@ exports.getCheckInData = async (req, res) => {
             .populate('eventId', 'name')
             .populate('checkInBy', 'name')
             .populate('checkOutBy', 'name')
-            .sort({ bookingId: 1, name: 1 })
             .lean();
 
         // Group by bookingId
@@ -140,7 +142,25 @@ exports.getCheckInData = async (req, res) => {
             grouped[key].members.push(person);
         }
 
-        res.status(200).json({ bookings: Object.values(grouped) });
+        // Convert to array and Sort
+        let bookingsArr = Object.values(grouped);
+        const { sortBy = 'date', sortOrder = 'asc' } = req.query;
+        const order = sortOrder === 'desc' ? -1 : 1;
+
+        bookingsArr.sort((a, b) => {
+            if (sortBy === 'name') {
+                const nameA = (a.ashramName || a.members[0]?.name || '').toLowerCase();
+                const nameB = (b.ashramName || b.members[0]?.name || '').toLowerCase();
+                return nameA.localeCompare(nameB) * order;
+            } else {
+                // Default: sort by date (stayFrom)
+                const dateA = new Date(a.stayFrom);
+                const dateB = new Date(b.stayFrom);
+                return (dateA - dateB) * order;
+            }
+        });
+
+        res.status(200).json({ bookings: bookingsArr });
     } catch (error) {
         console.error('Get check-in data error:', error);
         res.status(500).json({ message: 'Server error', error: error.message });
