@@ -290,7 +290,7 @@ const BookingCard = ({ booking, onAction, onEdit, allocations, handleAllocationC
             if (!person) return false;
             if (String(person.bookingId) === String(currentBooking._id)) return false;
             const bedInRoom = beds.some(bed => String(bed._id) === String(person.bedId?._id || person.bedId));
-            return bedInRoom && person.stayFrom && person.stayTo && datesOverlap(currentBooking.formData.stayFrom, currentBooking.formData.stayTo, person.stayFrom, person.stayTo);
+            return bedInRoom && person.stayFrom && person.stayTo && datesOverlap(currentBooking.formData.stayFrom, currentBooking.formData.stayTo, person.stayFrom, person.checkOutTime || person.stayTo);
         }).length;
         const rawVacant = capacity - occupiedCount;
         return { capacity, occupied: occupiedCount, vacant: Math.max(0, rawVacant) };
@@ -302,7 +302,7 @@ const BookingCard = ({ booking, onAction, onEdit, allocations, handleAllocationC
         const bookingStart = currentBooking?.formData?.stayFrom ? new Date(currentBooking.formData.stayFrom) : null;
         const bookingEnd = currentBooking?.formData?.stayTo ? new Date(currentBooking.formData.stayTo) : null;
         const globallyOccupiedBedIds = new Set(
-            (people || []).filter(p => p && String(p.bookingId) !== String(currentBooking._id) && p.stayFrom && p.stayTo && datesOverlap(bookingStart, bookingEnd, p.stayFrom, p.stayTo))
+            (people || []).filter(p => p && String(p.bookingId) !== String(currentBooking._id) && p.stayFrom && p.stayTo && datesOverlap(bookingStart, bookingEnd, p.stayFrom, p.checkOutTime || p.stayTo))
                 .map(p => String(p.bedId?._id || p.bedId))
         );
         const tentativelyOccupiedBedIds = new Set(
@@ -768,7 +768,7 @@ const ManageAllocations = () => {
             const beds = Array.isArray(room.beds) ? room.beds : [];
             const bedInRoom = beds.some(bed => String(bed._id) === String(person.bedId?._id || person.bedId));
             if (!bedInRoom) return false;
-            return !!(person.stayFrom && person.stayTo && datesOverlap(currentBooking?.formData?.stayFrom, currentBooking?.formData?.stayTo, person.stayFrom, person.stayTo));
+            return !!(person.stayFrom && person.stayTo && datesOverlap(currentBooking?.formData?.stayFrom, currentBooking?.formData?.stayTo, person.stayFrom, person.checkOutTime || person.stayTo));
         });
         setRoomDetailsModal({ isOpen: true, room, occupants });
     };

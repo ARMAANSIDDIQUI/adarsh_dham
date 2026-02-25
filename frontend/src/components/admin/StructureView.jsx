@@ -152,8 +152,27 @@ const StructureView = () => {
         people.forEach(person => {
             const stayFrom = new Date(person.stayFrom);
             const stayTo = new Date(person.stayTo);
+            const now = new Date();
 
-            if (stayFrom < endOfISTDayUTC && stayTo >= startOfISTDayUTC) {
+            // If querying today, and they checked out already, they are not an occupant.
+            // If querying a future date, and they checked out already, they are not an occupant.
+            // If querying a past date, and they checked out ON or BEFORE that date, they are not an occupant for the whole day.
+            let isCheckedOutForQueriedDate = false;
+            if (person.checkOutTime) {
+                const checkoutTime = new Date(person.checkOutTime);
+                if (startOfISTDayUTC <= now && now <= endOfISTDayUTC) {
+                    // Querying today
+                    if (checkoutTime <= now) isCheckedOutForQueriedDate = true;
+                } else if (now < startOfISTDayUTC) {
+                    // Querying future date
+                    if (checkoutTime < startOfISTDayUTC) isCheckedOutForQueriedDate = true;
+                } else {
+                    // Querying past date
+                    if (checkoutTime < startOfISTDayUTC) isCheckedOutForQueriedDate = true;
+                }
+            }
+
+            if (!isCheckedOutForQueriedDate && stayFrom < endOfISTDayUTC && stayTo >= startOfISTDayUTC) {
                 map.set(person.bedId, person);
             }
         });

@@ -15,7 +15,10 @@ const checkBedAvailability = async (bedId, stayFrom, stayTo, excludeBookingId = 
     const query = {
         bedId,
         stayFrom: { $lt: end },
-        stayTo: { $gt: start }
+        $or: [
+            { checkOutTime: null, stayTo: { $gt: start } },
+            { checkOutTime: { $gt: start } }
+        ]
     };
 
     if (excludeBookingId) {

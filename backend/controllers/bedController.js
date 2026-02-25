@@ -22,7 +22,8 @@ exports.getAllBeds = async (req, res) => {
                                     $and: [
                                         { $eq: ['$bedId', '$$bed_id'] },
                                         { $lt: ['$stayFrom', startOfTomorrow] },
-                                        { $gte: ['$stayTo', startOfToday] }
+                                        { $gte: ['$stayTo', startOfToday] },
+                                        { $eq: [{ $ifNull: ['$checkOutTime', null] }, null] }
                                     ]
                                 }
                             }
@@ -81,7 +82,8 @@ exports.getBedById = async (req, res) => {
                                     $and: [
                                         { $eq: ['$bedId', '$$bed_id'] },
                                         { $lt: ['$stayFrom', startOfTomorrow] },
-                                        { $gte: ['$stayTo', startOfToday] }
+                                        { $gte: ['$stayTo', startOfToday] },
+                                        { $eq: [{ $ifNull: ['$checkOutTime', null] }, null] }
                                     ]
                                 }
                             }
