@@ -51,40 +51,44 @@ const UpdateProfileForm = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (isButtonDisabled) return;
-
-        // If email changed or was unverified but OTP not sent/entered
-        if (isEmailChanged || !user?.isEmailVerified) {
-            if (!otpSent) {
-                toast.error("Please verify your email first.");
-                return;
-            }
-            if (!otp) {
-                toast.error("Please enter the OTP sent to your email.");
-                return;
-            }
-        }
+        if (loading || name.trim() === '') return;
 
         setLoading(true);
         try {
             const payload = { name };
-            if (isEmailChanged || !user?.isEmailVerified) {
-                payload.email = email;
-                payload.otp = otp;
-            }
-
             const res = await api.put(`/users/profile`, payload);
 
             dispatch(updateUser(res.data));
             toast.success(t.profile.updateForm.success);
+        } catch (err) {
+            console.error("Profile update failed:", err);
+            const errorMessage = err.response?.data?.message || t.profile.updateForm.error;
+            toast.error(errorMessage);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleVerifyEmail = async () => {
+        if (!otp) {
+            toast.error("Please enter the OTP sent to your email.");
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const res = await api.put(`/users/verify-email`, { email, otp });
+
+            dispatch(updateUser(res.data));
+            toast.success("Email verified successfully!");
+
             // Reset OTP state and editing mode
             setOtpSent(false);
             setOtp('');
             setIsEmailEditable(false);
         } catch (err) {
-            console.error("Profile update failed:", err);
-            const errorMessage = err.response?.data?.message || t.profile.updateForm.error;
-            toast.error(errorMessage);
+            console.error("Email verification failed:", err);
+            toast.error(err.response?.data?.message || "Verification failed");
         } finally {
             setLoading(false);
         }
@@ -175,13 +179,24 @@ const UpdateProfileForm = () => {
                 {/* OTP Field for Email Update */}
                 {(isEmailEditable || !user?.isEmailVerified) && (isEmailChanged || !user?.isEmailVerified) && otpSent && (
                     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-4">
-                        <ThemedInput
-                            label={t.profile.updateForm.enterOtp || "Enter OTP"}
-                            name="otp"
-                            value={otp}
-                            onChange={(e) => setOtp(e.target.value)}
-                            required={isEmailChanged || !user?.isEmailVerified}
-                        />
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                placeholder={t.profile.updateForm.enterOtp || "Enter OTP"}
+                                value={otp}
+                                onChange={(e) => setOtp(e.target.value)}
+                                className="block w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary border-background"
+                                required={isEmailChanged || !user?.isEmailVerified}
+                            />
+                            <button
+                                type="button"
+                                onClick={handleVerifyEmail}
+                                disabled={loading || !otp}
+                                className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primaryDark disabled:bg-gray-300 text-sm whitespace-nowrap"
+                            >
+                                {loading ? <FaSpinner className="animate-spin" /> : "Verify"}
+                            </button>
+                        </div>
                         <p className="text-xs text-gray-500 mt-2">{t.profile.updateForm.checkEmailCode || "Check your email for the code."}</p>
                     </motion.div>
                 )}
@@ -209,7 +224,7 @@ const UpdateProfileForm = () => {
                                 <FaSpinner className="animate-spin mr-2 h-5 w-5" /> {t.profile.updateForm.updating}
                             </>
                         ) : (
-                            ((isEmailChanged || !user?.isEmailVerified) && otpSent) ? (t.profile.updateForm.verifyAndUpdate || "Verify Code & Update Details") : t.profile.updateForm.button
+                            t.profile.updateForm.button
                         )}
                     </button>
                 </div>

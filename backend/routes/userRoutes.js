@@ -7,7 +7,11 @@ const authMiddleware = require('../middlewares/authMiddleware');
 router.use(authMiddleware);
 
 // Defines the route PUT /api/users/profile
+// Defines the route PUT /api/users/profile
 router.route('/profile').put(userController.updateMyProfile);
+
+// Defines the route PUT /api/users/verify-email
+router.route('/verify-email').put(userController.verifyMyEmail);
 
 // Defines the route PUT /api/users/change-password
 router.route('/change-password').put(userController.changeMyPassword);

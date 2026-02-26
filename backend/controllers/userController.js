@@ -14,30 +14,6 @@ exports.updateMyProfile = async (req, res) => {
         if (user) {
             user.name = req.body.name || user.name;
 
-            // Handle Email Verify/Update
-            if (req.body.email && (req.body.email !== user.email || !user.isEmailVerified)) {
-                const { email, otp } = req.body;
-                if (!otp) {
-                    return res.status(400).json({ message: 'OTP is required to change or verify email.' });
-                }
-
-                // Verify OTP
-                const otpRecord = await OTP.findOne({ email, otp, type: 'update' });
-                if (!otpRecord) {
-                    return res.status(400).json({ message: 'Invalid or expired OTP.' });
-                }
-
-                // Check if email taken
-                const existingUser = await User.findOne({ email });
-                if (existingUser && existingUser._id.toString() !== user._id.toString()) {
-                    return res.status(400).json({ message: 'Email already in use.' });
-                }
-
-                user.email = email;
-                user.isEmailVerified = true;
-                await OTP.deleteOne({ _id: otpRecord._id });
-            }
-
             const updatedUser = await user.save();
 
             // Return the updated user object (without the password hash)
@@ -55,6 +31,53 @@ exports.updateMyProfile = async (req, res) => {
     } catch (error) {
         console.error("Error updating profile:", error);
         res.status(500).json({ message: 'Server error updating profile.' });
+    }
+};
+
+// @desc    Verify or update current user's email
+// @route   PUT /api/users/verify-email
+// @access  Private
+exports.verifyMyEmail = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const { email, otp } = req.body;
+        if (!email || !otp) {
+            return res.status(400).json({ message: 'Email and OTP are required.' });
+        }
+
+        // Verify OTP
+        const otpRecord = await OTP.findOne({ email, otp, type: 'update' });
+        if (!otpRecord) {
+            return res.status(400).json({ message: 'Invalid or expired OTP.' });
+        }
+
+        // Check if email taken
+        const existingUser = await User.findOne({ email });
+        if (existingUser && existingUser._id.toString() !== user._id.toString()) {
+            return res.status(400).json({ message: 'Email already in use.' });
+        }
+
+        user.email = email;
+        user.isEmailVerified = true;
+        await OTP.deleteOne({ _id: otpRecord._id });
+
+        const updatedUser = await user.save();
+
+        res.json({
+            id: updatedUser._id,
+            name: updatedUser.name,
+            phone: updatedUser.phone,
+            email: updatedUser.email,
+            isEmailVerified: updatedUser.isEmailVerified,
+            roles: updatedUser.roles,
+        });
+    } catch (error) {
+        console.error("Error verifying email:", error);
+        res.status(500).json({ message: 'Server error verifying email.' });
     }
 };
 
