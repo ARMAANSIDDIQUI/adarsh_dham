@@ -165,7 +165,7 @@ const UpdateProfileForm = () => {
                                 disabled={otpLoading || !email}
                                 className="px-4 py-2 bg-primaryDark text-white rounded-lg hover:bg-highlight disabled:bg-gray-300 text-sm whitespace-nowrap"
                             >
-                                {otpLoading ? <FaSpinner className="animate-spin" /> : (otpSent ? "Resend OTP" : "Send OTP")}
+                                {otpLoading ? <FaSpinner className="animate-spin" /> : (otpSent ? "Resend OTP" : "Verify Email")}
                             </button>
                         )}
                     </div>

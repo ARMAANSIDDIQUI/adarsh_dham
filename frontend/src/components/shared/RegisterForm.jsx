@@ -175,7 +175,7 @@ const RegisterForm = () => {
                                 disabled={otpLoading || !formData.email || timer > 0}
                                 className="px-4 py-2 bg-primaryDark text-white rounded-lg hover:bg-highlight disabled:bg-gray-300 text-sm whitespace-nowrap"
                             >
-                                {otpLoading ? <FaSpinner className="animate-spin" /> : (timer > 0 ? `Resend in ${timer}s` : (otpSent ? "Resend OTP" : "Send OTP"))}
+                                {otpLoading ? <FaSpinner className="animate-spin" /> : (timer > 0 ? `Resend in ${timer}s` : (otpSent ? "Resend OTP" : "Verify Email"))}
                             </button>
                         </div>
                         {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
