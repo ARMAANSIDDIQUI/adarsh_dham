@@ -183,46 +183,47 @@ const RegisterForm = () => {
                                 </span>
                             )}
                         </label>
-                        <div className="flex gap-2 mt-1">
-                            <div className="relative flex-grow">
-                                <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-accent" />
-                                <input
-                                    type="email"
-                                    id="email"
-                                    name="email"
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                    className={`block w-full pl-10 pr-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-shadow ${errors.email ? 'border-red-500' : 'border-background'} ${isEmailVerified ? 'bg-gray-100 text-gray-500' : ''}`}
-                                    required
-                                    disabled={isEmailVerified}
-                                />
-                            </div>
-                            {!isEmailVerified && (
+                        <div className="relative mt-1">
+                            <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-accent" />
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleChange}
+                                className={`block w-full pl-10 pr-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-shadow ${errors.email ? 'border-red-500' : 'border-background'} ${isEmailVerified ? 'bg-gray-100 text-gray-500' : ''}`}
+                                required
+                                disabled={isEmailVerified}
+                            />
+                        </div>
+                        {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+
+                        {!isEmailVerified && !otpSent && (
+                            <div className="mt-2 text-right">
                                 <button
                                     type="button"
                                     onClick={handleSendOtp}
                                     disabled={otpLoading || !formData.email || timer > 0}
-                                    className="px-4 py-2 bg-primaryDark text-white rounded-lg hover:bg-highlight disabled:bg-gray-300 text-sm whitespace-nowrap"
+                                    className="px-4 py-2 bg-primaryDark text-white rounded-lg hover:bg-highlight disabled:bg-gray-300 text-sm whitespace-nowrap shadow-sm transition-colors"
                                 >
-                                    {otpLoading ? <FaSpinner className="animate-spin" /> : (timer > 0 ? `Resend in ${timer}s` : (otpSent ? "Resend OTP" : "Verify Email"))}
+                                    {otpLoading ? <FaSpinner className="animate-spin" /> : (timer > 0 ? `Resend in ${timer}s` : "Verify Email")}
                                 </button>
-                            )}
-                        </div>
-                        {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+                            </div>
+                        )}
                     </div>
 
                     {/* OTP Field */}
                     {otpSent && !isEmailVerified && (
-                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-4">
-                            <label htmlFor="otp" className="block text-sm font-medium text-gray-700">Enter OTP</label>
-                            <div className="flex gap-2">
+                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-4 p-4 border border-background rounded-lg bg-gray-50 shadow-inner block">
+                            <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-2">Verification Code</label>
+                            <div className="flex gap-2 w-full">
                                 <input
                                     type="text"
                                     id="otp"
                                     name="otp"
                                     value={otp}
                                     onChange={(e) => setOtp(e.target.value)}
-                                    className={`mt-1 block w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary ${errors.otp ? 'border-red-500' : 'border-background'}`}
+                                    className={`flex-grow block px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary ${errors.otp ? 'border-red-500' : 'border-background'}`}
                                     placeholder="Enter 6-digit OTP"
                                     required
                                 />
@@ -230,13 +231,23 @@ const RegisterForm = () => {
                                     type="button"
                                     onClick={handleVerifyOtp}
                                     disabled={loading || !otp}
-                                    className="mt-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primaryDark disabled:bg-gray-300 text-sm whitespace-nowrap"
+                                    className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primaryDark disabled:bg-gray-300 text-sm font-semibold whitespace-nowrap shadow-sm transition-colors"
                                 >
-                                    {loading ? <FaSpinner className="animate-spin" /> : "Verify"}
+                                    {loading ? <FaSpinner className="animate-spin mx-auto" /> : "Submit OTP"}
                                 </button>
                             </div>
                             {errors.otp && <p className="text-red-500 text-xs mt-1">{errors.otp}</p>}
-                            <p className="text-xs text-gray-500 mt-2">Check your email for the code.</p>
+                            <div className="flex justify-between items-center mt-3">
+                                <p className="text-xs text-gray-500">Check your email for the code.</p>
+                                <button
+                                    type="button"
+                                    onClick={handleSendOtp}
+                                    disabled={otpLoading || timer > 0}
+                                    className="text-xs text-primary font-medium hover:underline disabled:text-gray-400"
+                                >
+                                    {otpLoading ? "Sending..." : (timer > 0 ? `Resend (${timer}s)` : "Resend OTP")}
+                                </button>
+                            </div>
                         </motion.div>
                     )}
 
