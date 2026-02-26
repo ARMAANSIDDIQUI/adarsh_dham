@@ -14,11 +14,11 @@ exports.updateMyProfile = async (req, res) => {
         if (user) {
             user.name = req.body.name || user.name;
 
-            // Handle Email Update
-            if (req.body.email && req.body.email !== user.email) {
+            // Handle Email Verify/Update
+            if (req.body.email && (req.body.email !== user.email || !user.isEmailVerified)) {
                 const { email, otp } = req.body;
                 if (!otp) {
-                    return res.status(400).json({ message: 'OTP is required to change email.' });
+                    return res.status(400).json({ message: 'OTP is required to change or verify email.' });
                 }
 
                 // Verify OTP
@@ -34,6 +34,7 @@ exports.updateMyProfile = async (req, res) => {
                 }
 
                 user.email = email;
+                user.isEmailVerified = true;
                 await OTP.deleteOne({ _id: otpRecord._id });
             }
 
@@ -45,6 +46,7 @@ exports.updateMyProfile = async (req, res) => {
                 name: updatedUser.name,
                 phone: updatedUser.phone,
                 email: updatedUser.email,
+                isEmailVerified: updatedUser.isEmailVerified,
                 roles: updatedUser.roles,
             });
         } else {

@@ -127,14 +127,14 @@ const UpdateProfileForm = () => {
                 <div>
                     <div className="flex justify-between items-center mb-1">
                         <label className="block text-sm font-medium text-gray-700">
-                            Email
+                            {t.profile.updateForm.email || 'Email'}
                             {user?.isEmailVerified ? (
                                 <span className="ml-2 text-green-500 text-xs font-semibold flex items-center inline-flex">
-                                    <FaCheckCircle className="mr-1" /> Verified
+                                    <FaCheckCircle className="mr-1" /> {t.profile.updateForm.verified || 'Verified'}
                                 </span>
                             ) : (
                                 <span className="ml-2 text-red-500 text-xs font-semibold flex items-center inline-flex">
-                                    <FaTimes className="mr-1" /> Unverified
+                                    <FaTimes className="mr-1" /> {t.profile.updateForm.unverified || 'Unverified'}
                                 </span>
                             )}
                         </label>
@@ -146,7 +146,7 @@ const UpdateProfileForm = () => {
                                 disabled={!user?.isEmailVerified}
                                 className="form-checkbox h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary disabled:opacity-50"
                             />
-                            <span className="text-gray-600">Edit Email</span>
+                            <span className="text-gray-600">{t.profile.updateForm.editEmail || 'Edit Email'}</span>
                         </label>
                     </div>
                     <div className="flex gap-2">
@@ -165,7 +165,7 @@ const UpdateProfileForm = () => {
                                 disabled={otpLoading || !email}
                                 className="px-4 py-2 bg-primaryDark text-white rounded-lg hover:bg-highlight disabled:bg-gray-300 text-sm whitespace-nowrap"
                             >
-                                {otpLoading ? <FaSpinner className="animate-spin" /> : (otpSent ? "Resend OTP" : "Verify Email")}
+                                {otpLoading ? <FaSpinner className="animate-spin" /> : (otpSent ? (t.profile.updateForm.resendOtp || "Resend OTP") : (t.profile.updateForm.verifyEmail || "Verify Email"))}
                             </button>
                         )}
                     </div>
@@ -176,13 +176,13 @@ const UpdateProfileForm = () => {
                 {(isEmailEditable || !user?.isEmailVerified) && (isEmailChanged || !user?.isEmailVerified) && otpSent && (
                     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-4">
                         <ThemedInput
-                            label="Enter OTP"
+                            label={t.profile.updateForm.enterOtp || "Enter OTP"}
                             name="otp"
                             value={otp}
                             onChange={(e) => setOtp(e.target.value)}
                             required={isEmailChanged || !user?.isEmailVerified}
                         />
-                        <p className="text-xs text-gray-500 mt-2">Check your email for the code.</p>
+                        <p className="text-xs text-gray-500 mt-2">{t.profile.updateForm.checkEmailCode || "Check your email for the code."}</p>
                     </motion.div>
                 )}
                 <div>
@@ -209,7 +209,7 @@ const UpdateProfileForm = () => {
                                 <FaSpinner className="animate-spin mr-2 h-5 w-5" /> {t.profile.updateForm.updating}
                             </>
                         ) : (
-                            t.profile.updateForm.button
+                            ((isEmailChanged || !user?.isEmailVerified) && otpSent) ? (t.profile.updateForm.verifyAndUpdate || "Verify Code & Update Details") : t.profile.updateForm.button
                         )}
                     </button>
                 </div>

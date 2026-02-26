@@ -359,7 +359,16 @@ export const translations = {
         button: "Update Details",
         updating: "Updating...",
         success: "Profile updated successfully!",
-        error: "Profile update failed. Please try again."
+        error: "Profile update failed. Please try again.",
+        email: "Email",
+        verified: "Verified",
+        unverified: "Unverified",
+        editEmail: "Edit Email",
+        verifyEmail: "Verify Email",
+        resendOtp: "Resend OTP",
+        enterOtp: "Enter OTP",
+        checkEmailCode: "Check your email for the code.",
+        verifyAndUpdate: "Verify Code & Update Details"
       },
       passwordForm: {
         title: "Change Password",
@@ -730,7 +739,16 @@ export const translations = {
         button: "विवरण अपडेट करें",
         updating: "अपडेट हो रहा है...",
         success: "प्रोफाइल सफलतापूर्वक अपडेट हो गया!",
-        error: "प्रोफाइल अपडेट विफल। कृपया पुनः प्रयास करें।"
+        error: "प्रोफाइल अपडेट विफल। कृपया पुनः प्रयास करें।",
+        email: "ईमेल",
+        verified: "सत्यापित",
+        unverified: "असत्यापित",
+        editEmail: "ईमेल बदलें",
+        verifyEmail: "ईमेल सत्यापित करें",
+        resendOtp: "OTP फिर से भेजें",
+        enterOtp: "OTP दर्ज करें",
+        checkEmailCode: "कोड के लिए अपना ईमेल जांचें।",
+        verifyAndUpdate: "कोड सत्यापित करें और विवरण अपडेट करें"
       },
       passwordForm: {
         title: "पासवर्ड बदलें",

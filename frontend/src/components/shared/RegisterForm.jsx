@@ -273,7 +273,7 @@ const RegisterForm = () => {
                                     <FaSpinner className="animate-spin mr-2 h-5 w-5" /> {t.register.registering}
                                 </>
                             ) : (
-                                t.register.button
+                                otpSent ? "Verify Code & Register" : t.register.button
                             )}
                         </button>
                     </div>
