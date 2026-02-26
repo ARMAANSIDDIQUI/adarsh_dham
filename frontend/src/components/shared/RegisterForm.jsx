@@ -204,9 +204,9 @@ const RegisterForm = () => {
                                     type="button"
                                     onClick={handleSendOtp}
                                     disabled={otpLoading || !formData.email || timer > 0}
-                                    className="px-4 py-2 bg-primaryDark text-white rounded-lg hover:bg-highlight disabled:bg-gray-300 text-sm whitespace-nowrap shadow-sm transition-colors"
+                                    className="w-full sm:w-auto px-4 py-2 bg-primaryDark text-white rounded-lg hover:bg-highlight disabled:bg-gray-300 text-sm whitespace-nowrap shadow-sm transition-colors"
                                 >
-                                    {otpLoading ? <FaSpinner className="animate-spin" /> : (timer > 0 ? `Resend in ${timer}s` : "Verify Email")}
+                                    {otpLoading ? <FaSpinner className="animate-spin inline" /> : (timer > 0 ? `Resend in ${timer}s` : "Verify Email")}
                                 </button>
                             </div>
                         )}
@@ -216,14 +216,14 @@ const RegisterForm = () => {
                     {otpSent && !isEmailVerified && (
                         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-4 p-4 border border-background rounded-lg bg-gray-50 shadow-inner block">
                             <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-2">Verification Code</label>
-                            <div className="flex gap-2 w-full">
+                            <div className="flex flex-col sm:flex-row gap-2 w-full">
                                 <input
                                     type="text"
                                     id="otp"
                                     name="otp"
                                     value={otp}
                                     onChange={(e) => setOtp(e.target.value)}
-                                    className={`flex-grow block px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary ${errors.otp ? 'border-red-500' : 'border-background'}`}
+                                    className={`w-full sm:flex-grow block px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary ${errors.otp ? 'border-red-500' : 'border-background'}`}
                                     placeholder="Enter 6-digit OTP"
                                     required
                                 />
@@ -231,19 +231,19 @@ const RegisterForm = () => {
                                     type="button"
                                     onClick={handleVerifyOtp}
                                     disabled={loading || !otp}
-                                    className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primaryDark disabled:bg-gray-300 text-sm font-semibold whitespace-nowrap shadow-sm transition-colors"
+                                    className="w-full sm:w-auto px-4 py-2 bg-primary text-white rounded-lg hover:bg-primaryDark disabled:bg-gray-300 text-sm font-semibold whitespace-nowrap shadow-sm transition-colors"
                                 >
-                                    {loading ? <FaSpinner className="animate-spin mx-auto" /> : "Submit OTP"}
+                                    {loading ? <FaSpinner className="animate-spin mx-auto inline" /> : "Submit OTP"}
                                 </button>
                             </div>
                             {errors.otp && <p className="text-red-500 text-xs mt-1">{errors.otp}</p>}
-                            <div className="flex justify-between items-center mt-3">
+                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0 mt-3">
                                 <p className="text-xs text-gray-500">Check your email for the code.</p>
                                 <button
                                     type="button"
                                     onClick={handleSendOtp}
                                     disabled={otpLoading || timer > 0}
-                                    className="text-xs text-primary font-medium hover:underline disabled:text-gray-400"
+                                    className="text-xs text-primary font-medium hover:underline disabled:text-gray-400 self-start sm:self-auto"
                                 >
                                     {otpLoading ? "Sending..." : (timer > 0 ? `Resend (${timer}s)` : "Resend OTP")}
                                 </button>
