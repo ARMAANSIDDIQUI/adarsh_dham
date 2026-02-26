@@ -226,24 +226,29 @@ const UpdateProfileForm = () => {
                         >
                             <button
                                 onClick={cancelEdit}
-                                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+                                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
                             >
                                 <FaTimes />
                             </button>
-                            <h3 className="text-lg font-bold text-gray-900 mb-2">Edit Email?</h3>
-                            <p className="text-gray-600 mb-6 text-sm">
-                                To ensure security, updating your email address requires verifying the new email via OTP. Are you sure you want to proceed?
-                            </p>
-                            <div className="flex justify-end gap-3">
+                            <div className="flex flex-col items-center text-center">
+                                <div className="p-4 rounded-full mb-4 bg-primary/10 text-primary">
+                                    <FaUser size={32} />
+                                </div>
+                                <h3 className="text-xl font-bold font-heading text-gray-900 mb-2">Edit Email?</h3>
+                                <p className="text-gray-600 mb-6 text-sm">
+                                    To ensure security, updating your email address requires verifying the new email via OTP. Are you sure you want to proceed?
+                                </p>
+                            </div>
+                            <div className="flex justify-end gap-3 w-full">
                                 <button
                                     onClick={cancelEdit}
-                                    className="px-4 py-2 text-gray-700 font-medium hover:bg-gray-100 rounded-lg transition-colors"
+                                    className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 rounded-lg transition-colors"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={confirmEdit}
-                                    className="px-4 py-2 bg-primary text-white font-medium hover:bg-primaryDark rounded-lg shadow-sm transition-colors"
+                                    className="flex-1 px-4 py-2 bg-primary text-white font-medium hover:bg-primaryDark rounded-lg shadow-sm transition-colors"
                                 >
                                     Yes, Edit
                                 </button>
