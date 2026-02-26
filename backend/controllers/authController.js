@@ -49,10 +49,38 @@ exports.register = async (req, res) => {
     });
 
     await newUser.save();
-    await OTP.deleteOne({ _id: otpRecord._id }); // Consume OTP
+
+    // Cleanup OTP if not already consumed
+    if (otpRecord) {
+      await OTP.deleteOne({ _id: otpRecord._id });
+    }
+
     res.status(201).json({ message: 'User registered successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error });
+  }
+};
+
+exports.verifyOtp = async (req, res) => {
+  const { email, otp, type } = req.body;
+  if (!email || !otp || !type) {
+    return res.status(400).json({ message: 'Email, OTP, and type are required' });
+  }
+
+  try {
+    const otpRecord = await OTP.findOne({ email, otp, type });
+    if (!otpRecord) {
+      return res.status(400).json({ message: 'Invalid or expired OTP' });
+    }
+
+    // Rather than deleting the OTP here, we can set a verified flag on it, 
+    // or just let the register step consume it.
+    // For simplicity, we just return success so the frontend knows it's valid.
+
+    res.status(200).json({ message: 'OTP verified successfully' });
+  } catch (error) {
+    console.error('Error verifying OTP:', error);
+    res.status(500).json({ message: 'Failed to verify OTP' });
   }
 };
 

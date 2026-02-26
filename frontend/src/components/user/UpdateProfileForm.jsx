@@ -232,16 +232,16 @@ const UpdateProfileForm = () => {
 
             <AnimatePresence>
                 {showEditConfirmation && (
-                    <div className="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center p-4">
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl relative"
+                            className="bg-card rounded-2xl p-6 max-w-sm w-full shadow-soft border border-background relative"
                         >
                             <button
                                 onClick={cancelEdit}
-                                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+                                className="absolute top-4 right-4 text-gray-500 hover:text-primary transition-colors"
                             >
                                 <FaTimes />
                             </button>
@@ -249,15 +249,15 @@ const UpdateProfileForm = () => {
                                 <div className="p-4 rounded-full mb-4 bg-primary/10 text-primary">
                                     <FaUser size={32} />
                                 </div>
-                                <h3 className="text-xl font-bold font-heading text-gray-900 mb-2">Edit Email?</h3>
-                                <p className="text-gray-600 mb-6 text-sm">
+                                <h3 className="text-xl font-bold font-heading text-primaryDark mb-2">Edit Email?</h3>
+                                <p className="text-gray-700 mb-6 text-sm">
                                     To ensure security, updating your email address requires verifying the new email via OTP. Are you sure you want to proceed?
                                 </p>
                             </div>
                             <div className="flex justify-end gap-3 w-full">
                                 <button
                                     onClick={cancelEdit}
-                                    className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 rounded-lg transition-colors"
+                                    className="flex-1 px-4 py-2 bg-neutral text-gray-800 font-medium hover:bg-background rounded-lg border border-background shadow-sm transition-colors"
                                 >
                                     Cancel
                                 </button>

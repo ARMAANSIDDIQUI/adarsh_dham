@@ -12,11 +12,11 @@ const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message, confirmText 
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl relative"
+                    className="bg-card rounded-2xl p-6 max-w-sm w-full shadow-soft border border-background relative"
                 >
                     <button
                         onClick={onClose}
-                        className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+                        className="absolute top-4 right-4 text-gray-500 hover:text-primary transition-colors"
                     >
                         <FaTimes />
                     </button>
@@ -24,13 +24,13 @@ const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message, confirmText 
                         <div className={`p-4 rounded-full mb-4 ${isDanger ? 'bg-red-100 text-red-500' : 'bg-primary/10 text-primary'}`}>
                             <FaExclamationTriangle size={32} />
                         </div>
-                        <h3 className="text-xl font-bold font-heading text-gray-900 mb-2">{title || "Confirm Action"}</h3>
-                        <p className="text-gray-600 mb-6 text-sm">{message}</p>
+                        <h3 className="text-xl font-bold font-heading text-primaryDark mb-2">{title || "Confirm Action"}</h3>
+                        <p className="text-gray-700 mb-6 text-sm">{message}</p>
                     </div>
                     <div className="flex justify-end gap-3 w-full">
                         <button
                             onClick={onClose}
-                            className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 rounded-lg transition-colors"
+                            className="flex-1 px-4 py-2 bg-neutral text-gray-800 font-medium hover:bg-background border border-background shadow-sm rounded-lg transition-colors"
                         >
                             {cancelText}
                         </button>

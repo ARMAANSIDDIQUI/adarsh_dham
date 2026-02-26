@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../../api/api';
 import { motion } from 'framer-motion';
-import { FaLock, FaUser, FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa';
+import { FaLock, FaUser, FaEye, FaEyeSlash, FaSpinner, FaCheckCircle } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { useTranslation } from '../../hooks/useTranslation';
 import PhoneInput, { validatePhoneNumber } from '../common/PhoneInput';
@@ -19,6 +19,7 @@ const RegisterForm = () => {
 
     const [otp, setOtp] = useState('');
     const [otpSent, setOtpSent] = useState(false);
+    const [isEmailVerified, setIsEmailVerified] = useState(false);
     const [otpLoading, setOtpLoading] = useState(false);
     const [timer, setTimer] = useState(0);
 
@@ -67,8 +68,9 @@ const RegisterForm = () => {
             newErrors.email = "Invalid email format";
         }
 
-        if (!otp) newErrors.otp = "OTP is required";
-        if (!otpSent) newErrors.otp = "Please verify email first";
+        if (!isEmailVerified) {
+            newErrors.email = "Please verify your email address";
+        }
 
         if (!validatePhoneNumber(formData.phone)) {
             newErrors.phone = t.register.error.phoneLength || "Invalid phone number";
@@ -102,6 +104,25 @@ const RegisterForm = () => {
         }
     };
 
+    const handleVerifyOtp = async () => {
+        if (!otp) {
+            setErrors({ ...errors, otp: 'OTP is required' });
+            return;
+        }
+
+        setLoading(true);
+        try {
+            await api.post('/auth/verify-otp', { email: formData.email, otp, type: 'register' });
+            setIsEmailVerified(true);
+            toast.success("Email verified successfully!");
+            setErrors({ ...errors, otp: null, email: null });
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Invalid OTP");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -126,7 +147,7 @@ const RegisterForm = () => {
         }
     };
 
-    const isFormIncomplete = !formData.name || !formData.phone || !formData.password || !formData.confirmPassword || !formData.email || !otp;
+    const isFormIncomplete = !formData.name || !formData.phone || !formData.password || !formData.confirmPassword || !formData.email || !isEmailVerified || !otp;
 
     return (
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="p-4 md:p-8 flex items-center justify-center bg-neutral font-body">
@@ -154,7 +175,14 @@ const RegisterForm = () => {
 
                     {/* Email Field */}
                     <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email Address</label>
+                        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                            Email Address
+                            {isEmailVerified && (
+                                <span className="ml-2 text-green-500 text-xs font-semibold flex items-center inline-flex">
+                                    <FaCheckCircle className="mr-1" /> Verified
+                                </span>
+                            )}
+                        </label>
                         <div className="flex gap-2 mt-1">
                             <div className="relative flex-grow">
                                 <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-accent" />
@@ -164,37 +192,49 @@ const RegisterForm = () => {
                                     name="email"
                                     value={formData.email}
                                     onChange={handleChange}
-                                    className={`block w-full pl-10 pr-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-shadow ${errors.email ? 'border-red-500' : 'border-background'}`}
+                                    className={`block w-full pl-10 pr-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-shadow ${errors.email ? 'border-red-500' : 'border-background'} ${isEmailVerified ? 'bg-gray-100 text-gray-500' : ''}`}
                                     required
-                                    disabled={otpSent} // Lock email after sending OTP? Or allow user to change and resend? Let's allow change but reset OTP.
+                                    disabled={isEmailVerified}
                                 />
                             </div>
-                            <button
-                                type="button"
-                                onClick={handleSendOtp}
-                                disabled={otpLoading || !formData.email || timer > 0}
-                                className="px-4 py-2 bg-primaryDark text-white rounded-lg hover:bg-highlight disabled:bg-gray-300 text-sm whitespace-nowrap"
-                            >
-                                {otpLoading ? <FaSpinner className="animate-spin" /> : (timer > 0 ? `Resend in ${timer}s` : (otpSent ? "Resend OTP" : "Verify Email"))}
-                            </button>
+                            {!isEmailVerified && (
+                                <button
+                                    type="button"
+                                    onClick={handleSendOtp}
+                                    disabled={otpLoading || !formData.email || timer > 0}
+                                    className="px-4 py-2 bg-primaryDark text-white rounded-lg hover:bg-highlight disabled:bg-gray-300 text-sm whitespace-nowrap"
+                                >
+                                    {otpLoading ? <FaSpinner className="animate-spin" /> : (timer > 0 ? `Resend in ${timer}s` : (otpSent ? "Resend OTP" : "Verify Email"))}
+                                </button>
+                            )}
                         </div>
                         {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
                     </div>
 
                     {/* OTP Field */}
-                    {otpSent && (
+                    {otpSent && !isEmailVerified && (
                         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-4">
                             <label htmlFor="otp" className="block text-sm font-medium text-gray-700">Enter OTP</label>
-                            <input
-                                type="text"
-                                id="otp"
-                                name="otp"
-                                value={otp}
-                                onChange={(e) => setOtp(e.target.value)}
-                                className={`mt-1 block w-full px-3 py-2 border rounded-lg shadow-sm focus:ring-primary focus:border-primary ${errors.otp ? 'border-red-500' : 'border-background'}`}
-                                placeholder="Enter 6-digit OTP"
-                                required
-                            />
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    id="otp"
+                                    name="otp"
+                                    value={otp}
+                                    onChange={(e) => setOtp(e.target.value)}
+                                    className={`mt-1 block w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary ${errors.otp ? 'border-red-500' : 'border-background'}`}
+                                    placeholder="Enter 6-digit OTP"
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    onClick={handleVerifyOtp}
+                                    disabled={loading || !otp}
+                                    className="mt-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primaryDark disabled:bg-gray-300 text-sm whitespace-nowrap"
+                                >
+                                    {loading ? <FaSpinner className="animate-spin" /> : "Verify"}
+                                </button>
+                            </div>
                             {errors.otp && <p className="text-red-500 text-xs mt-1">{errors.otp}</p>}
                             <p className="text-xs text-gray-500 mt-2">Check your email for the code.</p>
                         </motion.div>
@@ -273,7 +313,7 @@ const RegisterForm = () => {
                                     <FaSpinner className="animate-spin mr-2 h-5 w-5" /> {t.register.registering}
                                 </>
                             ) : (
-                                otpSent ? "Verify Code & Register" : t.register.button
+                                t.register.button
                             )}
                         </button>
                     </div>
