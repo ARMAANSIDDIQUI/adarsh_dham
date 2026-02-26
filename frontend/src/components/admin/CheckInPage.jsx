@@ -86,9 +86,9 @@ const PersonRow = ({ person, onAction }) => {
 
     return (
         <div className={`flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-xl border transition-all duration-200
-            ${isCheckedOut ? 'bg-gray-50/70 border-gray-200 opacity-75' :
+            ${isCheckedOut ? 'bg-neutral/40 border-gray-200 opacity-75' :
                 isCheckedIn ? 'bg-emerald-50/60 border-emerald-200' :
-                    'bg-white border-gray-200 hover:border-primary/40'}`}>
+                    'bg-neutral/60 border-gray-200 hover:border-primary/40'}`}>
 
             {/* Person info */}
             <div className="flex-1 min-w-0">
@@ -323,19 +323,19 @@ const CheckInPage = () => {
             {/* Stats Summary - Integration into the header or top bar if needed */}
             {!loading && totalMembers > 0 && (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                    <div className="bg-white p-4 rounded-xl shadow-soft border-l-4 border-blue-500 text-center hover:shadow-md transition-shadow">
+                    <div className="bg-card p-4 rounded-xl shadow-soft border-l-4 border-blue-500 text-center hover:shadow-md transition-shadow">
                         <div className="text-3xl font-extrabold text-blue-700 font-heading">{totalMembers}</div>
                         <div className="text-xs text-blue-500 font-bold uppercase tracking-wider mt-1">Expected</div>
                     </div>
-                    <div className="bg-white p-4 rounded-xl shadow-soft border-l-4 border-amber-500 text-center hover:shadow-md transition-shadow">
+                    <div className="bg-card p-4 rounded-xl shadow-soft border-l-4 border-amber-500 text-center hover:shadow-md transition-shadow">
                         <div className="text-3xl font-extrabold text-amber-600 font-heading">{totalPending}</div>
                         <div className="text-xs text-amber-500 font-bold uppercase tracking-wider mt-1">Pending</div>
                     </div>
-                    <div className="bg-white p-4 rounded-xl shadow-soft border-l-4 border-emerald-500 text-center hover:shadow-md transition-shadow">
+                    <div className="bg-card p-4 rounded-xl shadow-soft border-l-4 border-emerald-500 text-center hover:shadow-md transition-shadow">
                         <div className="text-3xl font-extrabold text-emerald-600 font-heading">{totalCheckedIn}</div>
                         <div className="text-xs text-emerald-500 font-bold uppercase tracking-wider mt-1">Checked In</div>
                     </div>
-                    <div className="bg-white p-4 rounded-xl shadow-soft border-l-4 border-rose-500 text-center hover:shadow-md transition-shadow">
+                    <div className="bg-card p-4 rounded-xl shadow-soft border-l-4 border-rose-500 text-center hover:shadow-md transition-shadow">
                         <div className="text-3xl font-extrabold text-rose-600 font-heading">{totalOut}</div>
                         <div className="text-xs text-rose-500 font-bold uppercase tracking-wider mt-1">Checked Out</div>
                     </div>
