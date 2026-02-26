@@ -111,7 +111,7 @@ const SearchableSelect = ({ options, value, onChange, placeholder, disabled = fa
     return (
         <div className="relative w-full" ref={wrapperRef}>
             <div
-                className={`flex items-center justify-between p-2 border rounded-lg cursor-pointer transition-colors duration-200 ${disabled ? 'bg-gray-200 text-gray-400' : 'bg-white hover:border-primary'}`}
+                className={`flex items-center justify-between p-2 border rounded-lg cursor-pointer transition-colors duration-200 ${disabled ? 'bg-gray-100 border-gray-200 text-gray-400' : 'bg-white border-gray-300 hover:border-primary focus-within:ring-2 focus-within:ring-primary/20 shadow-sm text-gray-700'}`}
                 onClick={() => !disabled && setIsOpen(!isOpen)}
             >
                 <span className={`text-sm truncate ${selectedOption ? 'text-gray-900' : 'text-gray-500'}`}>
@@ -146,7 +146,7 @@ const SearchableSelect = ({ options, value, onChange, placeholder, disabled = fa
                                     <li
                                         key={option.value}
                                         onClick={() => handleOptionClick(option.value)}
-                                        className="p-2 text-sm cursor-pointer hover:bg-gray-100 rounded-md"
+                                        className="p-2 text-sm cursor-pointer hover:bg-primary/10 hover:text-primaryDark text-gray-700 rounded-md transition-colors"
                                     >
                                         {option.label}
                                     </li>
@@ -463,18 +463,18 @@ const BookingCard = ({ booking, onAction, onEdit, allocations, handleAllocationC
                                             const isChildPerson = (person?.gender === 'boy' || person?.gender === 'girl') && parseInt(person?.age) <= 2;
 
                                             return (
-                                                <div key={index} className={`p-3 bg-gray-50 rounded-lg border relative z-[${zIndex}]`}>
-                                                    <div className="mb-2">
-                                                        <p className="font-semibold text-gray-700">
+                                                <div key={index} className={`p-4 bg-white shadow-sm rounded-xl border border-gray-100 relative z-[${zIndex}] hover:border-primary/30 transition-colors`}>
+                                                    <div className="mb-3">
+                                                        <p className="font-bold text-primaryDark font-heading text-lg flex items-center gap-2">
                                                             {person?.name || `Person ${index + 1}`}
-                                                            <span className="text-xs text-pink-500 capitalize ml-1">({person?.gender || 'N/A'})</span>
+                                                            <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full capitalize font-body tracking-wider">({person?.gender || 'N/A'})</span>
                                                             {isChildPerson && (
                                                                 <span className="ml-2 text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200">
                                                                     Child ≤2
                                                                 </span>
                                                             )}
                                                         </p>
-                                                        <p className="text-xs text-gray-500">Stay: {formatDate(person.stayFrom)} - {formatDate(person.stayTo)}</p>
+                                                        <p className="text-xs font-semibold text-gray-500 mt-1 uppercase tracking-widest bg-gray-50 inline-block px-2 py-1 rounded-md">Stay: <span className="text-gray-700">{formatDate(person.stayFrom)} - {formatDate(person.stayTo)}</span></p>
                                                     </div>
 
                                                     {isChildPerson ? (

@@ -81,8 +81,8 @@ const PersonRow = ({ person, onAction }) => {
 
     const bed = person.bedId;
     const allocationText = bed
-        ? `${bed.roomId?.buildingId?.name || ''} · Rm ${bed.roomId?.roomNumber || '?'} / Bed ${bed.name || '?'}`
-        : 'No bed assigned';
+        ? <><span className="font-semibold text-primaryDark">{bed.roomId?.buildingId?.name || ''}</span> · Rm <span className="font-medium text-gray-700">{bed.roomId?.roomNumber || '?'}</span> / Bed <span className="font-medium text-gray-700">{bed.name || '?'}</span></>
+        : <span className="italic text-gray-400">No bed assigned</span>;
 
     return (
         <div className={`flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-xl border transition-all duration-200
@@ -288,11 +288,19 @@ const CheckInPage = () => {
                 )
             })));
 
-            const msg =
-                action === 'checkin' ? `✅ ${updated.name} checked in` :
-                    action === 'checkout' ? `🚪 ${updated.name} checked out` :
-                        `↩️ Reset for ${updated.name}`;
-            toast.success(msg);
+            const Msg = () => (
+                <div className="flex items-center gap-2">
+                    {action === 'checkin' ? <FaSignInAlt className="text-emerald-500" /> :
+                        action === 'checkout' ? <FaSignOutAlt className="text-rose-500" /> :
+                            <FaUndo className="text-gray-500" />}
+                    <span>
+                        {action === 'checkin' ? `${updated.name} checked in` :
+                            action === 'checkout' ? `${updated.name} checked out` :
+                                `Reset for ${updated.name}`}
+                    </span>
+                </div>
+            );
+            toast.success(<Msg />);
         } catch (err) {
             toast.error(err.response?.data?.message || 'Action failed.');
         }

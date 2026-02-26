@@ -5,6 +5,7 @@ import { FaSpinner, FaTrash, FaFilePdf, FaBed, FaBuilding, FaDoorOpen, FaTimesCi
 import Button from '../../components/common/Button.jsx';
 import { Link, useNavigate } from 'react-router-dom';
 import EditBookingModal from './EditBookingModal.jsx';
+import ConfirmModal from '../../components/common/ConfirmModal.jsx';
 import { toast } from 'react-toastify';
 import { useTranslation } from '../../hooks/useTranslation';
 
@@ -113,6 +114,7 @@ const MyBookings = () => {
     const [error, setError] = useState(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedBooking, setSelectedBooking] = useState(null);
+    const [bookingToDelete, setBookingToDelete] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
     const navigate = useNavigate();
 
@@ -131,17 +133,22 @@ const MyBookings = () => {
         if (!isEditModalOpen) fetchMyBookings();
     }, [isEditModalOpen]);
 
-    const handleDeleteBooking = async (bookingId) => {
-        if (window.confirm(t.myBookings.actions.withdrawConfirm)) {
-            try {
-                await api.delete(`/bookings/delete/${bookingId}`);
-                fetchMyBookings();
-                toast.success(t.myBookings.actions.withdrawSuccess);
-            } catch (err) {
-                const msg = err.response?.data?.message || t.myBookings.actions.withdrawFail;
-                toast.error(msg);
-            }
+    const executeDeleteBooking = async () => {
+        if (!bookingToDelete) return;
+        try {
+            await api.delete(`/bookings/delete/${bookingToDelete}`);
+            fetchMyBookings();
+            toast.success(t.myBookings.actions.withdrawSuccess);
+        } catch (err) {
+            const msg = err.response?.data?.message || t.myBookings.actions.withdrawFail;
+            toast.error(msg);
+        } finally {
+            setBookingToDelete(null);
         }
+    };
+
+    const handleDeleteClick = (bookingId) => {
+        setBookingToDelete(bookingId);
     };
 
     const handleEdit = (booking) => {
@@ -232,7 +239,7 @@ const MyBookings = () => {
                                         key={b._id}
                                         booking={b}
                                         onEdit={handleEdit}
-                                        onDelete={handleDeleteBooking}
+                                        onDelete={handleDeleteClick}
                                         onDownloadPdf={async booking => {
                                             const res = await api.get(`/bookings/pdf/${booking._id}`, { responseType: 'blob' });
                                             const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
@@ -272,6 +279,17 @@ const MyBookings = () => {
                     />
                 )}
             </AnimatePresence>
+
+            <ConfirmModal
+                isOpen={!!bookingToDelete}
+                onClose={() => setBookingToDelete(null)}
+                onConfirm={executeDeleteBooking}
+                title="Withdraw Booking"
+                message={t.myBookings.actions.withdrawConfirm}
+                confirmText={t.myBookings.card.withdraw}
+                cancelText={t.common.cancel}
+                isDanger={true}
+            />
         </>
     );
 };

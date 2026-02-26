@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import { useSelector } from 'react-redux'; // <--- ADDED
 import { AnimatePresence, motion } from 'framer-motion';
 import { ToastContainer } from 'react-toastify';
+import { useDispatch } from 'react-redux';
+import { logout } from './redux/slices/authSlice.js';
 
 // Page Imports
 import HomePage from './pages/Home.jsx';
@@ -52,7 +54,20 @@ const PageTransition = ({ children }) => {
 // to conditionally show/hide the global footer.
 const AppLayout = () => {
   const location = useLocation();
+  const dispatch = useDispatch();
   const isHomePage = location.pathname === '/';
+
+  React.useEffect(() => {
+    const handleAuthExpired = () => {
+      // Ensure we clean up Redux state as well
+      dispatch(logout());
+    };
+
+    window.addEventListener('auth-expired', handleAuthExpired);
+    return () => {
+      window.removeEventListener('auth-expired', handleAuthExpired);
+    };
+  }, [dispatch]);
 
   return (
     <div className="flex flex-col min-h-screen bg-neutral font-body transition-colors duration-300">

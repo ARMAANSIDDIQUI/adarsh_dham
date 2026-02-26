@@ -39,8 +39,12 @@ api.interceptors.response.use(
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
 
-                // Redirect to login (only if not already on login page)
-                if (!window.location.pathname.includes('/login')) {
+
+                // Also trigger a custom event that Redux/App can listen to if needed
+                window.dispatchEvent(new Event('auth-expired'));
+
+                // Redirect to login only if not already on it
+                if (!window.location.pathname.startsWith('/login')) {
                     window.location.href = '/login?expired=true';
                 }
             }

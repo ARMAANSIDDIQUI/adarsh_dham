@@ -4,6 +4,7 @@ import shortLinkService from '../../api/shortLinkService';
 import { toast } from 'react-toastify';
 import { FaTrashAlt, FaEdit, FaCopy, FaExternalLinkAlt, FaPlus, FaSpinner } from 'react-icons/fa';
 import Button from '../common/Button';
+import ConfirmModal from '../common/ConfirmModal';
 
 const ManageShortLinks = () => {
     const [links, setLinks] = useState([]);
@@ -15,6 +16,7 @@ const ManageShortLinks = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [currentId, setCurrentId] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [linkToDelete, setLinkToDelete] = useState(null);
 
     useEffect(() => {
         fetchLinks();
@@ -67,17 +69,22 @@ const ManageShortLinks = () => {
         setCurrentId(link._id);
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to delete this link?')) {
-            try {
-                await shortLinkService.deleteShortLink(id);
-                toast.success('Link deleted successfully!');
-                fetchLinks();
-            } catch (error) {
-                console.error('Error deleting link:', error);
-                toast.error('Failed to delete link.');
-            }
+    const executeDelete = async () => {
+        if (!linkToDelete) return;
+        try {
+            await shortLinkService.deleteShortLink(linkToDelete);
+            toast.success('Link deleted successfully!');
+            fetchLinks();
+        } catch (error) {
+            console.error('Error deleting link:', error);
+            toast.error('Failed to delete link.');
+        } finally {
+            setLinkToDelete(null);
         }
+    };
+
+    const handleDelete = (id) => {
+        setLinkToDelete(id);
     };
 
     const copyToClipboard = (slug) => {
@@ -230,6 +237,16 @@ const ManageShortLinks = () => {
                     </tbody>
                 </table>
             </div>
+
+            <ConfirmModal
+                isOpen={!!linkToDelete}
+                onClose={() => setLinkToDelete(null)}
+                onConfirm={executeDelete}
+                title="Delete Short Link"
+                message="Are you sure you want to delete this link?"
+                confirmText="Delete"
+                isDanger={true}
+            />
         </motion.div>
     );
 };

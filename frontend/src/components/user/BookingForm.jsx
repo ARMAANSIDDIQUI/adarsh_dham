@@ -437,7 +437,36 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
   }
 
   if (!event) {
-    return <p className="text-center text-red-500 mt-10">{t.booking.errors.eventNotFound}</p>;
+    return <p className="text-center text-red-500 mt-10">{t.booking.errors.eventNotFound || "Event not found"}</p>;
+  }
+
+  if (!isEditing && event.bookingStartDate && event.bookingEndDate) {
+    const now = new Date();
+    const bStart = new Date(event.bookingStartDate);
+    const bEnd = new Date(event.bookingEndDate);
+    bEnd.setHours(23, 59, 59, 999);
+
+    if (now < bStart) {
+      return (
+        <div className="flex flex-col items-center justify-center min-h-[50vh] p-4 text-center">
+          <h2 className="text-3xl font-bold font-heading text-highlight mb-4">Booking Not Open Yet</h2>
+          <p className="text-gray-700 text-lg">
+            Bookings for <strong>{event.name}</strong> will open on <strong>{bStart.toLocaleDateString('en-GB')}</strong>.
+          </p>
+        </div>
+      );
+    }
+
+    if (now > bEnd) {
+      return (
+        <div className="flex flex-col items-center justify-center min-h-[50vh] p-4 text-center">
+          <h2 className="text-3xl font-bold font-heading text-red-500 mb-4">Booking Closed</h2>
+          <p className="text-gray-700 text-lg">
+            Bookings for <strong>{event.name}</strong> closed on <strong>{bEnd.toLocaleDateString('en-GB')}</strong>.
+          </p>
+        </div>
+      );
+    }
   }
 
 

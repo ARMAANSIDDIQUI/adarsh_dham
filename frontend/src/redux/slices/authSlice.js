@@ -8,7 +8,7 @@ const initialState = {
   isAuthenticated: false,
   loading: false,
   error: null,
-  isPersistLoaded: false, 
+  isPersistLoaded: false,
   token: null,
 };
 
@@ -29,10 +29,10 @@ export const login = createAsyncThunk(
 export const checkAuth = createAsyncThunk(
   'auth/checkAuth',
   async (_, { getState, rejectWithValue }) => {
-    const state = getState().auth; 
-    
+    const state = getState().auth;
+
     if (!state.isPersistLoaded) {
-      return { user: null, isAuthenticated: false }; 
+      return { user: null, isAuthenticated: false };
     }
 
     if (state.token) {
@@ -46,13 +46,19 @@ export const checkAuth = createAsyncThunk(
     try {
       const decoded = jwtDecode(state.token);
       if (decoded.exp * 1000 < Date.now()) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.dispatchEvent(new Event('auth-expired'));
         return rejectWithValue({ message: 'Token expired' });
       }
-      
+
       return { user: state.user, isAuthenticated: true };
 
     } catch (error) {
       api.defaults.headers.common['Authorization'] = null;
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.dispatchEvent(new Event('auth-expired'));
       return rejectWithValue({ message: 'Invalid token' });
     }
   }
@@ -66,35 +72,35 @@ const authSlice = createSlice({
     logout: (state) => {
       state.user = null;
       state.isAuthenticated = false;
-      state.token = null; 
+      state.token = null;
       api.defaults.headers.common['Authorization'] = null;
     },
     // Action for PROFILE UPDATES (only changes user details)
     updateUser: (state, action) => {
-        if (state.user && action.payload) {
-            state.user = { ...state.user, ...action.payload };
-        }
+      if (state.user && action.payload) {
+        state.user = { ...state.user, ...action.payload };
+      }
     },
     // Action for full login/session replacement (requires user AND token)
     setCredentials: (state, action) => {
-        state.user = action.payload.user;
-        state.token = action.payload.token;
-        state.isAuthenticated = !!action.payload.token;
+      state.user = action.payload.user;
+      state.token = action.payload.token;
+      state.isAuthenticated = !!action.payload.token;
     },
   },
   extraReducers: (builder) => {
     builder
       .addCase(REHYDRATE, (state, action) => {
-          state.isPersistLoaded = true;
-          if (action.payload && action.payload.auth) {
-            const token = action.payload.auth.token;
-            if (token) {
-              api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-            }
-            state.user = action.payload.auth.user || null;
-            state.isAuthenticated = !!action.payload.auth.token;
-            state.token = action.payload.auth.token || null;
+        state.isPersistLoaded = true;
+        if (action.payload && action.payload.auth) {
+          const token = action.payload.auth.token;
+          if (token) {
+            api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
           }
+          state.user = action.payload.auth.user || null;
+          state.isAuthenticated = !!action.payload.auth.token;
+          state.token = action.payload.auth.token || null;
+        }
       })
       .addCase(login.pending, (state) => {
         state.loading = true;
@@ -128,7 +134,7 @@ const authSlice = createSlice({
         state.loading = false;
         state.isAuthenticated = false;
         state.user = null;
-        state.token = null; 
+        state.token = null;
         api.defaults.headers.common['Authorization'] = null;
         state.error = action.payload;
       });

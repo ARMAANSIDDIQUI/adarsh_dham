@@ -19,7 +19,7 @@ const UpdateProfileForm = () => {
     const [otpSent, setOtpSent] = useState(false);
     const [otpLoading, setOtpLoading] = useState(false);
     const [loading, setLoading] = useState(false);
-    
+
     // Email editing states
     const [isEmailEditable, setIsEmailEditable] = useState(false);
     const [showEditConfirmation, setShowEditConfirmation] = useState(false);
@@ -30,7 +30,7 @@ const UpdateProfileForm = () => {
     // 3. If neither name nor email has changed.
     const isNameChanged = name.trim() !== user?.name;
     const isEmailChanged = email.trim() !== (user?.email || '');
-    const isButtonDisabled = loading || name.trim() === '' || email.trim() === '' || (!isNameChanged && !isEmailChanged);
+    const isButtonDisabled = loading || name.trim() === '' || email.trim() === '' || (!isNameChanged && !isEmailChanged && user?.isEmailVerified);
 
     const handleSendOtp = async () => {
         if (!email) {
@@ -53,10 +53,10 @@ const UpdateProfileForm = () => {
         e.preventDefault();
         if (isButtonDisabled) return;
 
-        // If email changed but OTP not sent/entered
-        if (isEmailChanged) {
+        // If email changed or was unverified but OTP not sent/entered
+        if (isEmailChanged || !user?.isEmailVerified) {
             if (!otpSent) {
-                toast.error("Please verify your new email first.");
+                toast.error("Please verify your email first.");
                 return;
             }
             if (!otp) {
@@ -68,7 +68,7 @@ const UpdateProfileForm = () => {
         setLoading(true);
         try {
             const payload = { name };
-            if (isEmailChanged) {
+            if (isEmailChanged || !user?.isEmailVerified) {
                 payload.email = email;
                 payload.otp = otp;
             }
@@ -128,16 +128,23 @@ const UpdateProfileForm = () => {
                     <div className="flex justify-between items-center mb-1">
                         <label className="block text-sm font-medium text-gray-700">
                             Email
-                            {user?.email && (
-                                <FaCheckCircle className="inline ml-2 text-green-500" title="Verified" />
+                            {user?.isEmailVerified ? (
+                                <span className="ml-2 text-green-500 text-xs font-semibold flex items-center inline-flex">
+                                    <FaCheckCircle className="mr-1" /> Verified
+                                </span>
+                            ) : (
+                                <span className="ml-2 text-red-500 text-xs font-semibold flex items-center inline-flex">
+                                    <FaTimes className="mr-1" /> Unverified
+                                </span>
                             )}
                         </label>
                         <label className="flex items-center space-x-2 text-sm cursor-pointer select-none">
                             <input
                                 type="checkbox"
-                                checked={isEmailEditable}
+                                checked={isEmailEditable || !user?.isEmailVerified}
                                 onChange={handleCheckboxChange}
-                                className="form-checkbox h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
+                                disabled={!user?.isEmailVerified}
+                                className="form-checkbox h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary disabled:opacity-50"
                             />
                             <span className="text-gray-600">Edit Email</span>
                         </label>
@@ -147,11 +154,11 @@ const UpdateProfileForm = () => {
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            disabled={!isEmailEditable}
+                            disabled={!isEmailEditable && user?.isEmailVerified}
                             className={`block w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary border-background disabled:bg-gray-100 disabled:text-gray-500`}
                             placeholder="Enter email"
                         />
-                        {isEmailEditable && isEmailChanged && (
+                        {(isEmailEditable || !user?.isEmailVerified) && (isEmailChanged || !user?.isEmailVerified) && (
                             <button
                                 type="button"
                                 onClick={handleSendOtp}
@@ -162,20 +169,20 @@ const UpdateProfileForm = () => {
                             </button>
                         )}
                     </div>
-                    {isEmailEditable && isEmailChanged && !otpSent && <p className="text-xs text-orange-500 mt-1">Verification required to change email.</p>}
+                    {(isEmailEditable || !user?.isEmailVerified) && (isEmailChanged || !user?.isEmailVerified) && !otpSent && <p className="text-xs text-orange-500 mt-1">Verification required to change or verify email.</p>}
                 </div>
 
                 {/* OTP Field for Email Update */}
-                {isEmailEditable && isEmailChanged && otpSent && (
+                {(isEmailEditable || !user?.isEmailVerified) && (isEmailChanged || !user?.isEmailVerified) && otpSent && (
                     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-4">
                         <ThemedInput
                             label="Enter OTP"
                             name="otp"
                             value={otp}
                             onChange={(e) => setOtp(e.target.value)}
-                            required={isEmailChanged}
+                            required={isEmailChanged || !user?.isEmailVerified}
                         />
-                        <p className="text-xs text-gray-500 mt-2">Check your new email for the code.</p>
+                        <p className="text-xs text-gray-500 mt-2">Check your email for the code.</p>
                     </motion.div>
                 )}
                 <div>
@@ -217,8 +224,8 @@ const UpdateProfileForm = () => {
                             exit={{ opacity: 0, scale: 0.95 }}
                             className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl relative"
                         >
-                            <button 
-                                onClick={cancelEdit} 
+                            <button
+                                onClick={cancelEdit}
                                 className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
                             >
                                 <FaTimes />

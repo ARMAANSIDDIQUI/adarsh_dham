@@ -340,7 +340,19 @@ const Home = () => {
 
         const now = new Date();
         const upcoming = allEvents
-          .filter(e => new Date(e.startDate) >= now || (new Date(e.startDate) <= now && new Date(e.endDate) >= now)) // Upcoming or Ongoing
+          .filter(e => {
+            const isOngoingOrUpcoming = new Date(e.startDate) >= now || (new Date(e.startDate) <= now && new Date(e.endDate) >= now);
+            if (!isOngoingOrUpcoming) return false;
+
+            // Modal for upcoming event should only show when booking dates are open
+            if (e.bookingStartDate && e.bookingEndDate) {
+              const bStart = new Date(e.bookingStartDate);
+              const bEnd = new Date(e.bookingEndDate);
+              bEnd.setHours(23, 59, 59, 999);
+              return now >= bStart && now <= bEnd;
+            }
+            return false;
+          })
           .sort((a, b) => new Date(a.startDate) - new Date(b.startDate)); // Sort by nearest start date
 
         if (upcoming.length > 0) {
