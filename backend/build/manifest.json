@@ -1,0 +1,42 @@
+{
+  "short_name": "Shri Adarsh Dham",
+  "name": "Shri Adarsh Dham - Ashram Management",
+  "description": "Shri Adarsh Dham | Online Platform for Visitor Registration, Accommodation & Program Management",
+  "icons": [
+    {
+      "src": "VM401196.png",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "VM401196.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "VM401196.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "VM401196.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "VM401196.JPG",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#E29C9C",
+  "background_color": "#F5F5DC",
+  "orientation": "portrait"
+}
