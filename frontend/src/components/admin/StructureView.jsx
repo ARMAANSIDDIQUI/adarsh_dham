@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../api/api.js';
-import { FaSpinner, FaBuilding, FaBed, FaUserCheck, FaUserMinus, FaTimes, FaHashtag, FaHome, FaCity, FaPhone, FaUserTag, FaSearch, FaMale, FaFemale, FaClock, FaInfoCircle } from 'react-icons/fa';
+import { FaSpinner, FaBuilding, FaBed, FaUserCheck, FaUserMinus, FaTimes, FaHashtag, FaHome, FaCity, FaPhone, FaUserTag, FaSearch, FaMale, FaFemale, FaClock, FaInfoCircle, FaSignInAlt } from 'react-icons/fa';
 
 /**
  * Normalizes gender strings (e.g., 'Boy', 'unisex' -> 'male', 'mixed').
@@ -210,7 +210,16 @@ const StructureView = () => {
             bAcc + building.rooms.reduce((rAcc, room) => rAcc + room.beds.length, 0), 0);
 
         const totalOccupancy = occupancyMap.size;
-        return { totalCapacity, totalOccupancy, totalVacancy: totalCapacity - totalOccupancy };
+
+        let totalCheckedIn = 0;
+        occupancyMap.forEach(person => {
+            const status = person.status || (person.checkOutTime ? 'checkedout' : person.checkInTime ? 'checkedin' : 'pending');
+            if (status === 'checkedin') {
+                totalCheckedIn++;
+            }
+        });
+
+        return { totalCapacity, totalOccupancy, totalVacancy: totalCapacity - totalOccupancy, totalCheckedIn };
     }, [buildings, occupancyMap]);
 
     if (loading) return <div className="flex justify-center items-center h-screen"><FaSpinner className="animate-spin text-primary text-4xl" /></div>;
@@ -248,7 +257,7 @@ const StructureView = () => {
 
             {error && <p className="text-red-600 bg-red-100 p-3 rounded-md mb-6">{error}</p>}
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
                 <div className="bg-card p-4 rounded-2xl shadow-soft text-center">
                     <FaBed className="text-2xl text-accent mx-auto mb-2" />
                     <p className="text-3xl font-bold">{summaryStats.totalCapacity}</p>
@@ -258,6 +267,11 @@ const StructureView = () => {
                     <FaUserCheck className="text-2xl text-accent mx-auto mb-2" />
                     <p className="text-3xl font-bold">{summaryStats.totalOccupancy}</p>
                     <p className="text-sm text-gray-500">Current Occupancy</p>
+                </div>
+                <div className="bg-card p-4 rounded-2xl shadow-soft text-center">
+                    <FaSignInAlt className="text-2xl text-accent mx-auto mb-2" />
+                    <p className="text-3xl font-bold">{summaryStats.totalCheckedIn}</p>
+                    <p className="text-sm text-gray-500">Checked In</p>
                 </div>
                 <div className="bg-card p-4 rounded-2xl shadow-soft text-center">
                     <FaUserMinus className="text-2xl text-accent mx-auto mb-2" />
