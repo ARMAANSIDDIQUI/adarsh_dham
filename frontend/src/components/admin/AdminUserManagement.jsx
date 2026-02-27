@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../api/api.js';
 import Button from '../common/Button.jsx';
-import { FaSpinner, FaLock, FaUser, FaCheck, FaTimes, FaKey, FaSearch, FaEye, FaEyeSlash, FaEdit, FaSave } from 'react-icons/fa'; // Added FaEdit, FaSave
+import { FaSpinner, FaLock, FaUser, FaCheck, FaTimes, FaKey, FaSearch, FaEye, FaEyeSlash, FaEdit, FaSave, FaTrash } from 'react-icons/fa'; // Added FaEdit, FaSave, FaTrash
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-toastify';
 import PhoneInput, { validatePhoneNumber } from '../common/PhoneInput.jsx';
-import { useGetAllUsersQuery } from '../../redux/api/apiSlice';
+import { useGetAllUsersQuery, useDeleteUserMutation } from '../../redux/api/apiSlice';
 
 const UserDetailsModal = ({
     isOpen,
@@ -179,9 +179,67 @@ const PasswordModal = ({
     );
 };
 
+const DeleteUserModal = ({
+    isOpen,
+    user,
+    loading,
+    error,
+    onClose,
+    onConfirm
+}) => {
+    return (
+        <AnimatePresence>
+            {isOpen && user && (
+                <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4 font-body">
+                    <motion.div
+                        key={`delete-${user._id}`}
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.8, opacity: 0 }}
+                        className="bg-card p-6 md:p-8 rounded-2xl shadow-soft w-full max-w-md"
+                    >
+                        <h3 className="text-2xl font-bold text-red-600 font-heading mb-6 flex items-center">
+                            <FaTrash className="mr-3" /> Delete User
+                        </h3>
+                        <p className="text-gray-700 mb-4">
+                            Are you absolutely sure you want to delete <span className="font-semibold">{user.name}</span>?
+                        </p>
+                        <p className="text-red-500 text-sm mb-6 bg-red-50 p-3 rounded-lg border border-red-100">
+                            <strong>Warning:</strong> This action cannot be undone. User data and login access will be permanently removed.
+                        </p>
+
+                        {error && (
+                            <p className="text-highlight text-sm mb-4 text-center">{error}</p>
+                        )}
+
+                        <div className="flex justify-end space-x-3">
+                            <Button
+                                type="button"
+                                onClick={onClose}
+                                className="bg-background hover:bg-opacity-80 text-primaryDark"
+                                disabled={loading}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={onConfirm}
+                                className="bg-red-600 hover:bg-red-700 text-white"
+                                disabled={loading}
+                            >
+                                {loading ? <FaSpinner className="animate-spin inline-block mr-2" /> : <><FaTrash className="inline-block mr-2" /> Yes, Delete User</>}
+                            </Button>
+                        </div>
+                    </motion.div>
+                </div>
+            )}
+        </AnimatePresence>
+    );
+};
+
 
 const AdminUserManagement = () => {
     const { data: rawUsers, isLoading: loading, isError, refetch } = useGetAllUsersQuery();
+    const [deleteUserMutation] = useDeleteUserMutation();
     const [users, setUsers] = useState([]);
 
     useEffect(() => {
@@ -192,6 +250,7 @@ const AdminUserManagement = () => {
     const [globalMessage, setGlobalMessage] = useState(null);
     const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [currentUser, setCurrentUser] = useState(null);
     const [isModalLoading, setIsModalLoading] = useState(false);
     const [modalError, setModalError] = useState(null);
@@ -215,9 +274,17 @@ const AdminUserManagement = () => {
         setIsEditModalOpen(true);
     };
 
+    const handleOpenDeleteModal = (user) => {
+        setCurrentUser(user);
+        setModalError(null);
+        setIsModalLoading(false);
+        setIsDeleteModalOpen(true);
+    };
+
     const handleCloseModals = () => {
         setIsPasswordModalOpen(false);
         setIsEditModalOpen(false);
+        setIsDeleteModalOpen(false);
         setTimeout(() => setCurrentUser(null), 300);
     };
 
@@ -274,6 +341,26 @@ const AdminUserManagement = () => {
 
         } catch (err) {
             const msg = err.response?.data?.message || 'Failed to change password on server.';
+            setModalError(msg);
+            setIsModalLoading(false);
+            toast.error(msg);
+        }
+    };
+
+    const handleDeleteUser = async () => {
+        setIsModalLoading(true);
+        setModalError(null);
+        setGlobalMessage(null);
+
+        try {
+            await deleteUserMutation(currentUser._id).unwrap();
+
+            setGlobalMessage(`User \${currentUser.name} successfully deleted.`);
+            toast.success(`User \${currentUser.name} deleted.`);
+            handleCloseModals();
+
+        } catch (err) {
+            const msg = err.data?.message || err.error || 'Failed to delete user on server.';
             setModalError(msg);
             setIsModalLoading(false);
             toast.error(msg);
@@ -349,6 +436,13 @@ const AdminUserManagement = () => {
                                     >
                                         <FaLock />
                                     </Button>
+                                    <Button
+                                        onClick={() => handleOpenDeleteModal(user)}
+                                        className="text-sm bg-red-500 hover:bg-red-600 text-white py-2 px-3"
+                                        title="Delete User"
+                                    >
+                                        <FaTrash />
+                                    </Button>
                                 </td>
                             </tr>
                         )) : (
@@ -388,6 +482,15 @@ const AdminUserManagement = () => {
                     setPasswordInput(e.target.value);
                     if (modalError) setModalError(null);
                 }}
+            />
+
+            <DeleteUserModal
+                isOpen={isDeleteModalOpen}
+                user={currentUser}
+                loading={isModalLoading}
+                error={modalError}
+                onClose={handleCloseModals}
+                onConfirm={handleDeleteUser}
             />
         </div>
     );

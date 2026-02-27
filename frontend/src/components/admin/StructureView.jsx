@@ -1,8 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 // api.js is no longer needed here since we use RTK Query
-import { FaSpinner, FaBuilding, FaBed, FaUserCheck, FaUserMinus, FaTimes, FaHashtag, FaHome, FaCity, FaPhone, FaUserTag, FaSearch, FaMale, FaFemale, FaClock, FaInfoCircle, FaSignInAlt } from 'react-icons/fa';
-import { useGetStructureQuery } from '../../../redux/api/apiSlice';
+import { FaBuilding, FaBed, FaMale, FaFemale, FaCheckCircle, FaTimesCircle, FaSearch, FaSync, FaExclamationCircle, FaSpinner, FaUserCheck, FaUserMinus, FaTimes, FaHashtag, FaHome, FaCity, FaPhone, FaUserTag, FaClock, FaInfoCircle, FaSignInAlt } from 'react-icons/fa';
+import Button from '../common/Button';
+import RoomOccupantsModal from './RoomOccupantsModal';
+import { useGetStructureQuery } from '../../redux/api/apiSlice'; // RTK Query hook
 
 /**
  * Normalizes gender strings (e.g., 'Boy', 'unisex' -> 'male', 'mixed').

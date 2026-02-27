@@ -109,6 +109,13 @@ export const apiSlice = createApi({
             query: () => '/admin/short-links',
             providesTags: ['ShortLinks'],
         }),
+        deleteUser: builder.mutation({
+            query: (userId) => ({
+                url: `/admin/delete-admin/${userId}`,
+                method: 'DELETE',
+            }),
+            invalidatesTags: ['Users', 'Admins'],
+        }),
     }),
 });
 
@@ -132,5 +139,6 @@ export const {
     useGetPaginatedPeopleQuery,
     useGetNotificationsQuery,
     useGetUnreadNotificationCountQuery,
-    useGetShortLinksQuery
+    useGetShortLinksQuery,
+    useDeleteUserMutation
 } = apiSlice;
