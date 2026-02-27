@@ -5,6 +5,7 @@ import api from '../../api/api.js';
 import Button from '../common/Button.jsx';
 import { FaEdit, FaTrashAlt, FaPlus, FaSpinner, FaLink, FaClock, FaYoutube } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import { useGetLiveLinksQuery } from '../../redux/api/apiSlice';
 
 // Helper function to format ISO dates to IST for datetime-local input
 const formatDateTimeLocal = (isoString) => {
@@ -60,9 +61,10 @@ const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel, confir
 };
 
 const ManageSatsang = () => {
-    const [liveLinks, setLiveLinks] = useState([]);
+    const { data: rawLiveLinks, isLoading: loading, isError, refetch } = useGetLiveLinksQuery();
+    const liveLinks = Array.isArray(rawLiveLinks) ? rawLiveLinks : [];
+
     const [newLink, setNewLink] = useState({ name: '', url: '', youtubeEmbedUrl: '', liveFrom: '', liveTo: '' });
-    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [editingLink, setEditingLink] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -75,21 +77,13 @@ const ManageSatsang = () => {
         isAlert: false,
     });
 
-    const fetchLiveLinks = async () => {
-        try {
-            const linksRes = await api.get('/satsang/live-links');
-            setLiveLinks(Array.isArray(linksRes.data) ? linksRes.data : []);
-        } catch (err) {
-            console.error("Failed to fetch live links:", err);
-            setError('Failed to fetch live links.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
     useEffect(() => {
-        fetchLiveLinks();
-    }, []);
+        if (isError) setError('Failed to fetch live links.');
+    }, [isError]);
+
+    const fetchLiveLinks = () => {
+        refetch();
+    };
 
     const handleAddLink = async (e) => {
         e.preventDefault();

@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import api from '../../api/api.js';
+// api.js is no longer needed here since we use RTK Query
 import { FaSpinner, FaBuilding, FaBed, FaUserCheck, FaUserMinus, FaTimes, FaHashtag, FaHome, FaCity, FaPhone, FaUserTag, FaSearch, FaMale, FaFemale, FaClock, FaInfoCircle, FaSignInAlt } from 'react-icons/fa';
+import { useGetStructureQuery } from '../../../redux/api/apiSlice';
 
 /**
  * Normalizes gender strings (e.g., 'Boy', 'unisex' -> 'male', 'mixed').
@@ -111,10 +112,14 @@ const getMaxDateForMonth = (dateString) => {
 };
 
 const StructureView = () => {
-    const [buildings, setBuildings] = useState([]);
-    const [people, setPeople] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const { data: structureData, isLoading: loading, error: fetchError } = useGetStructureQuery();
+
+    // Safely extract from structureData
+    const buildings = structureData?.buildings || [];
+    const people = structureData?.people || [];
+
+    // Convert fetch error to string if exists
+    const error = fetchError ? 'Failed to fetch structure data. Please ensure the API is running and accessible.' : null;
 
     const { today } = useMemo(getIstDateBoundaries, []);
     const [selectedDate, setSelectedDate] = useState(formatDateForInput(today));
@@ -123,25 +128,6 @@ const StructureView = () => {
     // STATES for filtering
     const [buildingSearch, setBuildingSearch] = useState('');
     const [genderFilter, setGenderFilter] = useState(''); // 'Male', 'Female', or '' (All)
-
-    useEffect(() => {
-        const fetchStructureData = async () => {
-            try {
-                setLoading(true);
-                const res = await api.get('/structure');
-
-                setBuildings(res.data.buildings || []);
-                setPeople(res.data.people || []);
-                setError(null);
-            } catch (err) {
-                setError('Failed to fetch structure data. Please ensure the API is running and accessible.');
-                console.error("API Fetch Error:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchStructureData();
-    }, []);
 
     const occupancyMap = useMemo(() => {
         const map = new Map();

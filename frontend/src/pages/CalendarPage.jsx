@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { FaSpinner, FaCalendarAlt, FaCircle } from 'react-icons/fa';
-import api from '../api/api.js';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import { useNavigate } from 'react-router-dom';
 import { Tooltip } from 'react-tooltip';
 import { useTranslation } from '../hooks/useTranslation';
+import { useGetEventsQuery } from '../redux/api/apiSlice';
 
 const theme = {
     card: "#EEDAC5",
@@ -133,28 +133,13 @@ input[type="date"]:focus {
 
 const CalendarPage = () => {
     const t = useTranslation();
-    const [events, setEvents] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const { data: rawEvents, isLoading: loading, isError } = useGetEventsQuery();
+    const events = Array.isArray(rawEvents) ? rawEvents : [];
+    const error = isError ? t.events.error : null;
+
     const [selectedDate, setSelectedDate] = useState(new Date());
     const navigate = useNavigate();
     const [dateInput, setDateInput] = useState('');
-
-    useEffect(() => {
-        const fetchEvents = async () => {
-            try {
-                const response = await api.get('/events');
-                const eventsData = Array.isArray(response.data) ? response.data : [];
-                setEvents(eventsData);
-            } catch {
-                setError(t.events.error);
-                setEvents([]);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchEvents();
-    }, [t.events.error]);
 
     useEffect(() => {
         const year = selectedDate.getFullYear();
@@ -195,15 +180,15 @@ const CalendarPage = () => {
     const handleDateClick = (clickedDate) => {
         setSelectedDate(clickedDate);
         const key = clickedDate.toDateString();
-    
+
         if (bookingEventMap.has(key)) {
             const event = bookingEventMap.get(key);
             const now = new Date();
             const bookingStart = new Date(event.bookingStartDate);
-            bookingStart.setHours(0, 0, 0, 0); 
+            bookingStart.setHours(0, 0, 0, 0);
             const bookingEnd = new Date(event.bookingEndDate);
             bookingEnd.setHours(23, 59, 59, 999);
-            
+
             // Default to true if undefined, ensuring backward compatibility
             const isBookingOpen = event.isBookingOpen !== false;
 

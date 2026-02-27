@@ -6,6 +6,7 @@ import { FaUsers, FaEdit, FaTrashAlt, FaKey, FaTimes, FaPlusCircle, FaEye, FaEye
 import api from '../../api/api.js';
 import { toast } from 'react-toastify';
 import PhoneInput, { validatePhoneNumber } from '../common/PhoneInput.jsx';
+import { useGetAdminsQuery } from '../../redux/api/apiSlice';
 
 const roles = ['admin', 'super-operator', 'operator', 'satsang-operator'];
 
@@ -178,8 +179,8 @@ const AdminModal = ({ user, modalOpen, setModalOpen, fetchUsers, setError }) => 
 };
 
 const ManageAdmins = () => {
+  const { data: rawUsers, isLoading: loading, isError, refetch } = useGetAdminsQuery();
   const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -188,19 +189,17 @@ const ManageAdmins = () => {
   const [roleFilter, setRoleFilter] = useState('');
   const [showNewAdminPassword, setShowNewAdminPassword] = useState(false); // State for new admin password visibility
 
-  const fetchUsers = async () => {
-    try {
-      const res = await api.get('/admin');
-      setUsers(Array.isArray(res.data) ? res.data : []);
-      setError(null);
-    } catch (err) {
-      setError('Failed to fetch user list.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    if (rawUsers) setUsers(Array.isArray(rawUsers) ? rawUsers : []);
+  }, [rawUsers]);
 
-  useEffect(() => { fetchUsers(); }, []);
+  useEffect(() => {
+    if (isError) setError('Failed to fetch user list.');
+  }, [isError]);
+
+  const fetchUsers = () => {
+    refetch();
+  };
 
   const handleRoleToggle = async (userId, role, hasRole) => {
     try {

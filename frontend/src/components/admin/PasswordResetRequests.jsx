@@ -1,32 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FaSpinner, FaCheck, FaInfoCircle, FaUserClock } from 'react-icons/fa'; 
+import { FaSpinner, FaCheck, FaInfoCircle, FaUserClock } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import api from '../../api/api';
 import Button from '../common/Button';
 import { toast } from 'react-toastify';
+import { useGetPendingPasswordRequestsQuery } from '../../redux/api/apiSlice';
 
 const PasswordResetRequests = () => {
+    const { data: rawRequests, isLoading: loading, isError, refetch } = useGetPendingPasswordRequestsQuery();
     const [requests, setRequests] = useState([]);
-    const [loading, setLoading] = useState(true); // CORRECTED THIS LINE
     const [error, setError] = useState('');
 
-    const fetchRequests = async () => {
-        setLoading(true);
-        try {
-            const { data } = await api.get('/password-requests/pending');
-            setRequests(data);
-        } catch (err) {
-            setError('Failed to fetch password requests.');
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
-    };
+    useEffect(() => {
+        if (rawRequests) setRequests(rawRequests);
+    }, [rawRequests]);
 
     useEffect(() => {
-        fetchRequests();
-    }, []);
+        if (isError) setError('Failed to fetch password requests.');
+    }, [isError]);
+
+    const fetchRequests = () => {
+        refetch();
+    };
 
     const handleResolve = async (requestId) => {
         try {
@@ -45,9 +41,9 @@ const PasswordResetRequests = () => {
             className="p-4 md:p-8 bg-neutral min-h-screen font-body"
         >
             <h2 className="text-3xl font-bold font-heading mb-6 text-primaryDark border-b-4 border-primary pb-2">Password Reset Requests</h2>
-            
+
             <div className="bg-accent/10 border-l-4 border-accent text-accent p-4 mb-6 rounded-r-lg" role="alert">
-                <p className="font-bold flex items-center"><FaInfoCircle className="mr-2"/>Instructions</p>
+                <p className="font-bold flex items-center"><FaInfoCircle className="mr-2" />Instructions</p>
                 <p>Review the requests below. After contacting the user and resetting their password, mark the request as "Resolved".</p>
                 <p className="mt-2">You can reset passwords from the <Link to="/admin/user-management" className="font-semibold underline hover:text-primaryDark">User Management</Link> page.</p>
             </div>

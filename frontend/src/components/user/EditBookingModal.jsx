@@ -5,6 +5,7 @@ import { FaUserPlus, FaMapMarkerAlt, FaCalendarAlt, FaEnvelope, FaUniversity, Fa
 import api from '../../api/api.js';
 import { toast } from 'react-toastify';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useGetEventByIdQuery } from '../../redux/api/apiSlice';
 import PhoneInput from '../common/PhoneInput.jsx';
 
 const ThemedInput = ({ label, name, value, onChange, required, type = "text", icon, min, max, colSpan = "", maxLength }) => (
@@ -47,27 +48,15 @@ const EditBookingModal = ({ booking, onClose, onUpdate }) => {
   const [submitLoading, setSubmitLoading] = useState(false);
   const [error, setError] = useState('');
   const [validationError, setValidationError] = useState(null);
-  const [event, setEvent] = useState(null);
+  const { data: event } = useGetEventByIdQuery(booking?.eventId, {
+    skip: !booking?.eventId,
+  });
 
   const [formData, setFormData] = useState({
     numMales: 0, numFemales: 0, numBoys: 0, numGirls: 0, people: [],
     stayFrom: '', stayTo: '', ashramName: '', email: '', address: '', city: '',
     contactNumber: '', fillingForOthers: false, baijiMahatmaJi: '', baijiContact: '', notes: ''
   });
-
-  useEffect(() => {
-    if (booking?.eventId) {
-      const fetchEvent = async () => {
-        try {
-          const res = await api.get(`/events/${booking.eventId}`);
-          setEvent(res.data);
-        } catch {
-          setEvent(null);
-        }
-      };
-      fetchEvent();
-    }
-  }, [booking]);
 
   useEffect(() => {
     if (booking) {

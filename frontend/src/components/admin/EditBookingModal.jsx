@@ -211,7 +211,7 @@ const EditBookingModal = ({ isOpen, booking, onClose, onUpdate }) => {
                                     </p>
                                 )}
                                 {formData.people && formData.people.map((person, index) => (
-                                    <div key={index} className="p-4 border border-gray-200 rounded-lg bg-white relative">
+                                    <div key={index} className="p-4 border border-primary/20 rounded-xl bg-background/50 relative">
                                         <div className="flex justify-between items-start mb-2">
                                             <div className="text-xs font-mono text-gray-400">#{index + 1}</div>
                                             <button

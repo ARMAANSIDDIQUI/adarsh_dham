@@ -8,6 +8,7 @@ import {
     FaBuilding, FaCheckCircle, FaTimesCircle, FaClock, FaFilePdf
 } from 'react-icons/fa';
 import DynamicDateInput from '../common/DynamicDateInput.jsx';
+import { useGetCheckinDataQuery } from '../../redux/api/apiSlice';
 
 // ── Helpers ───────────────────────────────────────────────────
 const todayISO = () => {
@@ -172,7 +173,7 @@ const PersonRow = ({ person, onAction }) => {
 
 const BookingCard = ({ booking, onPersonAction }) => {
     const [open, setOpen] = useState(true);
-    const { _id: bookingId, bookingNumber, ashramName, contactNumber, city, eventName, stayFrom, stayTo, members, status } = booking;
+    const { bookingId, bookingNumber, ashramName, contactNumber, city, eventName, stayFrom, stayTo, members, status } = booking;
 
     const handleDownloadPdf = async (e) => {
         e.stopPropagation();
@@ -271,7 +272,6 @@ const CheckInPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [bookings, setBookings] = useState([]);
-    const [loading, setLoading] = useState(true);
 
     // Debounce search
     useEffect(() => {
@@ -279,26 +279,31 @@ const CheckInPage = () => {
         return () => clearTimeout(t);
     }, [searchTerm]);
 
-    const fetchData = useCallback(async () => {
-        setLoading(true);
-        try {
-            const params = new URLSearchParams({
-                startDate,
-                endDate,
-                sortBy,
-                sortOrder,
-                searchTerm: debouncedSearch
-            });
-            const res = await api.get(`/people/checkin-data?${params}`);
-            setBookings(res.data.bookings || []);
-        } catch (err) {
-            toast.error('Failed to load check-in data.');
-        } finally {
-            setLoading(false);
-        }
-    }, [startDate, endDate, sortBy, sortOrder, debouncedSearch]);
+    const queryParams = useMemo(() => ({
+        startDate,
+        endDate,
+        sortBy,
+        sortOrder,
+        searchTerm: debouncedSearch
+    }), [startDate, endDate, sortBy, sortOrder, debouncedSearch]);
 
-    useEffect(() => { fetchData(); }, [fetchData]);
+    const { data: checkinData, isLoading: loading, isError, refetch } = useGetCheckinDataQuery(queryParams);
+
+    useEffect(() => {
+        if (checkinData?.bookings) {
+            setBookings(checkinData.bookings);
+        }
+    }, [checkinData]);
+
+    useEffect(() => {
+        if (isError) {
+            toast.error('Failed to load check-in data.');
+        }
+    }, [isError]);
+
+    const fetchData = useCallback(() => {
+        refetch();
+    }, [refetch]);
 
     const handlePersonAction = async (personId, action) => {
         try {

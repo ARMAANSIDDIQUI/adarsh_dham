@@ -4,6 +4,7 @@ import api from '../../api/api.js';
 import Button from '../common/Button.jsx';
 import { FaEdit, FaTrashAlt, FaPlus, FaSpinner, FaBuilding, FaTimes, FaBed, FaUserCheck, FaUserMinus, FaSearch } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import { useGetBuildingsQuery } from '../../redux/api/apiSlice';
 
 const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel, confirmText, isAlert = false }) => {
     if (!isOpen) return null;
@@ -35,32 +36,20 @@ const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel, confir
 };
 
 const ManageBuildings = () => {
-    const [buildings, setBuildings] = useState([]);
+    const { data: rawBuildings, isLoading: loading, isError, refetch } = useGetBuildingsQuery();
+    const buildings = Array.isArray(rawBuildings) ? rawBuildings : [];
+    const error = isError ? 'Failed to fetch buildings.' : null;
+
     const [newBuilding, setNewBuilding] = useState({ name: '', gender: '' });
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
     const [editingBuilding, setEditingBuilding] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalData, setModalData] = useState({ title: '', message: '', onConfirm: () => { }, onCancel: () => { }, confirmText: '', isAlert: false });
     const [searchTerm, setSearchTerm] = useState('');
     const [genderFilter, setGenderFilter] = useState('');
 
-    const fetchBuildings = async () => {
-        try {
-            setLoading(true);
-            const res = await api.get('/buildings');
-            setBuildings(Array.isArray(res.data) ? res.data : []);
-            setError(null);
-        } catch (err) {
-            setError('Failed to fetch buildings.');
-        } finally {
-            setLoading(false);
-        }
+    const fetchBuildings = () => {
+        refetch();
     };
-
-    useEffect(() => {
-        fetchBuildings();
-    }, []);
 
     const summaryStats = useMemo(() => {
         const totalCapacity = buildings.reduce((acc, b) => acc + (b.capacity || 0), 0);

@@ -6,6 +6,7 @@ import { FaSpinner } from 'react-icons/fa';
 import { useDispatch } from 'react-redux';
 import { markAllAsRead } from '../../redux/slices/notificationSlice.js';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useGetNotificationsQuery, apiSlice } from '../../redux/api/apiSlice';
 
 const UserNotifications = () => {
     const t = useTranslation();
@@ -15,39 +16,40 @@ const UserNotifications = () => {
     const [isMarkingAll, setIsMarkingAll] = useState(false);
     const dispatch = useDispatch();
 
+    const { data: fetchedNotifications, isLoading, isError } = useGetNotificationsQuery();
+
     useEffect(() => {
-        const fetchNotifications = async () => {
-            try {
-                const res = await api.get('/notifications');
-                setNotifications(res.data || []);
-            } catch (err) {
-                setError(t.notifications.fetchFail);
-            } finally {
-                setLoading(false);
-            }
-        };
-        
-        fetchNotifications();
-    }, [dispatch, t.notifications.fetchFail]); 
+        if (fetchedNotifications) {
+            setNotifications(fetchedNotifications);
+        }
+    }, [fetchedNotifications]);
+
+    useEffect(() => {
+        if (isError) {
+            setError(t.notifications.fetchFail);
+        }
+    }, [isError, t.notifications.fetchFail]);
 
     const handleMarkOneAsRead = (updatedNotification) => {
-      setNotifications(prevNotifications =>
-        prevNotifications.map(notification =>
-          notification._id === updatedNotification._id
-            ? updatedNotification
-            : notification
-        )
-      );
+        setNotifications(prevNotifications =>
+            prevNotifications.map(notification =>
+                notification._id === updatedNotification._id
+                    ? updatedNotification
+                    : notification
+            )
+        );
+        dispatch(apiSlice.util.invalidateTags(['Notifications']));
     };
 
     const handleMarkAllAsReadClick = async () => {
         setIsMarkingAll(true);
         const resultAction = await dispatch(markAllAsRead());
-        
+
         if (markAllAsRead.fulfilled.match(resultAction)) {
-            setNotifications(prev => 
+            setNotifications(prev =>
                 prev.map(n => n.read ? n : { ...n, read: true })
             );
+            dispatch(apiSlice.util.invalidateTags(['Notifications']));
         } else {
             console.error("Failed to mark all as read");
         }
@@ -66,7 +68,7 @@ const UserNotifications = () => {
     // --- END NEW SORTING LOGIC ---
 
 
-    if (loading) {
+    if (isLoading && notifications.length === 0) {
         return (
             <div className="flex justify-center items-center h-screen bg-neutral font-body">
                 <div className="text-center">
@@ -88,30 +90,30 @@ const UserNotifications = () => {
     }
 
     return (
-        <motion.div 
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             className="p-6 md:p-10 max-w-4xl mx-auto font-body bg-neutral min-h-screen"
         >
             <div className="flex flex-col relative items-center justify-center mb-6">
-              <h2 className="text-3xl font-bold font-heading text-primaryDark border-b-2 border-primary pb-2 text-center">
-                  {t.notifications.title}
-              </h2>
-              {areAnyUnread && (
-                <button 
-                  onClick={handleMarkAllAsReadClick}
-                  disabled={isMarkingAll} 
-                  className="mt-4 md:absolute md:right-0 md:mt-0 text-sm font-medium text-primary hover:underline disabled:text-gray-400 disabled:no-underline"
-                >
-                  {isMarkingAll ? t.notifications.markingAll : t.notifications.markAll}
-                </button>
-              )}
+                <h2 className="text-3xl font-bold font-heading text-primaryDark border-b-2 border-primary pb-2 text-center">
+                    {t.notifications.title}
+                </h2>
+                {areAnyUnread && (
+                    <button
+                        onClick={handleMarkAllAsReadClick}
+                        disabled={isMarkingAll}
+                        className="mt-4 md:absolute md:right-0 md:mt-0 text-sm font-medium text-primary hover:underline disabled:text-gray-400 disabled:no-underline"
+                    >
+                        {isMarkingAll ? t.notifications.markingAll : t.notifications.markAll}
+                    </button>
+                )}
             </div>
-            
-            <NotificationsList 
-              // --- PASS THE SORTED ARRAY INSTEAD ---
-              notifications={sortedNotifications} 
-              onMarkAsRead={handleMarkOneAsRead} 
+
+            <NotificationsList
+                // --- PASS THE SORTED ARRAY INSTEAD ---
+                notifications={sortedNotifications}
+                onMarkAsRead={handleMarkOneAsRead}
             />
         </motion.div>
     );

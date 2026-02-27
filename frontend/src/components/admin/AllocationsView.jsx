@@ -1,46 +1,35 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import api from '../../api/api.js';
 import { FaSpinner, FaDownload, FaSort, FaSortUp, FaSortDown } from 'react-icons/fa';
+import { useGetPaginatedPeopleQuery } from '../../redux/api/apiSlice';
 
 const AllocationsView = ({ filters, dateFilterType, debouncedSearchTerm, pagination, setPagination }) => {
     const [people, setPeople] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [isDownloading, setIsDownloading] = useState(null);
-    const [sortBy, setSortBy] = useState('stayFrom'); // 'name' | 'room' | 'stayFrom'
-    const [sortDir, setSortDir] = useState('asc');   // 'asc' | 'desc'
-
-    useEffect(() => {
-        const fetchPeople = async () => {
-            setLoading(true);
-            try {
-                const params = new URLSearchParams({
-                    page: pagination.currentPage,
-                    limit: pagination.limit,
-                    startDate: filters.startDate,
-                    endDate: filters.endDate,
-                    eventId: filters.eventId,
-                    buildingId: filters.buildingId,
-                    roomId: filters.roomId,
-                    bedId: filters.bedId,
-                    gender: filters.gender,
-                    dateFilterType: dateFilterType,
-                    searchTerm: debouncedSearchTerm,
-                });
-
-                const res = await api.get(`/people/paginated?${params.toString()}`);
-                setPeople(res.data.data || []);
-                setPagination(prev => ({ ...prev, ...res.data.pagination }));
-            } catch (error) {
-                console.error("Failed to fetch people data:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchPeople();
-    }, [
+    const queryParams = useMemo(() => ({
+        page: pagination.currentPage,
+        limit: pagination.limit,
+        startDate: filters.startDate,
+        endDate: filters.endDate,
+        eventId: filters.eventId,
+        buildingId: filters.buildingId,
+        roomId: filters.roomId,
+        bedId: filters.bedId,
+        gender: filters.gender,
+        dateFilterType: dateFilterType,
+        searchTerm: debouncedSearchTerm,
+    }), [
         filters.startDate, filters.endDate, filters.eventId, filters.buildingId, filters.roomId, filters.bedId, filters.gender,
         dateFilterType, debouncedSearchTerm, pagination.currentPage, pagination.limit
     ]);
+
+    const { data: paginatedData, isLoading: loading } = useGetPaginatedPeopleQuery(queryParams);
+
+    useEffect(() => {
+        if (paginatedData) {
+            setPeople(paginatedData.data || []);
+            setPagination(prev => ({ ...prev, ...paginatedData.pagination }));
+        }
+    }, [paginatedData, setPagination]);
 
     const handleDownloadBookingPdf = async (person) => {
         setIsDownloading(person._id);

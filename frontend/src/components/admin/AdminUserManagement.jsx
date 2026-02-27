@@ -5,6 +5,7 @@ import { FaSpinner, FaLock, FaUser, FaCheck, FaTimes, FaKey, FaSearch, FaEye, Fa
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-toastify';
 import PhoneInput, { validatePhoneNumber } from '../common/PhoneInput.jsx';
+import { useGetAllUsersQuery } from '../../redux/api/apiSlice';
 
 const UserDetailsModal = ({
     isOpen,
@@ -180,9 +181,14 @@ const PasswordModal = ({
 
 
 const AdminUserManagement = () => {
+    const { data: rawUsers, isLoading: loading, isError, refetch } = useGetAllUsersQuery();
     const [users, setUsers] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [globalError, setGlobalError] = useState(null);
+
+    useEffect(() => {
+        if (rawUsers) setUsers(rawUsers);
+    }, [rawUsers]);
+
+    const globalError = isError ? 'Failed to fetch user data.' : null;
     const [globalMessage, setGlobalMessage] = useState(null);
     const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -192,24 +198,6 @@ const AdminUserManagement = () => {
     const [passwordInput, setPasswordInput] = useState('');
     const [editFormData, setEditFormData] = useState({ name: '', phone: '' });
     const [searchTerm, setSearchTerm] = useState('');
-
-    const fetchUsers = async () => {
-        setLoading(true);
-        try {
-            const res = await api.get('/admin/all-users');
-            setUsers(Array.isArray(res.data) ? res.data : []);
-            setGlobalError(null);
-        } catch (err) {
-            console.error("Error fetching users:", err);
-            setGlobalError(err.response?.data?.message || 'Failed to fetch user data.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchUsers();
-    }, []);
 
     const handleOpenPasswordModal = (user) => {
         setCurrentUser(user);

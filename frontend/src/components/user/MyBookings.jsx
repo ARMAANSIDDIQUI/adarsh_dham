@@ -8,6 +8,7 @@ import EditBookingModal from './EditBookingModal.jsx';
 import ConfirmModal from '../../components/common/ConfirmModal.jsx';
 import { toast } from 'react-toastify';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useGetMyBookingsQuery } from '../../redux/api/apiSlice';
 
 const BookingCard = ({ booking, onEdit, onDelete, onDownloadPdf, navigateToEvent }) => {
     const t = useTranslation();
@@ -109,35 +110,25 @@ const BookingCard = ({ booking, onEdit, onDelete, onDownloadPdf, navigateToEvent
 
 const MyBookings = () => {
     const t = useTranslation();
-    const [bookings, setBookings] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const { data: rawBookings, isLoading: loading, isError, refetch } = useGetMyBookingsQuery();
+    const bookings = Array.isArray(rawBookings) ? rawBookings : [];
+    const error = isError ? t.myBookings.actions.fetchFail : null;
+
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedBooking, setSelectedBooking] = useState(null);
     const [bookingToDelete, setBookingToDelete] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
     const navigate = useNavigate();
 
-    const fetchMyBookings = async () => {
-        try {
-            const res = await api.get('/bookings/my-bookings');
-            setBookings(Array.isArray(res.data) ? res.data : []);
-        } catch (err) {
-            setError(t.myBookings.actions.fetchFail);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     useEffect(() => {
-        if (!isEditModalOpen) fetchMyBookings();
-    }, [isEditModalOpen]);
+        if (!isEditModalOpen) refetch();
+    }, [isEditModalOpen, refetch]);
 
     const executeDeleteBooking = async () => {
         if (!bookingToDelete) return;
         try {
             await api.delete(`/bookings/delete/${bookingToDelete}`);
-            fetchMyBookings();
+            refetch();
             toast.success(t.myBookings.actions.withdrawSuccess);
         } catch (err) {
             const msg = err.response?.data?.message || t.myBookings.actions.withdrawFail;
@@ -160,7 +151,7 @@ const MyBookings = () => {
         setIsEditModalOpen(false);
         setSelectedBooking(null);
         toast.success(t.myBookings.actions.updateSuccess);
-        fetchMyBookings();
+        refetch();
     };
 
     const navigateToEvent = (event) => {

@@ -4,6 +4,7 @@ import { FaSpinner, FaCheck, FaTimes, FaUser, FaSearch, FaUndo } from 'react-ico
 import api from '../../api/api';
 import Button from '../common/Button';
 import { toast } from 'react-toastify';
+import { useGetAllCommentsQuery } from '../../redux/api/apiSlice';
 
 const StatusBadge = ({ status }) => {
     const style = useMemo(() => {
@@ -26,36 +27,28 @@ const StatusBadge = ({ status }) => {
 
 
 const ManageComments = () => {
+    const { data: rawComments, isLoading: loading, isError, refetch } = useGetAllCommentsQuery();
     const [comments, setComments] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [dateRange, setDateRange] = useState({ startDate: '', endDate: '' });
-    const [statusFilter, setStatusFilter] = useState('pending'); 
-
-    const fetchAllComments = async () => {
-        try {
-            setLoading(true);
-            const { data } = await api.get('/comments/all');
-            setComments(data);
-        } catch (err) {
-            setError('Failed to fetch comments.');
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
-    };
+    const [statusFilter, setStatusFilter] = useState('pending');
 
     useEffect(() => {
-        fetchAllComments();
-    }, []);
+        if (rawComments) setComments(rawComments);
+    }, [rawComments]);
+
+    const error = isError ? 'Failed to fetch comments.' : '';
+
+    const fetchAllComments = () => {
+        refetch();
+    };
 
     // --- CORRECTED FUNCTION ---
     const handleAction = async (commentId, action) => {
         try {
             await api.put(`/comments/${action}/${commentId}`);
             toast.success(`Comment ${action}d successfully!`);
-            
+
             // Explicitly set the new status instead of guessing
             const newStatus = action === 'approve' ? 'approved' : 'rejected';
 
@@ -92,7 +85,7 @@ const ManageComments = () => {
 
     const clearFilters = () => {
         setSearchTerm('');
-        setDateRange({ startDate: '', endDate: ''});
+        setDateRange({ startDate: '', endDate: '' });
         setStatusFilter('pending');
     };
 
@@ -131,11 +124,11 @@ const ManageComments = () => {
             className="p-4 md:p-8 bg-neutral min-h-screen font-body"
         >
             <h2 className="text-3xl font-bold font-heading mb-6 text-gray-800 border-b-4 border-primary pb-2">Manage User Comments</h2>
-            
+
             <div className="bg-card p-4 rounded-2xl shadow-soft mb-6 grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
                 <div className="relative md:col-span-2">
                     <FaSearch className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" />
-                    <input 
+                    <input
                         type="text"
                         placeholder="Search by user name or phone..."
                         value={searchTerm}
@@ -144,7 +137,7 @@ const ManageComments = () => {
                     />
                 </div>
                 <div className="flex-grow">
-                     <select
+                    <select
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
                         className="p-2 border border-background rounded-lg w-full focus:ring-primary focus:border-primary bg-white"
@@ -166,7 +159,7 @@ const ManageComments = () => {
                         className="p-2 border border-background rounded-lg w-full focus:ring-primary focus:border-primary"
                     />
                 </div>
-                 <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2">
                     <label htmlFor="endDate" className="text-sm font-medium text-gray-600 shrink-0">To:</label>
                     <input
                         type="date"

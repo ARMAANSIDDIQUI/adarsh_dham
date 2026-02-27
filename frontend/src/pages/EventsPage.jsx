@@ -4,10 +4,10 @@ import { FaSpinner, FaSearch, FaCalendarAlt, FaList } from "react-icons/fa";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import { Tooltip } from "react-tooltip";
-import api from "../api/api.js";
 import EventCard from "../components/shared/EventCard.jsx";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "../hooks/useTranslation";
+import { useGetEventsQuery } from "../redux/api/apiSlice";
 
 const theme = {
   card: "#EEDAC5",
@@ -161,9 +161,10 @@ input[type="date"]:focus {
 
 const EventsPage = () => {
   const t = useTranslation();
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { data: rawEvents, isLoading: loading, isError } = useGetEventsQuery();
+  const events = Array.isArray(rawEvents) ? rawEvents : [];
+  const error = isError ? t.events.error : null;
+
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState("list");
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -172,20 +173,6 @@ const EventsPage = () => {
   const { date } = useParams();
   const eventListRef = useRef(null);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const response = await api.get("/events");
-        setEvents(Array.isArray(response.data) ? response.data : []);
-      } catch (err) {
-        setError(t.events.error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchEvents();
-  }, [t.events.error]);
 
   useEffect(() => {
     if (date) {
@@ -261,51 +248,51 @@ const EventsPage = () => {
     const eventForBookingAvailable = bookingAvailableMap.get(key);
 
     if (eventForBookingAvailable) {
-        const now = new Date();
-        const bookingStart = new Date(eventForBookingAvailable.bookingStartDate);
-        bookingStart.setHours(0, 0, 0, 0);
-        const bookingEnd = new Date(eventForBookingAvailable.bookingEndDate);
-        bookingEnd.setHours(23, 59, 59, 999);
+      const now = new Date();
+      const bookingStart = new Date(eventForBookingAvailable.bookingStartDate);
+      bookingStart.setHours(0, 0, 0, 0);
+      const bookingEnd = new Date(eventForBookingAvailable.bookingEndDate);
+      bookingEnd.setHours(23, 59, 59, 999);
 
-        // Default to true if undefined
-        const isBookingOpen = eventForBookingAvailable.isBookingOpen !== false;
+      // Default to true if undefined
+      const isBookingOpen = eventForBookingAvailable.isBookingOpen !== false;
 
-        if (now >= bookingStart && now <= bookingEnd && isBookingOpen) {
-            const id = eventForBookingAvailable._id || eventForBookingAvailable.id || eventForBookingAvailable.slug || "";
-            if (id) {
-                navigate(`/booking/${id}`);
-                return;
-            }
-        } else {
-            const year = clickedDate.getFullYear();
-            const month = String(clickedDate.getMonth() + 1).padStart(2, "0");
-            const day = String(clickedDate.getDate()).padStart(2, "0");
-            const dateString = `${year}-${month}-${day}`;
-            navigate(`/events/${dateString}`);
-            setViewMode("list");
+      if (now >= bookingStart && now <= bookingEnd && isBookingOpen) {
+        const id = eventForBookingAvailable._id || eventForBookingAvailable.id || eventForBookingAvailable.slug || "";
+        if (id) {
+          navigate(`/booking/${id}`);
+          return;
         }
-    } else if (eventRangeMap.has(key)) {
+      } else {
         const year = clickedDate.getFullYear();
         const month = String(clickedDate.getMonth() + 1).padStart(2, "0");
         const day = String(clickedDate.getDate()).padStart(2, "0");
         const dateString = `${year}-${month}-${day}`;
         navigate(`/events/${dateString}`);
         setViewMode("list");
+      }
+    } else if (eventRangeMap.has(key)) {
+      const year = clickedDate.getFullYear();
+      const month = String(clickedDate.getMonth() + 1).padStart(2, "0");
+      const day = String(clickedDate.getDate()).padStart(2, "0");
+      const dateString = `${year}-${month}-${day}`;
+      navigate(`/events/${dateString}`);
+      setViewMode("list");
     }
-};
+  };
 
   const dailyEvents = date
     ? events.filter((e) => {
-        const start = new Date(e.startDate);
-        const end = new Date(e.endDate || e.startDate);
-        const bStart = e.bookingStartDate ? new Date(e.bookingStartDate) : null;
-        const bEnd = e.bookingEndDate ? new Date(e.bookingEndDate) : null;
-        const urlDate = new Date(date);
-        return (
-          (start <= urlDate && end >= urlDate) ||
-          (bStart && bEnd && bStart <= urlDate && bEnd >= urlDate)
-        );
-      })
+      const start = new Date(e.startDate);
+      const end = new Date(e.endDate || e.startDate);
+      const bStart = e.bookingStartDate ? new Date(e.bookingStartDate) : null;
+      const bEnd = e.bookingEndDate ? new Date(e.bookingEndDate) : null;
+      const urlDate = new Date(date);
+      return (
+        (start <= urlDate && end >= urlDate) ||
+        (bStart && bEnd && bStart <= urlDate && bEnd >= urlDate)
+      );
+    })
     : events;
 
   const filteredEvents = dailyEvents.filter((e) =>
@@ -335,7 +322,7 @@ const EventsPage = () => {
       } else if (eventRangeMap.has(key)) {
         classes.push("event-range");
       }
-      
+
       if (hoveredDate && key === hoveredDate.toDateString()) {
         classes.push("hovered-tile");
       }

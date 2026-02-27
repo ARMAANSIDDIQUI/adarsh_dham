@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux';
 import api from '../../api/api';
 import { FaMapMarkerAlt, FaCalendarAlt, FaTicketAlt, FaPlayCircle } from 'react-icons/fa';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useGetLiveLinksByEventQuery } from '../../redux/api/apiSlice';
 
 const itemVariants = {
   hidden: { y: 20, opacity: 0 },
@@ -14,22 +15,13 @@ const itemVariants = {
 const EventCard = ({ event }) => {
   const navigate = useNavigate();
   const { isAuthenticated } = useSelector((state) => state.auth);
-  const [liveLinks, setLiveLinks] = useState([]);
   const t = useTranslation();
 
-  useEffect(() => {
-    const fetchLiveLinks = async () => {
-      try {
-        const res = await api.get(`/satsang/live-links/event/${event._id}`);
-        setLiveLinks(res.data);
-      } catch (err) {
-        console.error("Failed to fetch live links", err);
-      }
-    };
-    if ((event.name || '').toLowerCase().includes('satsang')) {
-      fetchLiveLinks();
-    }
-  }, [event]);
+  const isSatsang = (event?.name || '').toLowerCase().includes('satsang');
+  const { data: liveLinksData } = useGetLiveLinksByEventQuery(event?._id, {
+    skip: !isSatsang || !event?._id,
+  });
+  const liveLinks = Array.isArray(liveLinksData) ? liveLinksData : [];
 
   const handleBooking = () => {
     if (isAuthenticated) {
@@ -47,11 +39,11 @@ const EventCard = ({ event }) => {
   bookingEndAdjusted.setHours(23, 59, 59, 999); // Set to 23:59:59.999 of the adjusted day
 
   const now = new Date();
-  
+
   // Logic to determine booking status
   const isManuallyClosed = event.isBookingOpen === false;
   const isDateWindowActive = now >= bookingStartAdjusted && now <= bookingEndAdjusted;
-  
+
   const isBookingActive = isDateWindowActive && !isManuallyClosed;
   const isBookingNotYetOpen = now < bookingStartAdjusted;
 
@@ -73,7 +65,7 @@ const EventCard = ({ event }) => {
       <p className="text-gray-700 mb-4 flex-grow text-sm md:text-base">
         {event.description}
       </p>
-      
+
       {/* Details Section */}
       <div className="text-sm text-gray-700 space-y-2 mb-6">
         <p className="flex items-center space-x-2">
@@ -99,10 +91,10 @@ const EventCard = ({ event }) => {
           <ul className="space-y-1">
             {liveLinks.map(link => (
               <li key={link._id} className="text-highlight text-sm">
-                <a 
-                  href={link.url} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
+                <a
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="hover:underline font-medium"
                 >
                   {link.name}
@@ -116,16 +108,16 @@ const EventCard = ({ event }) => {
       {/* Action Button */}
       <div className="mt-auto">
         {isBookingActive ? (
-          <button 
-            onClick={handleBooking} 
+          <button
+            onClick={handleBooking}
             className={`${baseButtonClasses} ${activeClasses}`}
           >
             {t.events.card.requestBooking}
           </button>
         ) : isManuallyClosed ? (
           <div className="w-full">
-            <button 
-              className={`${baseButtonClasses} ${inactiveClasses}`} 
+            <button
+              className={`${baseButtonClasses} ${inactiveClasses}`}
               disabled
             >
               {t.events.card.bookingClosed}
@@ -137,15 +129,15 @@ const EventCard = ({ event }) => {
             )}
           </div>
         ) : isBookingNotYetOpen ? (
-          <button 
-            className={`${baseButtonClasses} ${inactiveClasses}`} 
+          <button
+            className={`${baseButtonClasses} ${inactiveClasses}`}
             disabled
           >
             {t.events.card.bookingNotStarted}
           </button>
         ) : (
-          <button 
-            className={`${baseButtonClasses} ${inactiveClasses}`} 
+          <button
+            className={`${baseButtonClasses} ${inactiveClasses}`}
             disabled
           >
             {t.events.card.bookingClosed}

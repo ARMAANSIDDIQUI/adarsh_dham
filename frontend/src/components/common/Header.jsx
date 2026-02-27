@@ -21,24 +21,30 @@ import {
     FaGlobe
 } from 'react-icons/fa';
 import { logout } from '../../redux/slices/authSlice.js';
-import { fetchUnreadCount } from '../../redux/slices/notificationSlice.js';
+import { useGetUnreadNotificationCountQuery } from '../../redux/api/apiSlice.js';
 import { setLanguage } from '../../redux/slices/uiSlice.js';
 import { useTranslation } from '../../hooks/useTranslation.js';
 import FloatingActionButtons from './FloatingActionButtons';
 import EnableNotificationsButton from './EnableNotificationsButton';
 
 const NotificationIcon = () => {
-  const { unreadCount } = useSelector((state) => state.notification);
-  return (
-    <span className="relative">
-      <FaBell />
-      {unreadCount > 0 && (
-        <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-highlight text-white text-[10px] font-bold">
-          {unreadCount > 9 ? '9+' : unreadCount}
+    const { isAuthenticated } = useSelector((state) => state.auth);
+    const { data: countResponse } = useGetUnreadNotificationCountQuery(undefined, {
+        skip: !isAuthenticated,
+        pollingInterval: 300000, // 5 minutes
+    });
+    const unreadCount = countResponse?.count ?? countResponse ?? 0;
+
+    return (
+        <span className="relative">
+            <FaBell />
+            {unreadCount > 0 && (
+                <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-highlight text-white text-[10px] font-bold">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+            )}
         </span>
-      )}
-    </span>
-  );
+    );
 };
 
 const NavLink = ({ to, icon, text, onClick, end = false }) => (
@@ -60,7 +66,6 @@ const NavLink = ({ to, icon, text, onClick, end = false }) => (
 
 const Header = () => {
     const { user, isAuthenticated } = useSelector((state) => state.auth);
-    const { unreadCount } = useSelector((state) => state.notification);
     const { language } = useSelector((state) => state.ui);
     const t = useTranslation();
     const dispatch = useDispatch();
@@ -74,20 +79,14 @@ const Header = () => {
     };
 
     const handleLanguageToggle = () => dispatch(setLanguage(language === 'en' ? 'hi' : 'en'));
-    
+
     const isAdmin = user?.roles?.some((role) =>
         ['admin', 'super-admin', 'super-operator', 'operator', 'satsang-operator'].includes(role)
     );
 
     useEffect(() => {
-      if (isAuthenticated) {
-        dispatch(fetchUnreadCount());
-        const intervalId = setInterval(() => {
-          dispatch(fetchUnreadCount());
-        }, 5 * 60 * 1000);
-        return () => clearInterval(intervalId);
-      }
-    }, [isAuthenticated, dispatch]);
+        // Redux Toolkit Query now handles polling automatically in the NotificationIcon component
+    }, []);
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 1200);
@@ -119,10 +118,10 @@ const Header = () => {
                             {isAuthenticated && (
                                 <>
                                     <NavLink to="/my-bookings" icon={<FaClipboardList />} text={t.nav.myBookings} />
-                                    <NavLink 
-                                      to="/notifications" 
-                                      icon={<NotificationIcon />} 
-                                      text={t.nav.notifications} 
+                                    <NavLink
+                                        to="/notifications"
+                                        icon={<NotificationIcon />}
+                                        text={t.nav.notifications}
                                     />
                                     {/* Language Toggle (Desktop - Logged In) */}
                                     <div className="relative group">
@@ -159,7 +158,7 @@ const Header = () => {
                             </div>
                         </div>
                     )}
-                    
+
                     {isMobile && (
                         <div className="flex items-center gap-3">
                             <button
@@ -198,10 +197,10 @@ const Header = () => {
                                     <NavLink to="/events" icon={<FaClipboardList />} text={t.nav.eventList} onClick={handleMenuToggle} />
                                     <NavLink to="/events" icon={<FaBookOpen />} text={t.nav.requestBooking} />
                                     <NavLink to="/comments" icon={<FaComments />} text={t.nav.comments} onClick={handleMenuToggle} />
-                                    <NavLink to="/contact" icon={<FaPhone className="rotate-90"/>} text={t.nav.contact} onClick={handleMenuToggle} />
-                                    
+                                    <NavLink to="/contact" icon={<FaPhone className="rotate-90" />} text={t.nav.contact} onClick={handleMenuToggle} />
+
                                     <div className="w-full border-t border-background my-4"></div>
-                                    
+
                                     <button onClick={handleLanguageToggle} className="flex items-center space-x-2 px-3 py-2 text-primaryDark font-medium hover:bg-black/5 rounded-md w-full text-left">
                                         <FaGlobe />
                                         <span>{language === 'en' ? t.language.hindi : t.language.english}</span>
@@ -212,13 +211,13 @@ const Header = () => {
                                             <NavLink to="/profile" icon={<FaUserCircle />} text={t.nav.myProfile} onClick={handleMenuToggle} />
                                             <NavLink to="/my-bookings" icon={<FaClipboardList />} text={t.nav.myBookings} onClick={handleMenuToggle} />
                                             <div className="my-2"><EnableNotificationsButton /></div>
-                                            <NavLink 
-                                              to="/notifications" 
-                                              icon={<NotificationIcon />} 
-                                              text={t.nav.notificationsHistory} 
-                                              onClick={handleMenuToggle} 
+                                            <NavLink
+                                                to="/notifications"
+                                                icon={<NotificationIcon />}
+                                                text={t.nav.notificationsHistory}
+                                                onClick={handleMenuToggle}
                                             />
-                                            {isAdmin && <NavLink to="/admin" icon={<FaUserShield/>} text={t.nav.adminPanel} onClick={handleMenuToggle} />}
+                                            {isAdmin && <NavLink to="/admin" icon={<FaUserShield />} text={t.nav.adminPanel} onClick={handleMenuToggle} />}
                                             <div className="mt-4">
                                                 <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-2 text-lg text-white bg-primaryDark hover:bg-highlight rounded-lg transition-colors">
                                                     <FaSignOutAlt /> {t.nav.logout}
@@ -237,7 +236,7 @@ const Header = () => {
                     )}
                 </AnimatePresence>
             </header>
-            
+
             {!isMobile && <FloatingActionButtons />}
         </>
     );

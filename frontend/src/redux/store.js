@@ -14,15 +14,16 @@ import storage from 'redux-persist/lib/storage'; // defaults to localStorage for
 
 import authReducer from './slices/authSlice';
 import bookingReducer from './slices/bookingSlice';
-import notificationReducer from './slices/notificationSlice'; 
+import notificationReducer from './slices/notificationSlice';
 import uiReducer from './slices/uiSlice'; // <--- ADD THIS
+import { apiSlice } from './api/apiSlice';
 
 // 1. Configuration for Redux Persist
 const persistConfig = {
   key: 'root',
   storage,
   // Persist auth and ui (preferences)
-  whitelist: ['auth', 'ui'], 
+  whitelist: ['auth', 'ui'],
 };
 
 // 2. Combine reducers
@@ -31,6 +32,7 @@ const rootReducer = combineReducers({
   booking: bookingReducer,
   notification: notificationReducer,
   ui: uiReducer, // <--- ADD THIS
+  [apiSlice.reducerPath]: apiSlice.reducer,
 });
 
 // 3. Create a persisted reducer wrapper
@@ -39,12 +41,13 @@ const persistedReducer = persistReducer(persistConfig, rootReducer);
 export const store = configureStore({
   reducer: persistedReducer,
   // 4. Middleware to ignore redux-persist action types in the console warnings
+  // AND add RTK Query middleware
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
-    }),
+    }).concat(apiSlice.middleware),
 });
 
 // 5. Create a persistor object

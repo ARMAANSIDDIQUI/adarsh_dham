@@ -6,6 +6,12 @@ import Button from '../common/Button.jsx';
 import { FaCheck, FaTimes, FaSpinner, FaEdit, FaUserShield, FaFilter, FaFilePdf, FaInfoCircle, FaChevronDown, FaSearch, FaSortAmountDown, FaSortAmountUp } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import EditBookingModal from './EditBookingModal.jsx';
+import {
+    useGetAllBookingsQuery,
+    useGetRoomsQuery,
+    useGetBuildingsQuery,
+    useGetAllPeopleQuery,
+} from '../../redux/api/apiSlice';
 
 const datesOverlap = (startA, endA, startB, endB) => {
     if (!startA || !endA || !startB || !endB) return false;
@@ -463,7 +469,7 @@ const BookingCard = ({ booking, onAction, onEdit, allocations, handleAllocationC
                                             const isChildPerson = (person?.gender === 'boy' || person?.gender === 'girl') && parseInt(person?.age) <= 2;
 
                                             return (
-                                                <div key={index} className={`p-4 bg-white shadow-sm rounded-xl border border-gray-100 relative z-[${zIndex}] hover:border-primary/30 transition-colors`}>
+                                                <div key={index} className={`p-4 bg-background/50 shadow-sm rounded-xl border border-primary/20 relative z-[${zIndex}] hover:border-primary/30 transition-colors`}>
                                                     <div className="mb-3">
                                                         <p className="font-bold text-primaryDark font-heading text-lg flex items-center gap-2">
                                                             {person?.name || `Person ${index + 1}`}
@@ -660,11 +666,15 @@ const BookingSection = ({ title, color = 'pink', bookings, readOnly, ...props })
 };
 
 const ManageAllocations = () => {
+    const { data: rawBookings, isLoading: loadingBookings, isError: errorBookings, refetch: refetchBookings } = useGetAllBookingsQuery();
+    const { data: rawRooms, isLoading: loadingRooms, isError: errorRooms, refetch: refetchRooms } = useGetRoomsQuery();
+    const { data: rawBuildings, isLoading: loadingBuildings, isError: errorBuildings, refetch: refetchBuildings } = useGetBuildingsQuery();
+    const { data: rawPeople, isLoading: loadingPeople, isError: errorPeople, refetch: refetchPeople } = useGetAllPeopleQuery();
+
     const [bookings, setBookings] = useState([]);
     const [rooms, setRooms] = useState([]);
     const [buildings, setBuildings] = useState([]);
     const [people, setPeople] = useState([]);
-    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [allocations, setAllocations] = useState({});
     const [roomDetailsModal, setRoomDetailsModal] = useState({ isOpen: false, room: null, occupants: [] });
@@ -674,38 +684,35 @@ const ManageAllocations = () => {
     const [sortBy, setSortBy] = useState('stayFrom');   // 'stayFrom' | 'name'
     const [sortDir, setSortDir] = useState('asc');      // 'asc' | 'desc'
 
-    const fetchAllData = async () => {
-        try {
-            setLoading(true);
-            const [bookingsRes, roomsRes, buildingsRes, peopleRes] = await Promise.all([
-                api.get('/bookings'),
-                api.get('/rooms'),
-                api.get('/buildings'),
-                api.get('/people'),
-            ]);
-            const fetchedBookings = bookingsRes?.data;
-            const fetchedRooms = roomsRes?.data;
-            const fetchedBuildings = buildingsRes?.data;
-            const fetchedPeople = peopleRes?.data;
+    const loading = loadingBookings || loadingRooms || loadingBuildings || loadingPeople;
 
-            setBookings(Array.isArray(fetchedBookings) ? fetchedBookings : (fetchedBookings ? [fetchedBookings] : []));
-            setRooms(Array.isArray(fetchedRooms) ? fetchedRooms : (fetchedRooms ? [fetchedRooms] : []));
-            setBuildings(Array.isArray(fetchedBuildings) ? fetchedBuildings : (fetchedBuildings ? [fetchedBuildings] : []));
-            setPeople(Array.isArray(fetchedPeople) ? fetchedPeople : (fetchedPeople ? [fetchedPeople] : []));
-            setError(null);
-        } catch (err) {
+    useEffect(() => {
+        if (rawBookings) setBookings(Array.isArray(rawBookings) ? rawBookings : [rawBookings]);
+    }, [rawBookings]);
+    useEffect(() => {
+        if (rawRooms) setRooms(Array.isArray(rawRooms) ? rawRooms : [rawRooms]);
+    }, [rawRooms]);
+    useEffect(() => {
+        if (rawBuildings) setBuildings(Array.isArray(rawBuildings) ? rawBuildings : [rawBuildings]);
+    }, [rawBuildings]);
+    useEffect(() => {
+        if (rawPeople) setPeople(Array.isArray(rawPeople) ? rawPeople : [rawPeople]);
+    }, [rawPeople]);
+
+    useEffect(() => {
+        if (errorBookings || errorRooms || errorBuildings || errorPeople) {
             setError('Failed to fetch data. Please try again.');
-            console.error(err);
-            setBookings(prev => Array.isArray(prev) ? prev : []);
-            setRooms(prev => Array.isArray(prev) ? prev : []);
-            setBuildings(prev => Array.isArray(prev) ? prev : []);
-            setPeople(prev => Array.isArray(prev) ? prev : []);
-        } finally {
-            setLoading(false);
+        } else {
+            setError(null);
         }
-    };
+    }, [errorBookings, errorRooms, errorBuildings, errorPeople]);
 
-    useEffect(() => { fetchAllData(); }, []);
+    const fetchAllData = () => {
+        refetchBookings();
+        refetchRooms();
+        refetchBuildings();
+        refetchPeople();
+    };
 
     const handleAction = async (bookingId, action, allocationData = null) => {
         try {

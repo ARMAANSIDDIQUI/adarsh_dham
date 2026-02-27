@@ -6,6 +6,7 @@ import { FaEdit, FaTrashAlt, FaPlus, FaSpinner } from 'react-icons/fa';
 import DynamicDateInput from '../common/DynamicDateInput.jsx';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { useGetEventsQuery } from '../../redux/api/apiSlice';
 
 const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel, confirmText, isAlert = false }) => {
     if (!isOpen) return null;
@@ -57,28 +58,22 @@ const EventTable = ({ events, handleEdit, handleDelete }) => (
 
 const ManageEvents = () => {
     const navigate = useNavigate();
-    const [events, setEvents] = useState([]);
+    const { data: rawEvents, isLoading: loading, isError, refetch } = useGetEventsQuery();
+    const events = Array.isArray(rawEvents) ? rawEvents : [];
+
     const [newEvent, setNewEvent] = useState({ name: '', description: '', location: '', startDate: '', endDate: '', bookingStartDate: '', bookingEndDate: '', isBookingOpen: true, bookingClosedMessage: 'Bookings closed' });
-    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [editingEvent, setEditingEvent] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalData, setModalData] = useState({ title: '', message: '', onConfirm: () => { }, onCancel: () => { }, confirmText: '', isAlert: false });
 
-    const fetchEvents = async () => {
-        try {
-            const res = await api.get('/events');
-            setEvents(Array.isArray(res.data) ? res.data : []);
-        } catch {
-            setError('Failed to fetch events.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
     useEffect(() => {
-        fetchEvents();
-    }, []);
+        if (isError) setError('Failed to fetch events.');
+    }, [isError]);
+
+    const fetchEvents = () => {
+        refetch();
+    };
 
     const validateDates = (eventData) => {
         const { startDate, endDate, bookingStartDate, bookingEndDate } = eventData;

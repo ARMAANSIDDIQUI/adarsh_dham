@@ -6,6 +6,7 @@ import { FaPaperPlane, FaSpinner, FaUserCircle, FaTrashAlt } from 'react-icons/f
 import api from '../../api/api';
 import { toast } from 'react-toastify';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useGetCommentsQuery } from '../../redux/api/apiSlice';
 
 // Simple Confirmation Modal for Deletion
 const ConfirmationModal = ({ isOpen, message, onConfirm, onCancel, title, cancelText, confirmText }) => {
@@ -42,33 +43,22 @@ const ConfirmationModal = ({ isOpen, message, onConfirm, onCancel, title, cancel
 
 const CommentsPage = () => {
     const { user, isAuthenticated } = useSelector((state) => state.auth);
-    const [comments, setComments] = useState([]);
-    const [newComment, setNewComment] = useState('');
-    const [loading, setLoading] = useState(true);
-    const [submitting, setSubmitting] = useState(false);
-    const [error, setError] = useState('');
-    const [commentToDelete, setCommentToDelete] = useState(null);
     const t = useTranslation();
+
+    const { data: rawComments, isLoading: loading, isError, refetch } = useGetCommentsQuery();
+    const comments = Array.isArray(rawComments) ? rawComments : [];
+    const error = isError ? t.comments.error.fetchFail : null;
+
+    const [newComment, setNewComment] = useState('');
+    const [submitting, setSubmitting] = useState(false);
+    const [commentToDelete, setCommentToDelete] = useState(null);
 
     const isCommentEmpty = newComment.trim() === '';
     const isButtonDisabled = submitting || isCommentEmpty;
 
-    const fetchComments = async () => {
-        try {
-            setLoading(true);
-            const { data } = await api.get('/comments'); 
-            setComments(data);
-        } catch (err) {
-            setError(t.comments.error.fetchFail);
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     useEffect(() => {
-        fetchComments();
-    }, [isAuthenticated, t.comments.error.fetchFail]);
+        refetch();
+    }, [isAuthenticated, refetch]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -82,7 +72,7 @@ const CommentsPage = () => {
             setNewComment('');
             toast.success(t.comments.error.submitSuccess);
             if (isAuthenticated) {
-                fetchComments();
+                refetch();
             }
         } catch (err) {
             toast.error(err.response?.data?.message || t.comments.error.submitFail);
@@ -98,12 +88,12 @@ const CommentsPage = () => {
         try {
             await api.delete(`/comments/${commentToDelete}`);
             toast.success(t.comments.error.deleteSuccess);
-            setComments(prev => prev.filter(c => c._id !== commentToDelete));
+            refetch();
         } catch (err) {
             toast.error(err.response?.data?.message || t.comments.error.deleteFail);
             console.error(err);
         } finally {
-            setCommentToDelete(null); 
+            setCommentToDelete(null);
         }
     };
 
