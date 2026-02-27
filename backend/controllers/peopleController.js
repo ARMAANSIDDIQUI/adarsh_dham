@@ -291,7 +291,7 @@ exports.getPeoplePaginated = async (req, res) => {
                     {
                         $project: {
                             _id: 1, name: 1, age: 1, gender: 1, bookingNumber: 1, bookingId: 1, stayFrom: 1,
-                            stayTo: 1, city: 1,
+                            stayTo: 1, city: 1, status: 1, checkInTime: 1, checkOutTime: 1,
                             eventId: '$event',
                             userId: '$user',
                             bedId: {
@@ -401,7 +401,7 @@ exports.exportPeopleCsv = async (req, res) => {
         pipeline.push({
             $project: {
                 _id: 1, name: 1, age: 1, gender: 1, bookingNumber: 1, stayFrom: 1,
-                stayTo: 1, city: 1, contactNumber: 1,
+                stayTo: 1, city: 1, contactNumber: 1, status: 1, checkInTime: 1, checkOutTime: 1,
                 eventName: '$event.name',
                 userName: '$user.name',
                 userPhone: '$user.phone',
@@ -431,6 +431,9 @@ exports.exportPeopleCsv = async (req, res) => {
             { header: 'Bed', key: 'bedName', width: 10 },
             { header: 'Booked By', key: 'userName', width: 20 },
             { header: 'Booker Phone', key: 'userPhone', width: 15 },
+            { header: 'Status', key: 'status', width: 15 },
+            { header: 'Check In', key: 'checkInTime', width: 20 },
+            { header: 'Check Out', key: 'checkOutTime', width: 20 },
         ];
 
         people.forEach(person => {
@@ -448,7 +451,10 @@ exports.exportPeopleCsv = async (req, res) => {
                 roomNumber: person.roomNumber,
                 bedName: person.bedName,
                 userName: person.userName,
-                userPhone: person.userPhone
+                userPhone: person.userPhone,
+                status: person.status ? person.status.toUpperCase() : 'PENDING',
+                checkInTime: person.checkInTime ? new Date(person.checkInTime).toLocaleString() : '',
+                checkOutTime: person.checkOutTime ? new Date(person.checkOutTime).toLocaleString() : ''
             });
         });
 
@@ -543,7 +549,7 @@ exports.exportPeoplePdf = async (req, res) => {
         pipeline.push({
             $project: {
                 _id: 1, name: 1, age: 1, gender: 1, bookingNumber: 1, stayFrom: 1,
-                stayTo: 1, city: 1, contactNumber: 1,
+                stayTo: 1, city: 1, contactNumber: 1, status: 1, checkInTime: 1, checkOutTime: 1,
                 eventName: '$event.name',
                 userName: '$user.name',
                 userPhone: '$user.phone',

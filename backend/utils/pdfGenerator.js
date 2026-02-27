@@ -237,11 +237,11 @@ function generateOccupancyReportPdf(people, filters) {
 
         // Table Constants
         const tableTop = doc.y;
-        // Updated Columns: Name, Gen, Age, City, Contact, Stay, Building, Room, Bed
+        // Updated Columns: Name, Gen, Age, City, Contact, Stay, Allocation, Status/In/Out
         // X positions
-        const colX = [40, 130, 160, 190, 250, 315, 390, 445, 485];
-        // Widths: Name, Gen, Age, City, Contact, Stay, Building, Room, Bed
-        const colWidths = [85, 25, 25, 55, 60, 70, 50, 35, 35];
+        const colX = [40, 115, 140, 160, 210, 270, 330, 410];
+        // Widths
+        const colWidths = [70, 25, 20, 50, 60, 60, 80, 90];
 
         // Header Row
         drawReportTableHeader(doc, doc.y, colX);
@@ -254,13 +254,17 @@ function generateOccupancyReportPdf(people, filters) {
             doc.fontSize(9).font('Helvetica');
             const nameH = doc.heightOfString(person.name, { width: colWidths[0] });
             const cityH = doc.heightOfString(person.city, { width: colWidths[3] });
-            const buildH = doc.heightOfString(person.buildingName, { width: colWidths[5] }); // Building col index is 6 in X, but 5 in old logic... wait. It's index 6 in data text call.
-            // Actually building name index in colWidths is 6 (Wait, 0..8 indices).
-            // colWidths[6] is building width (50).
 
-            // Let's check logic below in drawReportTableRow
+            const allocation = `${person.buildingName || '-'}\n${person.roomNumber || '-'} / ${person.bedName || '-'}`;
+            const allocH = doc.heightOfString(allocation, { width: colWidths[6] });
 
-            const rowHeight = Math.max(20, nameH, cityH, buildH) + 10;
+            const statusText = person.status ? person.status.toUpperCase() : 'PENDING';
+            const checkInText = person.checkInTime ? `In: ${formatShortDate(person.checkInTime)} ${new Date(person.checkInTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}` : '';
+            const checkOutText = person.checkOutTime ? `Out: ${formatShortDate(person.checkOutTime)} ${new Date(person.checkOutTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}` : '';
+            const statusColText = [statusText, checkInText, checkOutText].filter(Boolean).join('\n');
+            const statusH = doc.heightOfString(statusColText, { width: colWidths[7] });
+
+            const rowHeight = Math.max(20, nameH, cityH, allocH, statusH) + 10;
 
             // Check for page break
             if (currentY + rowHeight > 750) {
@@ -300,9 +304,8 @@ function drawReportTableHeader(doc, y, colX) {
     doc.text('City', colX[3], y);
     doc.text('Contact', colX[4], y);
     doc.text('Stay', colX[5], y);
-    doc.text('Build', colX[6], y);
-    doc.text('Room', colX[7], y);
-    doc.text('Bed', colX[8], y);
+    doc.text('Allocation', colX[6], y);
+    doc.text('Status / In / Out', colX[7], y);
 }
 
 function drawReportTableRow(doc, y, person, colX, colWidths, height) {
@@ -317,9 +320,14 @@ function drawReportTableRow(doc, y, person, colX, colWidths, height) {
     const stayStr = `${formatShortDate(person.stayFrom)}-${formatShortDate(person.stayTo)}`;
     doc.text(stayStr, colX[5], y, { width: colWidths[5] });
 
-    doc.text(person.buildingName, colX[6], y, { width: colWidths[6] });
-    doc.text(person.roomNumber || '-', colX[7], y, { width: colWidths[7] });
-    doc.text(person.bedName || '-', colX[8], y, { width: colWidths[8] });
+    const allocation = `${person.buildingName || '-'}\n${person.roomNumber || '-'} / ${person.bedName || '-'}`;
+    doc.text(allocation, colX[6], y, { width: colWidths[6] });
+
+    const statusText = person.status ? person.status.toUpperCase() : 'PENDING';
+    const checkInText = person.checkInTime ? `In: ${formatShortDate(person.checkInTime)} ${new Date(person.checkInTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}` : '';
+    const checkOutText = person.checkOutTime ? `Out: ${formatShortDate(person.checkOutTime)} ${new Date(person.checkOutTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}` : '';
+    const statusColText = [statusText, checkInText, checkOutText].filter(Boolean).join('\n');
+    doc.text(statusColText, colX[7], y, { width: colWidths[7] });
 
     doc.rect(40, y + height - 5, 515, 0.5).stroke('#E2E8F0'); // Row separator
 }

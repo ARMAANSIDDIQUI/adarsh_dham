@@ -135,12 +135,13 @@ const AllocationsView = ({ filters, dateFilterType, debouncedSearchTerm, paginat
                         >
                             Allocation <SortIcon col="room" />
                         </th>
+                        <th className={thClass}>Status / Check-In</th>
                         <th className={thClass}>Actions</th>
                     </tr>
                 </thead>
                 <tbody className="bg-card divide-y divide-background">
                     {loading ? (
-                        <tr><td colSpan="6" className="text-center py-8"><FaSpinner className="animate-spin text-primary text-3xl mx-auto" /></td></tr>
+                        <tr><td colSpan="7" className="text-center py-8"><FaSpinner className="animate-spin text-primary text-3xl mx-auto" /></td></tr>
                     ) : sortedPeople.length > 0 ? (
                         sortedPeople.map(person => (
                             <tr key={person._id} className="hover:bg-background transition-colors">
@@ -163,6 +164,13 @@ const AllocationsView = ({ filters, dateFilterType, debouncedSearchTerm, paginat
                                     <p>Room {person.bedId?.roomId?.roomNumber} / Bed {person.bedId?.name}</p>
                                 </td>
                                 <td className="px-4 py-4 whitespace-nowrap text-sm align-top">
+                                    <p className={`font-semibold ${person.status === 'checkedin' ? 'text-green-600' : person.status === 'checkedout' ? 'text-gray-500' : 'text-yellow-600'}`}>
+                                        {person.status ? person.status.toUpperCase() : 'PENDING'}
+                                    </p>
+                                    {person.checkInTime && <p className="text-xs text-gray-600 mt-1" title={new Date(person.checkInTime).toLocaleString()}>In: {new Date(person.checkInTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })}</p>}
+                                    {person.checkOutTime && <p className="text-xs text-gray-600" title={new Date(person.checkOutTime).toLocaleString()}>Out: {new Date(person.checkOutTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })}</p>}
+                                </td>
+                                <td className="px-4 py-4 whitespace-nowrap text-sm align-top">
                                     <button
                                         onClick={() => handleDownloadBookingPdf(person)}
                                         className="text-accent hover:text-primaryDark disabled:opacity-50 transition-colors"
@@ -179,7 +187,7 @@ const AllocationsView = ({ filters, dateFilterType, debouncedSearchTerm, paginat
                             </tr>
                         ))
                     ) : (
-                        <tr><td colSpan="6" className="text-center py-8 text-gray-500">No people match the current filters.</td></tr>
+                        <tr><td colSpan="7" className="text-center py-8 text-gray-500">No people match the current filters.</td></tr>
                     )}
                 </tbody>
             </table>
