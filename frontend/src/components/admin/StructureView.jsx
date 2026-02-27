@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../api/api.js';
-import { FaSpinner, FaBuilding, FaBed, FaUserCheck, FaUserMinus, FaTimes, FaHashtag, FaHome, FaCity, FaPhone, FaUserTag, FaSearch, FaMale, FaFemale } from 'react-icons/fa';
+import { FaSpinner, FaBuilding, FaBed, FaUserCheck, FaUserMinus, FaTimes, FaHashtag, FaHome, FaCity, FaPhone, FaUserTag, FaSearch, FaMale, FaFemale, FaClock, FaInfoCircle } from 'react-icons/fa';
 
 /**
  * Normalizes gender strings (e.g., 'Boy', 'unisex' -> 'male', 'mixed').
@@ -54,6 +54,11 @@ const OccupantDetailsModal = ({ isOpen, person, onClose }) => {
                             <p className="flex items-center"><FaPhone className="mr-3 text-gray-400" />Contact: <span className="font-semibold ml-2">{person.contactNumber}</span></p>
                             <p className="flex items-center"><FaUserTag className="mr-3 text-gray-400" />Reference: <span className="font-semibold ml-2">{person.baijiMahatmaJi || 'N/A'}</span></p>
                             <p className="flex items-center"><FaUserTag className="mr-3 text-gray-400" />Gender: <span className="font-semibold ml-2 capitalize">{person.gender || 'N/A'}</span></p>
+
+                            <p className="flex items-center"><FaInfoCircle className="mr-3 text-gray-400" />Status: <span className="font-semibold ml-2 capitalize">{person.status || (person.checkOutTime ? 'checkedout' : person.checkInTime ? 'checkedin' : 'pending')}</span></p>
+                            <p className="flex items-center"><FaClock className="mr-3 text-gray-400" />Checked In: <span className="font-semibold ml-2">{person.checkInTime ? new Date(person.checkInTime).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true }) : 'Not yet'}</span></p>
+                            <p className="flex items-center"><FaClock className="mr-3 text-gray-400" />Checked Out: <span className="font-semibold ml-2">{person.checkOutTime ? new Date(person.checkOutTime).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true }) : 'Not yet'}</span></p>
+
                             <p className="mt-4 pt-4 border-t border-background text-sm text-center">Stay: {formatDate(person.stayFrom)} to {formatDate(person.stayTo)}</p>
                         </div>
                     </motion.div>

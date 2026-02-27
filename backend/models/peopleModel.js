@@ -62,6 +62,11 @@ const personSchema = new Schema({
     baijiMahatmaJi: {
         type: String
     },
+    status: {
+        type: String,
+        enum: ['pending', 'checkedin', 'checkedout'],
+        default: 'pending'
+    },
     // ── Check-in / Check-out ─────────────────────────────────
     checkInTime: {
         type: Date,

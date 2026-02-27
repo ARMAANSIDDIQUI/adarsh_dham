@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import {
     FaClipboardCheck, FaSignInAlt, FaSignOutAlt, FaUndo,
     FaSpinner, FaSearch, FaFilter, FaUser, FaBed,
-    FaBuilding, FaCheckCircle, FaTimesCircle, FaClock
+    FaBuilding, FaCheckCircle, FaTimesCircle, FaClock, FaFilePdf
 } from 'react-icons/fa';
 import DynamicDateInput from '../common/DynamicDateInput.jsx';
 
@@ -97,18 +97,22 @@ const PersonRow = ({ person, onAction }) => {
                     <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border capitalize ${genderColor}`}>
                         {person.gender}, {person.age}y
                     </span>
-                    {isCheckedIn && (
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 flex items-center gap-1">
-                            <FaCheckCircle size={9} /> In at {formatTime(person.checkInTime)}
-                        </span>
-                    )}
-                    {isCheckedOut && (
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-200 text-gray-600 flex items-center gap-1">
-                            <FaTimesCircle size={9} /> Out at {formatTime(person.checkOutTime)}
-                        </span>
-                    )}
+                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${person.status === 'checkedout' || person.checkOutTime ? 'bg-rose-100 text-rose-700' :
+                        person.status === 'checkedin' || person.checkInTime ? 'bg-emerald-100 text-emerald-700' :
+                            'bg-amber-100 text-amber-700'
+                        } capitalize flex items-center gap-1`}>
+                        {person.status || (person.checkOutTime ? 'checked out' : person.checkInTime ? 'checked in' : 'pending')}
+                    </span>
                 </div>
-                <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
+                <div className="flex items-center gap-3 mt-1.5 text-[11px] text-gray-500 font-medium">
+                    <span className="flex items-center gap-1">
+                        <FaSignInAlt className="opacity-70" /> In: {person.checkInTime ? formatTime(person.checkInTime) : 'Not yet'}
+                    </span>
+                    <span className="flex items-center gap-1">
+                        <FaSignOutAlt className="opacity-70" /> Out: {person.checkOutTime ? formatTime(person.checkOutTime) : 'Not yet'}
+                    </span>
+                </div>
+                <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
                     <FaBed size={9} className="opacity-60" />
                     {allocationText}
                 </p>
@@ -166,10 +170,28 @@ const PersonRow = ({ person, onAction }) => {
     );
 };
 
-// ── Booking Card ──────────────────────────────────────────────
 const BookingCard = ({ booking, onPersonAction }) => {
     const [open, setOpen] = useState(true);
-    const { bookingNumber, ashramName, contactNumber, city, eventName, stayFrom, stayTo, members } = booking;
+    const { _id: bookingId, bookingNumber, ashramName, contactNumber, city, eventName, stayFrom, stayTo, members, status } = booking;
+
+    const handleDownloadPdf = async (e) => {
+        e.stopPropagation();
+        try {
+            const response = await api.get(`/bookings/pdf/${bookingId}`, { responseType: 'blob' });
+            const blob = new Blob([response.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `Booking-Pass-${bookingNumber || bookingId}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Error downloading PDF:', error);
+            toast.error('Failed to download PDF.');
+        }
+    };
 
     return (
         <motion.div
@@ -203,6 +225,13 @@ const BookingCard = ({ booking, onPersonAction }) => {
                 </div>
                 <div className="flex items-center gap-3 shrink-0 ml-4">
                     <BookingStatusBadge members={members} />
+                    <button
+                        onClick={handleDownloadPdf}
+                        className="text-primary hover:text-primaryDark p-1.5 rounded-full hover:bg-pink-50 transition-colors ml-2 flex items-center shadow-sm border border-transparent hover:border-pink-200"
+                        title="Download Booking Pass"
+                    >
+                        <FaFilePdf size={14} />
+                    </button>
                     <span className={`text-gray-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}>▼</span>
                 </div>
             </button>

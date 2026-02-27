@@ -214,16 +214,14 @@ const EditBookingModal = ({ isOpen, booking, onClose, onUpdate }) => {
                                     <div key={index} className="p-4 border border-gray-200 rounded-lg bg-white relative">
                                         <div className="flex justify-between items-start mb-2">
                                             <div className="text-xs font-mono text-gray-400">#{index + 1}</div>
-                                            {!isApproved && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleRemovePerson(index)}
-                                                    className="text-white bg-red-500 hover:bg-red-600 rounded px-2 py-1 flex items-center shadow-sm"
-                                                    title="Remove this member"
-                                                >
-                                                    <FaTimes className="mr-1" size={10} /> <span className="text-[10px]">Remove</span>
-                                                </button>
-                                            )}
+                                            <button
+                                                type="button"
+                                                onClick={() => handleRemovePerson(index)}
+                                                className="text-white bg-red-500 hover:bg-red-600 rounded px-2 py-1 flex items-center shadow-sm"
+                                                title="Remove this member"
+                                            >
+                                                <FaTimes className="mr-1" size={10} /> <span className="text-[10px]">Remove</span>
+                                            </button>
                                         </div>
                                         <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
                                             <div className="md:col-span-3">

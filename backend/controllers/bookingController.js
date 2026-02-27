@@ -337,14 +337,23 @@ exports.updateBooking = async (req, res) => {
 
             const currentAllocations = Array.isArray(booking.allocations) ? booking.allocations : [];
 
-            // Determine removed people (indices that no longer exist in newPeople)
-            const removedIndices = [];
-            for (let i = newPeople.length; i < oldPeople.length; i++) {
-                removedIndices.push(i);
-            }
+            // Determine removed people using robust _id mapping (not just popping from the end)
+            const newPeopleIds = newPeople.map(p => p._id ? p._id.toString() : null).filter(Boolean);
+            const removedOldIndices = [];
+
+            oldPeople.forEach((op, index) => {
+                const opId = op._id ? op._id.toString() : null;
+                if (opId) {
+                    if (!newPeopleIds.includes(opId)) removedOldIndices.push(index);
+                } else {
+                    // Fallback to name matching
+                    const stillExists = newPeople.some(np => np.name === op.name);
+                    if (!stillExists) removedOldIndices.push(index);
+                }
+            });
 
             // Delete Person records for removed people
-            for (const removedIdx of removedIndices) {
+            for (const removedIdx of removedOldIndices) {
                 const removedAlloc = currentAllocations[removedIdx];
                 const removedPersonData = oldPeople[removedIdx];
 
@@ -358,8 +367,8 @@ exports.updateBooking = async (req, res) => {
                 });
             }
 
-            // Trim allocations to match new count
-            const newAllocations = currentAllocations.slice(0, newPeople.length);
+            // Keep only allocations for non-deleted people
+            const newAllocations = currentAllocations.filter((_, idx) => !removedOldIndices.includes(idx));
 
             // Validate beds for date changes on remaining people
             const unavailableBeds = [];

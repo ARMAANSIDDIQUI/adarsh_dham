@@ -12,6 +12,7 @@ exports.checkIn = async (req, res) => {
         const person = await Person.findById(personId);
         if (!person) return res.status(404).json({ message: 'Person not found' });
 
+        person.status = 'checkedin';
         person.checkInTime = new Date();
         person.checkInBy = req.user.id;
         // Clear checkout if re-checking-in
@@ -38,6 +39,7 @@ exports.checkOut = async (req, res) => {
             return res.status(400).json({ message: 'Person has not been checked in yet.' });
         }
 
+        person.status = 'checkedout';
         person.checkOutTime = new Date();
         person.checkOutBy = req.user.id;
         await person.save();
@@ -58,6 +60,7 @@ exports.undoCheckIn = async (req, res) => {
         const person = await Person.findById(personId);
         if (!person) return res.status(404).json({ message: 'Person not found' });
 
+        person.status = 'pending';
         person.checkInTime = null;
         person.checkInBy = null;
         person.checkOutTime = null;
