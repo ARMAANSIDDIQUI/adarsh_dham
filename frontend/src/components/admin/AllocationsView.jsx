@@ -5,6 +5,10 @@ import { useGetPaginatedPeopleQuery } from '../../redux/api/apiSlice';
 
 const AllocationsView = ({ filters, dateFilterType, debouncedSearchTerm, pagination, setPagination }) => {
     const [people, setPeople] = useState([]);
+    const [isDownloading, setIsDownloading] = useState(null);
+    const [sortBy, setSortBy] = useState('name');
+    const [sortDir, setSortDir] = useState('asc');
+
     const queryParams = useMemo(() => ({
         page: pagination.currentPage,
         limit: pagination.limit,

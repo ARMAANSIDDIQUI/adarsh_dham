@@ -78,7 +78,6 @@ const ManageBuildings = () => {
             toast.success("Building added successfully");
         } catch (err) {
             const msg = err.response?.data?.message || 'Failed to add building.';
-            setError(msg);
             toast.error(msg);
         }
     };
@@ -92,7 +91,6 @@ const ManageBuildings = () => {
             toast.success("Building updated successfully");
         } catch (err) {
             const msg = err.response?.data?.message || 'Failed to update building.';
-            setError(msg);
             toast.error(msg);
         }
     };
