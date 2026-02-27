@@ -2,18 +2,39 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 const API_URL = process.env.REACT_APP_API_BASE_URL || '';
 
+const baseQuery = fetchBaseQuery({
+    baseUrl: `${API_URL}/api`,
+    prepareHeaders: (headers, { getState }) => {
+        // Try to get token from state first, fallback to localStorage
+        const token = getState().auth?.token || localStorage.getItem('token');
+        if (token) {
+            headers.set('Authorization', `Bearer ${token}`);
+        }
+        return headers;
+    },
+});
+
+const baseQueryWithReauth = async (args, api, extraOptions) => {
+    let result = await baseQuery(args, api, extraOptions);
+
+    if (result.error && (result.error.status === 401 || result.error.status === 403)) {
+        // Auto-logout on token expiry or invalid token
+        api.dispatch({ type: 'auth/logout' });
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.dispatchEvent(new Event('auth-expired'));
+
+        // Redirect to login only if not already on it
+        if (!window.location.pathname.startsWith('/login')) {
+            window.location.href = '/login?expired=true';
+        }
+    }
+    return result;
+};
+
 export const apiSlice = createApi({
     reducerPath: 'api',
-    baseQuery: fetchBaseQuery({
-        baseUrl: `${API_URL}/api`,
-        prepareHeaders: (headers) => {
-            const token = localStorage.getItem('token');
-            if (token) {
-                headers.set('x-auth-token', token);
-            }
-            return headers;
-        },
-    }),
+    baseQuery: baseQueryWithReauth,
     tagTypes: [
         'Structure', 'Events', 'Buildings', 'Admins', 'Users',
         'Bookings', 'Comments', 'LiveLinks', 'PasswordRequests',

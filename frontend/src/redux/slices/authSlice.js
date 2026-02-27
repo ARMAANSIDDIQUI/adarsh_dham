@@ -111,6 +111,7 @@ const authSlice = createSlice({
         state.isAuthenticated = true;
         state.user = action.payload.user;
         state.token = action.payload.token;
+        localStorage.setItem('token', action.payload.token);
         api.defaults.headers.common['Authorization'] = `Bearer ${action.payload.token}`;
       })
       .addCase(login.rejected, (state, action) => {

@@ -1,4 +1,5 @@
 const Person = require('../models/peopleModel');
+const mongoose = require('mongoose');
 
 /**
  * Checks if a bed is available for a given date range.
@@ -22,10 +23,32 @@ const checkBedAvailability = async (bedId, stayFrom, stayTo, excludeBookingId = 
     };
 
     if (excludeBookingId) {
-        query.bookingId = { $ne: excludeBookingId };
+        try {
+            const objectId = typeof excludeBookingId === 'string'
+                ? new mongoose.Types.ObjectId(excludeBookingId)
+                : excludeBookingId;
+            query.bookingId = { $ne: objectId };
+        } catch (e) {
+            console.error("Failed to cast excludeBookingId to ObjectId", e);
+            query.bookingId = { $ne: excludeBookingId };
+        }
     }
 
+    // Temporarily logging to see why it fails
     const existingOccupant = await Person.findOne(query);
+
+    // Fallback manual check to absolutely guarantee we never self-conflict
+    if (existingOccupant && excludeBookingId && existingOccupant.bookingId.toString() === excludeBookingId.toString()) {
+        console.warn('Mongoose $ne failed to exclude the current booking. Ignoring safely.', {
+            foundId: existingOccupant.bookingId.toString(),
+            expectedExcluded: excludeBookingId.toString()
+        });
+
+        // Try to find if there's any OTHER occupant
+        const otherOccupant = await Person.findOne({ ...query, bookingId: { $ne: existingOccupant.bookingId } });
+        return !otherOccupant;
+    }
+
     return !existingOccupant;
 };
 

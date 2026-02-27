@@ -179,9 +179,10 @@ const EditBookingModal = ({ booking, onClose, onUpdate }) => {
     setSubmitLoading(true);
     try {
       const { numMales, numFemales, numBoys, numGirls, ...submissionData } = formData;
-      await api.put(`/bookings/update/${booking._id}`, { formData: submissionData });
+      const response = await api.put(`/bookings/update/${booking._id}`, { formData: submissionData });
       toast.success(t.myBookings.actions.updateSuccess);
-      onUpdate();
+      onUpdate(response.data?.booking);
+      if (onClose) onClose();
     } catch (err) {
       const msg = err.response?.data?.message || t.booking.submitError;
       setError(msg);

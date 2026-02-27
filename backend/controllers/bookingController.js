@@ -324,22 +324,13 @@ exports.updateBooking = async (req, res) => {
         // -------------------------------------------------------
         // ADMIN EDIT ON APPROVED BOOKING — keep status = 'approved'
         // -------------------------------------------------------
-        // -------------------------------------------------------
-        // ADMIN EDIT ON APPROVED BOOKING — keep status = 'approved'
-        // -------------------------------------------------------
         if (wasApproved && isAdmin) {
-            // CRITICAL: Prohibit adding new guests to an approved booking
-            if (newPeople.length > oldPeople.length) {
-                return res.status(403).json({
-                    message: `Adding new guests to an approved booking is not permitted. Please create a new booking for the additional ${newPeople.length - oldPeople.length} guest(s).`
-                });
-            }
-
             const currentAllocations = Array.isArray(booking.allocations) ? booking.allocations : [];
 
             // Determine removed people using robust _id mapping (not just popping from the end)
             const newPeopleIds = newPeople.map(p => p._id ? p._id.toString() : null).filter(Boolean);
             const removedOldIndices = [];
+            const preservedAllocations = []; // Will store allocations matching the NEW people array
 
             oldPeople.forEach((op, index) => {
                 const opId = op._id ? op._id.toString() : null;
@@ -355,6 +346,7 @@ exports.updateBooking = async (req, res) => {
             // Delete Person records for removed people
             for (const removedIdx of removedOldIndices) {
                 const removedAlloc = currentAllocations[removedIdx];
+                if (!removedAlloc) continue;
                 const removedPersonData = oldPeople[removedIdx];
 
                 // Match by booking and either bedId OR name (if bed was null)
@@ -367,8 +359,28 @@ exports.updateBooking = async (req, res) => {
                 });
             }
 
-            // Keep only allocations for non-deleted people
-            const newAllocations = currentAllocations.filter((_, idx) => !removedOldIndices.includes(idx));
+            // Map old allocations to the newly structured people array
+            for (let i = 0; i < newPeople.length; i++) {
+                const np = newPeople[i];
+                const npId = np._id ? np._id.toString() : null;
+
+                // Find matching old person index
+                let oldIdx = -1;
+                if (npId) {
+                    oldIdx = oldPeople.findIndex(op => op._id && op._id.toString() === npId);
+                } else {
+                    oldIdx = oldPeople.findIndex(op => op.name === np.name);
+                }
+
+                if (oldIdx !== -1 && currentAllocations[oldIdx]) {
+                    preservedAllocations.push(currentAllocations[oldIdx]);
+                } else {
+                    // This is a NEW person added by the admin. Give them an empty allocation.
+                    preservedAllocations.push({ bedId: null, roomId: null, buildingId: null });
+                }
+            }
+
+            const newAllocations = preservedAllocations;
 
             // Validate beds for date changes on remaining people
             const unavailableBeds = [];
@@ -409,15 +421,20 @@ exports.updateBooking = async (req, res) => {
                 const newStayFrom = personData.stayFrom || formData.stayFrom;
                 const newStayTo = personData.stayTo || formData.stayTo;
 
-                // Match by booking and previous ID/Name anchor
+                // Match by booking and previous ID/Name anchor (if existed)
+                const searchCriteria = { bookingId: booking._id };
+                if (oldPersonData) {
+                    searchCriteria.$or = [
+                        { bedId: oldAlloc?.bedId || null },
+                        { name: oldPersonData.name }
+                    ];
+                } else {
+                    // Brand new person finding them by name if they somehow existed (they shouldn't)
+                    searchCriteria.name = personData.name;
+                }
+
                 await Person.findOneAndUpdate(
-                    {
-                        bookingId: booking._id,
-                        $or: [
-                            { bedId: oldAlloc?.bedId || null },
-                            { name: oldPersonData.name }
-                        ]
-                    },
+                    searchCriteria,
                     {
                         $set: {
                             name: personData.name,
@@ -429,8 +446,18 @@ exports.updateBooking = async (req, res) => {
                             contactNumber: formData.contactNumber,
                             city: formData.city,
                             baijiMahatmaJi: formData.baijiMahatmaJi
+                        },
+                        $setOnInsert: {
+                            bookingId: booking._id,
+                            bookingNumber: booking.bookingNumber,
+                            userId: booking.userId,
+                            eventId: booking.eventId,
+                            bedId: null,
+                            isChild: isYoungChild(personData),
+                            status: 'pending' // Still requires bed allocation technically
                         }
-                    }
+                    },
+                    { upsert: true, new: true } // Upsert for new members added by Admin
                 );
             }
 
@@ -458,16 +485,36 @@ exports.updateBooking = async (req, res) => {
         // -------------------------------------------------------
 
         // Check if member structure changed (count or gender/name changes requiring re-allocation)
-        const memberStructureChanged = oldPeople.length !== newPeople.length ||
-            oldPeople.some((oldP, i) => {
-                const newP = newPeople[i];
-                if (!newP) return true;
-                return oldP.name !== newP.name || oldP.gender !== newP.gender;
+        const newPeopleIds = newPeople.map(p => p._id ? p._id.toString() : null).filter(Boolean);
+        let isReductionOrSame = true;
+        let removedOldIndices = [];
+
+        if (newPeople.length > oldPeople.length) {
+            isReductionOrSame = false; // Cannot add members and keep it approved automatically
+        } else {
+            // Check if all NEW people existed in the OLD people list (meaning it's the same or a subset)
+            oldPeople.forEach((op, index) => {
+                const opId = op._id ? op._id.toString() : null;
+                if (opId) {
+                    if (!newPeopleIds.includes(opId)) removedOldIndices.push(index);
+                } else {
+                    const stillExists = newPeople.some(np => np.name === op.name);
+                    if (!stillExists) removedOldIndices.push(index);
+                }
             });
 
-        if (wasApproved && !memberStructureChanged && booking.allocations.length > 0) {
-            // SMART EDIT: Only dates changed, try to preserve allocations
-            const allocations = booking.allocations;
+            // If the number of removed people plus the new people doesn't equal old people, 
+            // it means they added someone completely new while removing someone else.
+            if (newPeople.length + removedOldIndices.length !== oldPeople.length) {
+                isReductionOrSame = false;
+            }
+        }
+
+        if (wasApproved && isReductionOrSame && booking.allocations.length > 0) {
+            // SMART EDIT: Dates changed or members removed, try to preserve allocations
+            const currentAllocations = Array.isArray(booking.allocations) ? booking.allocations : [];
+            const newAllocations = currentAllocations.filter((_, idx) => !removedOldIndices.includes(idx));
+
             let allBedsStillAvailable = true;
             const unavailableBeds = [];
 
@@ -494,9 +541,22 @@ exports.updateBooking = async (req, res) => {
             }
 
             if (allBedsStillAvailable) {
+                // Determine removed people to delete their Person records
+                for (const removedIdx of removedOldIndices) {
+                    const removedAlloc = currentAllocations[removedIdx];
+                    const removedPersonData = oldPeople[removedIdx];
+                    await Person.findOneAndDelete({
+                        bookingId: booking._id,
+                        $or: [
+                            { bedId: removedAlloc?.bedId || null },
+                            { name: removedPersonData.name }
+                        ]
+                    });
+                }
+
                 for (let i = 0; i < newPeople.length; i++) {
                     const personData = newPeople[i];
-                    const allocation = allocations[i];
+                    const allocation = newAllocations[i];
 
                     const newStayFrom = personData.stayFrom || formData.stayFrom;
                     const newStayTo = personData.stayTo || formData.stayTo;
@@ -522,6 +582,7 @@ exports.updateBooking = async (req, res) => {
                 }
 
                 booking.formData = formData;
+                booking.allocations = newAllocations;
                 await booking.save();
 
                 const updatedBooking = await Booking.findById(bookingId)
@@ -561,7 +622,7 @@ exports.updateBooking = async (req, res) => {
             }
         }
 
-        // STANDARD EDIT: Member structure changed or booking wasn't approved
+        // STANDARD EDIT: Member structure changed (added people) or booking wasn't approved
         if (wasApproved) {
             await Person.deleteMany({ bookingId: booking._id });
         }

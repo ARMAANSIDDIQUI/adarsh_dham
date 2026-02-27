@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../api/api.js';
 import { FaSpinner, FaTrash, FaFilePdf, FaBed, FaBuilding, FaDoorOpen, FaTimesCircle, FaCheckCircle, FaEdit } from 'react-icons/fa';
@@ -110,7 +111,8 @@ const BookingCard = ({ booking, onEdit, onDelete, onDownloadPdf, navigateToEvent
 
 const MyBookings = () => {
     const t = useTranslation();
-    const { data: rawBookings, isLoading: loading, isError, refetch } = useGetMyBookingsQuery();
+    const token = useSelector((state) => state.auth.token);
+    const { data: rawBookings, isLoading: loading, isError, refetch } = useGetMyBookingsQuery(undefined, { skip: !token });
     const bookings = Array.isArray(rawBookings) ? rawBookings : [];
     const error = isError ? t.myBookings.actions.fetchFail : null;
 

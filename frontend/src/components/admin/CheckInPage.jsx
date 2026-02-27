@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import {
     FaClipboardCheck, FaSignInAlt, FaSignOutAlt, FaUndo,
     FaSpinner, FaSearch, FaFilter, FaUser, FaBed,
-    FaBuilding, FaCheckCircle, FaTimesCircle, FaClock, FaFilePdf
+    FaBuilding, FaCheckCircle, FaTimesCircle, FaClock, FaFilePdf, FaPhone
 } from 'react-icons/fa';
 import DynamicDateInput from '../common/DynamicDateInput.jsx';
 import { useGetCheckinDataQuery } from '../../redux/api/apiSlice';
@@ -220,7 +220,9 @@ const BookingCard = ({ booking, onPersonAction }) => {
                             {formatDate(stayFrom)} → {formatDate(stayTo)}
                         </span>
                         {contactNumber && (
-                            <span className="text-xs text-gray-400">📞 {contactNumber}</span>
+                            <span className="text-xs text-gray-400 flex items-center gap-1">
+                                <FaPhone className="opacity-70" size={10} /> {contactNumber}
+                            </span>
                         )}
                     </div>
                 </div>
@@ -381,61 +383,61 @@ const CheckInPage = () => {
                 <h3 className="text-base font-semibold mb-4 flex items-center text-primaryDark font-heading">
                     <FaFilter className="mr-2 text-primary" /> Multi-Filter Search
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-                    <div className="w-full">
+                <div className="flex flex-col gap-5">
+                    {/* Top Row: Dates */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <DynamicDateInput
                             label="Check-in Date"
                             name="startDate"
                             value={startDate}
                             onChange={e => setStartDate(e.target.value)}
-                            className="w-full"
                         />
-                    </div>
-                    <div className="w-full">
                         <DynamicDateInput
                             label="Check-out Date"
                             name="endDate"
                             value={endDate}
                             onChange={e => setEndDate(e.target.value)}
-                            className="w-full"
                         />
                     </div>
 
-                    <div className="w-full">
-                        <label className="text-sm font-semibold text-gray-700 mb-1 block">Sort By</label>
-                        <select
-                            value={sortBy}
-                            onChange={e => setSortBy(e.target.value)}
-                            className="w-full p-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20 outline-none"
-                        >
-                            <option value="date">Date</option>
-                            <option value="name">Name</option>
-                        </select>
-                    </div>
+                    {/* Bottom Row: Search & Sort */}
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                        <div className="md:col-span-6 lg:col-span-8 w-full">
+                            <label className="text-sm font-semibold text-gray-700 mb-1 block">Quick Search</label>
+                            <div className="relative">
+                                <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                <input
+                                    type="text"
+                                    placeholder="Search by Name, City..."
+                                    value={searchTerm}
+                                    onChange={e => setSearchTerm(e.target.value)}
+                                    className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white shadow-sm h-[42px]"
+                                />
+                            </div>
+                        </div>
 
-                    <div className="w-full">
-                        <label className="text-sm font-semibold text-gray-700 mb-1 block">Order</label>
-                        <select
-                            value={sortOrder}
-                            onChange={e => setSortOrder(e.target.value)}
-                            className="w-full p-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20 outline-none"
-                        >
-                            <option value="asc">Ascending</option>
-                            <option value="desc">Descending</option>
-                        </select>
-                    </div>
+                        <div className="md:col-span-3 lg:col-span-2 w-full">
+                            <label className="text-sm font-semibold text-gray-700 mb-1 block">Sort By</label>
+                            <select
+                                value={sortBy}
+                                onChange={e => setSortBy(e.target.value)}
+                                className="w-full p-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20 outline-none h-[42px]"
+                            >
+                                <option value="date">Date</option>
+                                <option value="name">Name</option>
+                            </select>
+                        </div>
 
-                    <div className="relative flex-1 w-full lg:col-span-2">
-                        <label className="text-sm font-semibold text-gray-700 mb-1 block">Quick Search</label>
-                        <div className="relative">
-                            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                            <input
-                                type="text"
-                                placeholder="Search Name, City..."
-                                value={searchTerm}
-                                onChange={e => setSearchTerm(e.target.value)}
-                                className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white shadow-sm"
-                            />
+                        <div className="md:col-span-3 lg:col-span-2 w-full">
+                            <label className="text-sm font-semibold text-gray-700 mb-1 block">Order</label>
+                            <select
+                                value={sortOrder}
+                                onChange={e => setSortOrder(e.target.value)}
+                                className="w-full p-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20 outline-none h-[42px]"
+                            >
+                                <option value="asc">Ascending</option>
+                                <option value="desc">Descending</option>
+                            </select>
                         </div>
                     </div>
                 </div>
