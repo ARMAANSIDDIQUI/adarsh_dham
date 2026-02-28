@@ -57,7 +57,22 @@ const EditBookingModal = ({ isOpen, booking, onClose, onUpdate }) => {
     };
 
     const handleRemovePerson = (index) => {
+        if (formData.people.length <= 1) {
+            toast.error("You cannot remove the last member.");
+            return;
+        }
+
         const updatedPeople = formData.people.filter((_, i) => i !== index);
+
+        // Check kid/adult ratio
+        const remainingKids = updatedPeople.filter(p => p.gender === 'boy' || p.gender === 'girl').length;
+        const remainingAdults = updatedPeople.filter(p => p.gender === 'male' || p.gender === 'female').length;
+
+        if (remainingKids > 0 && remainingAdults === 0) {
+            toast.error("Children must be accompanied by at least one adult (male or female).");
+            return;
+        }
+
         setFormData(prev => ({ ...prev, people: updatedPeople }));
     };
 
@@ -214,14 +229,16 @@ const EditBookingModal = ({ isOpen, booking, onClose, onUpdate }) => {
                                     <div key={index} className="p-4 border border-primary/20 rounded-xl bg-background/50 relative">
                                         <div className="flex justify-between items-start mb-2">
                                             <div className="text-xs font-mono text-gray-400">#{index + 1}</div>
-                                            <button
-                                                type="button"
-                                                onClick={() => handleRemovePerson(index)}
-                                                className="text-white bg-red-500 hover:bg-red-600 rounded px-2 py-1 flex items-center shadow-sm"
-                                                title="Remove this member"
-                                            >
-                                                <FaTimes className="mr-1" size={10} /> <span className="text-[10px]">Remove</span>
-                                            </button>
+                                            {formData.people.length > 1 && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleRemovePerson(index)}
+                                                    className="text-white bg-red-500 hover:bg-red-600 rounded px-2 py-1 flex items-center shadow-sm"
+                                                    title="Remove this member"
+                                                >
+                                                    <FaTimes className="mr-1" size={10} /> <span className="text-[10px]">Remove</span>
+                                                </button>
+                                            )}
                                         </div>
                                         <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
                                             <div className="md:col-span-3">

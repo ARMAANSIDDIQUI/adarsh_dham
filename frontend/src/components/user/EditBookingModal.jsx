@@ -8,7 +8,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useGetEventByIdQuery } from '../../redux/api/apiSlice';
 import PhoneInput from '../common/PhoneInput.jsx';
 
-const ThemedInput = ({ label, name, value, onChange, required, type = "text", icon, min, max, colSpan = "", maxLength }) => (
+const ThemedInput = ({ label, name, value, onChange, required, type = "text", icon, min, max, colSpan = "", maxLength, disabled }) => (
   <div className={colSpan}>
     <label className="text-sm font-medium text-gray-700 flex items-center mb-1">
       {icon && <span className="mr-2 text-primary">{icon}</span>}
@@ -20,16 +20,17 @@ const ThemedInput = ({ label, name, value, onChange, required, type = "text", ic
       name={name}
       value={value}
       onChange={onChange}
-      className="mt-1 block w-full px-4 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary shadow-sm"
+      className={`mt-1 block w-full px-4 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary shadow-sm ${disabled ? 'bg-gray-100 cursor-not-allowed text-gray-500' : ''}`}
       required={required}
       min={min}
       max={max}
       maxLength={maxLength}
+      disabled={disabled}
     />
   </div>
 );
 
-const InputGroup = ({ label, name, value, onChange }) => (
+const InputGroup = ({ label, name, value, onChange, disabled }) => (
   <div>
     <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
     <input
@@ -37,8 +38,9 @@ const InputGroup = ({ label, name, value, onChange }) => (
       name={name}
       value={value}
       onChange={onChange}
-      className="w-full px-3 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary shadow-sm"
+      className={`w-full px-3 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary shadow-sm ${disabled ? 'bg-gray-100 cursor-not-allowed text-gray-500' : ''}`}
       min="0"
+      disabled={disabled}
     />
   </div>
 );
@@ -96,21 +98,36 @@ const EditBookingModal = ({ booking, onClose, onUpdate }) => {
     setFormData(prev => ({ ...prev, people: newPeople }));
   };
 
+  const isApproved = booking?.status === 'approved';
+
   const handleRemovePerson = (index) => {
     const personToRemove = formData.people[index];
     if (!personToRemove) return;
 
+    if (formData.people.length <= 1) {
+      toast.error("You cannot remove the last member. To cancel the booking, please withdraw it from the dashboard.");
+      return;
+    }
+
+    const remainingPeople = formData.people.filter((_, i) => i !== index);
+
+    // Check if remaining people have kids without adults
+    const remainingKids = remainingPeople.filter(p => p.gender === 'boy' || p.gender === 'girl').length;
+    const remainingAdults = remainingPeople.filter(p => p.gender === 'male' || p.gender === 'female').length;
+
+    if (remainingKids > 0 && remainingAdults === 0) {
+      toast.error("Children must be accompanied by at least one adult (male or female).");
+      return;
+    }
+
     const genderMap = { male: 'numMales', female: 'numFemales', boy: 'numBoys', girl: 'numGirls' };
     const fieldToDecrement = genderMap[personToRemove.gender];
 
-    setFormData(prev => {
-      const newPeople = prev.people.filter((_, i) => i !== index);
-      return {
-        ...prev,
-        [fieldToDecrement]: Math.max(0, prev[fieldToDecrement] - 1),
-        people: newPeople
-      };
-    });
+    setFormData(prev => ({
+      ...prev,
+      [fieldToDecrement]: Math.max(0, prev[fieldToDecrement] - 1),
+      people: remainingPeople
+    }));
   };
 
   const handleChange = e => {
@@ -202,21 +219,23 @@ const EditBookingModal = ({ booking, onClose, onUpdate }) => {
           <div key={i} className="grid grid-cols-2 gap-4 pt-4 border-b-2 border-background pb-4 last:border-b-0 relative group">
             <div className="col-span-2 flex justify-between items-center">
               <h4 className="font-bold capitalize text-primaryDark">{t.booking.genders[gender] || gender} #{idx + 1}</h4>
-              <button
-                type="button"
-                onClick={() => handleRemovePerson(i)}
-                className="text-xs text-highlight hover:text-red-700 font-medium px-2 py-1 rounded hover:bg-highlight/10 transition-colors flex items-center"
-              >
-                <FaTimesCircle className="mr-1" /> {t.common?.remove || 'Remove'}
-              </button>
+              {(!isApproved || formData.people.length > 1) && (
+                <button
+                  type="button"
+                  onClick={() => handleRemovePerson(i)}
+                  className="text-xs text-highlight hover:text-red-700 font-medium px-2 py-1 rounded hover:bg-highlight/10 transition-colors flex items-center"
+                >
+                  <FaTimesCircle className="mr-1" /> {t.common?.remove || 'Remove'}
+                </button>
+              )}
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600">{t.booking.fields.name}</label>
-              <input type="text" name="name" value={p.name} onChange={e => handlePersonChange(e, i)} className="mt-1 block w-full px-3 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary" required />
+              <input type="text" name="name" value={p.name} onChange={e => handlePersonChange(e, i)} disabled={isApproved} className={`mt-1 block w-full px-3 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary ${isApproved ? 'bg-gray-100 cursor-not-allowed text-gray-500' : ''}`} required />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600">{t.booking.fields.age}</label>
-              <input type="number" name="age" value={p.age} onChange={e => handlePersonChange(e, i)} className="mt-1 block w-full px-3 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary" required min="1" />
+              <input type="number" name="age" value={p.age} onChange={e => handlePersonChange(e, i)} disabled={isApproved} className={`mt-1 block w-full px-3 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary ${isApproved ? 'bg-gray-100 cursor-not-allowed text-gray-500' : ''}`} required min="1" />
             </div>
           </div>
         )
@@ -246,17 +265,17 @@ const EditBookingModal = ({ booking, onClose, onUpdate }) => {
             <div>
               <h3 className="text-xl font-semibold font-heading text-primaryDark mb-4 border-b border-background pb-2">{t.booking.sections.stay}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <ThemedInput label={t.booking.fields.from} name="stayFrom" value={formData.stayFrom} onChange={handleChange} required type="date" icon={<FaCalendarAlt />} min={new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }) || minStay} max={maxStay} />
-                <ThemedInput label={t.booking.fields.to} name="stayTo" value={formData.stayTo} onChange={handleChange} required type="date" icon={<FaCalendarAlt />} min={formData.stayFrom || new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }) || minStay} max={maxStay} />
+                <ThemedInput label={t.booking.fields.from} name="stayFrom" value={formData.stayFrom} onChange={handleChange} required type="date" icon={<FaCalendarAlt />} min={new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }) || minStay} max={maxStay} disabled={isApproved} />
+                <ThemedInput label={t.booking.fields.to} name="stayTo" value={formData.stayTo} onChange={handleChange} required type="date" icon={<FaCalendarAlt />} min={formData.stayFrom || new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }) || minStay} max={maxStay} disabled={isApproved} />
               </div>
             </div>
 
             <div>
               <h3 className="text-xl font-semibold font-heading text-primaryDark mb-4 border-b border-background pb-2">{t.booking.sections.ashram}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <ThemedInput label={t.booking.fields.ashramName} name="ashramName" value={formData.ashramName} onChange={handleChange} required icon={<FaUniversity />} colSpan="md:col-span-2" />
-                <ThemedInput label={t.booking.fields.baijiName} name="baijiMahatmaJi" value={formData.baijiMahatmaJi} onChange={handleChange} />
-                <div>
+                <ThemedInput label={t.booking.fields.ashramName} name="ashramName" value={formData.ashramName} onChange={handleChange} required icon={<FaUniversity />} colSpan="md:col-span-2" disabled={isApproved} />
+                <ThemedInput label={t.booking.fields.baijiName} name="baijiMahatmaJi" value={formData.baijiMahatmaJi} onChange={handleChange} disabled={isApproved} />
+                <div className={isApproved ? "opacity-60 pointer-events-none" : ""}>
                   <PhoneInput
                     label={t.booking.fields.baijiContact}
                     value={formData.baijiContact}
@@ -269,8 +288,8 @@ const EditBookingModal = ({ booking, onClose, onUpdate }) => {
             <div>
               <h3 className="text-xl font-semibold font-heading text-primaryDark mb-4 border-b border-background pb-2">{t.booking.sections.personal}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <ThemedInput label={t.booking.fields.email} name="email" type="email" value={formData.email} onChange={handleChange} icon={<FaEnvelope />} />
-                <div>
+                <ThemedInput label={t.booking.fields.email} name="email" type="email" value={formData.email} onChange={handleChange} icon={<FaEnvelope />} disabled={isApproved} />
+                <div className={isApproved ? "opacity-60 pointer-events-none" : ""}>
                   <PhoneInput
                     label={t.booking.fields.contact}
                     value={formData.contactNumber}
@@ -278,8 +297,8 @@ const EditBookingModal = ({ booking, onClose, onUpdate }) => {
                     required
                   />
                 </div>
-                <ThemedInput label={t.booking.fields.address} name="address" value={formData.address} onChange={handleChange} required icon={<FaMapMarkerAlt />} colSpan="md:col-span-2" />
-                <ThemedInput label={t.booking.fields.city} name="city" value={formData.city} onChange={handleChange} required icon={<FaMapMarkerAlt />} colSpan="md:col-span-2" />
+                <ThemedInput label={t.booking.fields.address} name="address" value={formData.address} onChange={handleChange} required icon={<FaMapMarkerAlt />} colSpan="md:col-span-2" disabled={isApproved} />
+                <ThemedInput label={t.booking.fields.city} name="city" value={formData.city} onChange={handleChange} required icon={<FaMapMarkerAlt />} colSpan="md:col-span-2" disabled={isApproved} />
               </div>
             </div>
 
@@ -291,12 +310,12 @@ const EditBookingModal = ({ booking, onClose, onUpdate }) => {
                     <FaUsers className="mr-2 text-primary" /> {t.booking.fields.fillingForOthers}
                   </label>
                   <div className="flex items-center space-x-6">
-                    <label className="flex items-center cursor-pointer">
-                      <input type="radio" name="fillingForOthers" value="true" checked={formData.fillingForOthers === true} onChange={handleRadioChange} className="form-radio h-4 w-4 text-primary focus:ring-primary" />
+                    <label className={`flex items-center ${isApproved ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}>
+                      <input type="radio" name="fillingForOthers" value="true" checked={formData.fillingForOthers === true} onChange={handleRadioChange} disabled={isApproved} className="form-radio h-4 w-4 text-primary focus:ring-primary" />
                       <span className="ml-2 text-gray-700">{t.booking.notices.yes}</span>
                     </label>
-                    <label className="flex items-center cursor-pointer">
-                      <input type="radio" name="fillingForOthers" value="false" checked={formData.fillingForOthers === false} onChange={handleRadioChange} className="form-radio h-4 w-4 text-primary focus:ring-primary" />
+                    <label className={`flex items-center ${isApproved ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}>
+                      <input type="radio" name="fillingForOthers" value="false" checked={formData.fillingForOthers === false} onChange={handleRadioChange} disabled={isApproved} className="form-radio h-4 w-4 text-primary focus:ring-primary" />
                       <span className="ml-2 text-gray-700">{t.booking.notices.no}</span>
                     </label>
                   </div>
@@ -305,11 +324,16 @@ const EditBookingModal = ({ booking, onClose, onUpdate }) => {
                   <label className="text-base font-semibold text-primaryDark flex items-center mb-3">
                     <FaUserPlus className="mr-2 text-primary" /> {t.booking.fields.memberDetails}
                   </label>
+                  {isApproved && (
+                    <div className="mb-4 text-xs bg-yellow-100 text-yellow-800 p-2 rounded border border-yellow-200">
+                      Editing an approved booking allows you to selectively CANCEL specific members from your stay. Adding members or changing dates is disabled to maintain allocations.
+                    </div>
+                  )}
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <InputGroup label={t.booking.fields.males} name="numMales" value={formData.numMales} onChange={handleGroupChange} />
-                    <InputGroup label={t.booking.fields.females} name="numFemales" value={formData.numFemales} onChange={handleGroupChange} />
-                    <InputGroup label={t.booking.fields.boys} name="numBoys" value={formData.numBoys} onChange={handleGroupChange} />
-                    <InputGroup label={t.booking.fields.girls} name="numGirls" value={formData.numGirls} onChange={handleGroupChange} />
+                    <InputGroup label={t.booking.fields.males} name="numMales" value={formData.numMales} onChange={handleGroupChange} disabled={isApproved} />
+                    <InputGroup label={t.booking.fields.females} name="numFemales" value={formData.numFemales} onChange={handleGroupChange} disabled={isApproved} />
+                    <InputGroup label={t.booking.fields.boys} name="numBoys" value={formData.numBoys} onChange={handleGroupChange} disabled={isApproved} />
+                    <InputGroup label={t.booking.fields.girls} name="numGirls" value={formData.numGirls} onChange={handleGroupChange} disabled={isApproved} />
                   </div>
                 </div>
                 {(formData.numMales > 0 || formData.numFemales > 0 || formData.numBoys > 0 || formData.numGirls > 0) && (
@@ -329,7 +353,7 @@ const EditBookingModal = ({ booking, onClose, onUpdate }) => {
                 <label className="text-sm font-medium text-gray-700 flex items-center mb-1">
                   <FaPen className="mr-2 text-primary" /> {t.booking.fields.notes}
                 </label>
-                <textarea name="notes" value={formData.notes} onChange={handleChange} rows="3" className="mt-1 block w-full px-4 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary shadow-sm" />
+                <textarea name="notes" value={formData.notes} onChange={handleChange} disabled={isApproved} rows="3" className={`mt-1 block w-full px-4 py-2 border border-background rounded-lg focus:ring-primary focus:border-primary shadow-sm ${isApproved ? 'bg-gray-100 cursor-not-allowed text-gray-500' : ''}`} />
               </div>
             </div>
 

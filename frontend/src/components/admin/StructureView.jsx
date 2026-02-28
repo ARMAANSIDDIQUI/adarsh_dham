@@ -358,33 +358,41 @@ const StructureView = () => {
                                                 const occupant = occupancyMap.get(bed._id);
                                                 const isOccupied = !!occupant;
                                                 const occupantGenderLower = normalizeGender(occupant?.gender);
+                                                const occStatus = occupant?.status || (occupant?.checkOutTime ? 'checkedout' : occupant?.checkInTime ? 'checkedin' : 'pending');
 
                                                 let bedStyle = 'border-green-300';
                                                 let bgColor = 'bg-green-100'; // Vacant default
                                                 let textColor = 'text-green-700';
                                                 let genderIcon = null;
+                                                let statusBadge = null;
 
                                                 // --- Filtering and Icon Display Logic ---
                                                 if (isOccupied) {
-                                                    bedStyle = 'border-red-300 cursor-pointer hover:bg-red-200 hover:shadow-md';
+                                                    // "Checked In" gets a more solid background and badge, "Allocated" gets lighter
+                                                    const isCheckedIn = occStatus === 'checkedin';
+                                                    bedStyle = `cursor-pointer hover:shadow-md ${isCheckedIn ? 'border-amber-400 border-2' : 'border-red-300 hover:bg-red-200'}`;
+
+                                                    if (isCheckedIn) {
+                                                        statusBadge = <FaCheckCircle className="absolute -top-1 -right-1 text-amber-500 bg-white rounded-full text-xs" title="Checked In" />;
+                                                    }
 
                                                     if (occupantGenderLower === 'male') {
-                                                        bgColor = 'bg-blue-100';
-                                                        textColor = 'text-blue-700';
+                                                        bgColor = isCheckedIn ? 'bg-blue-300' : 'bg-blue-100';
+                                                        textColor = isCheckedIn ? 'text-blue-900' : 'text-blue-700';
                                                         // Only show Male icon if building is male or mixed
                                                         if (roomGenderLower === 'male' || roomGenderLower === 'mixed') {
                                                             genderIcon = <FaMale className="inline ml-1 mb-0.5" />;
                                                         }
                                                     } else if (occupantGenderLower === 'female') {
-                                                        bgColor = 'bg-pink-100';
-                                                        textColor = 'text-pink-700';
+                                                        bgColor = isCheckedIn ? 'bg-pink-300' : 'bg-pink-100';
+                                                        textColor = isCheckedIn ? 'text-pink-900' : 'text-pink-700';
                                                         // Only show Female icon if building is female or mixed
                                                         if (roomGenderLower === 'female' || roomGenderLower === 'mixed') {
                                                             genderIcon = <FaFemale className="inline ml-1 mb-0.5" />;
                                                         }
                                                     } else {
-                                                        bgColor = 'bg-gray-100';
-                                                        textColor = 'text-gray-700';
+                                                        bgColor = isCheckedIn ? 'bg-gray-300' : 'bg-gray-100';
+                                                        textColor = isCheckedIn ? 'text-gray-900' : 'text-gray-700';
                                                     }
                                                 } else {
                                                     bedStyle = 'border-green-300';
@@ -400,7 +408,7 @@ const StructureView = () => {
                                                 // ---------------------------------------
 
                                                 const bedTitle = isOccupied
-                                                    ? `Occupied by: ${occupant.name} (${occupant.gender})`
+                                                    ? `Occupied by: ${occupant.name} (${occupant.gender}) - Status: ${occStatus === 'checkedin' ? 'Checked In' : 'Allocated'}`
                                                     : `Available (${roomGenderDisplay})`;
 
                                                 return (
@@ -408,8 +416,9 @@ const StructureView = () => {
                                                         key={bed._id}
                                                         title={bedTitle}
                                                         onClick={() => isOccupied && setModalData({ isOpen: true, person: occupant })}
-                                                        className={`p-2 rounded-md text-center text-xs border transition-all duration-200 cursor-pointer ${bedStyle} ${bgColor}`}
+                                                        className={`p-2 rounded-md text-center text-xs border transition-all duration-200 cursor-pointer relative ${bedStyle} ${bgColor}`}
                                                     >
+                                                        {statusBadge}
                                                         <p className="font-bold text-gray-800 flex items-center justify-center">
                                                             {bed.name} {genderIcon}
                                                         </p>

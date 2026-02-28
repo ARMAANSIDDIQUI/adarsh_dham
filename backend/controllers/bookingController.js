@@ -123,10 +123,10 @@ exports.approveOrDeclineBooking = async (req, res) => {
                 return res.status(400).json({ message: 'Allocation details must be provided as an array for every person.' });
             }
 
-            // Helper to check if person is a young child (age ≤ 2)
+            // Helper to check if person is a young child (age < 4)
             const isYoungChild = (person) => {
                 return (person.gender === 'boy' || person.gender === 'girl') &&
-                    parseInt(person.age) <= 2;
+                    parseInt(person.age) < 4;
             };
 
             // Validate beds for non-children
@@ -290,10 +290,9 @@ exports.updateBooking = async (req, res) => {
             return res.status(403).json({ message: 'Not authorized.' });
         }
 
-        // --- GUARD: Non-admins cannot edit an approved booking ---
-        if (booking.status === 'approved' && !isAdmin) {
-            return res.status(403).json({ message: 'You cannot edit an approved booking. Please contact the admin.' });
-        }
+        // --- GUARD: Non-admins cannot ADD members or change dates of an approved booking ---
+        // We will validate shortly whether the user's edit is strictly reducing members.
+        // For now, allow the process to proceed and we will apply the validation in the user edit block.
 
         // If only updating showAllocationDetails flag (admin toggle)
         if (showAllocationDetails !== undefined && !formData) {
@@ -315,10 +314,10 @@ exports.updateBooking = async (req, res) => {
         const newPeople = formData.people || [];
         const wasApproved = booking.status === 'approved';
 
-        // Helper to check if person is a young child (age ≤ 2)
+        // Helper to check if person is a young child (age < 4)
         const isYoungChild = (person) => {
             return (person.gender === 'boy' || person.gender === 'girl') &&
-                parseInt(person.age) <= 2;
+                parseInt(person.age) < 4;
         };
 
         // -------------------------------------------------------
@@ -489,6 +488,57 @@ exports.updateBooking = async (req, res) => {
         let isReductionOrSame = true;
         let removedOldIndices = [];
 
+        // STRICT NON-ADMIN APPROVED BOOKING VALIDATION
+        if (wasApproved && !isAdmin) {
+            if (newPeople.length >= oldPeople.length) {
+                return res.status(400).json({ message: 'You can only remove members from an approved booking. To add members, please create a new booking.' });
+            }
+
+            // Ensure no new members were added (i.e. every new person must exist in old people)
+            let addedNewMember = false;
+            newPeople.forEach(np => {
+                const npId = np._id ? np._id.toString() : null;
+                let exists = false;
+                if (npId) {
+                    exists = oldPeople.some(op => op._id && op._id.toString() === npId);
+                } else {
+                    exists = oldPeople.some(op => op.name === np.name);
+                }
+                if (!exists) addedNewMember = true;
+            });
+
+            if (addedNewMember) {
+                return res.status(400).json({ message: 'You cannot add new members to an approved booking.' });
+            }
+
+            // Force the rest of the formData to remain exactly the same
+            formData.stayFrom = booking.formData.stayFrom;
+            formData.stayTo = booking.formData.stayTo;
+            formData.ashramName = booking.formData.ashramName;
+            formData.email = booking.formData.email;
+            formData.address = booking.formData.address;
+            formData.city = booking.formData.city;
+            formData.contactNumber = booking.formData.contactNumber;
+            formData.fillingForOthers = booking.formData.fillingForOthers;
+            formData.baijiMahatmaJi = booking.formData.baijiMahatmaJi;
+            formData.baijiContact = booking.formData.baijiContact;
+            formData.notes = booking.formData.notes;
+            // We adjust the counts to match the new people array
+            formData.numMales = newPeople.filter(p => p.gender === 'male').length;
+            formData.numFemales = newPeople.filter(p => p.gender === 'female').length;
+            formData.numBoys = newPeople.filter(p => p.gender === 'boy').length;
+            formData.numGirls = newPeople.filter(p => p.gender === 'girl').length;
+
+            // Ensure dates for each individual person are also not modified
+            newPeople.forEach((np, i) => {
+                const op = oldPeople.find(o => (np._id && o._id && np._id.toString() === o._id.toString()) || o.name === np.name);
+                if (op) {
+                    np.stayFrom = op.stayFrom;
+                    np.stayTo = op.stayTo;
+                }
+            });
+        }
+
         if (newPeople.length > oldPeople.length) {
             isReductionOrSame = false; // Cannot add members and keep it approved automatically
         } else {
@@ -520,7 +570,7 @@ exports.updateBooking = async (req, res) => {
 
             for (let i = 0; i < newPeople.length; i++) {
                 const personData = newPeople[i];
-                const allocation = allocations[i];
+                const allocation = newAllocations[i]; // Use newAllocations derived above
 
                 if (isYoungChild(personData) || !allocation?.bedId) continue;
 
@@ -561,12 +611,17 @@ exports.updateBooking = async (req, res) => {
                     const newStayFrom = personData.stayFrom || formData.stayFrom;
                     const newStayTo = personData.stayTo || formData.stayTo;
 
+                    // Match by either bedId or Name (fallback for no-bed cases like young kids)
+                    const searchCriteria = {
+                        bookingId: booking._id,
+                        $or: [
+                            { bedId: allocation?.bedId || null },
+                            { name: personData.name }
+                        ]
+                    };
+
                     await Person.findOneAndUpdate(
-                        {
-                            bookingId: booking._id,
-                            bedId: allocation?.bedId || null,
-                            name: personData.name
-                        },
+                        searchCriteria,
                         {
                             $set: {
                                 age: personData.age,
