@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FaBuilding, FaBed, FaMale, FaFemale, FaCheckCircle, FaTimesCircle, FaSearch, FaSync, FaExclamationCircle, FaSpinner, FaUserCheck, FaUserMinus, FaTimes, FaHashtag, FaHome, FaCity, FaPhone, FaUserTag, FaClock, FaInfoCircle, FaSignInAlt } from 'react-icons/fa';
 // Removed unused Button and RoomOccupantsModal imports that caused build errors
 import { useGetStructureQuery } from '../../redux/api/apiSlice'; // RTK Query hook
+import { useTranslation } from '../../hooks/useTranslation';
 
 /**
  * Normalizes gender strings (e.g., 'Boy', 'unisex' -> 'male', 'mixed').
@@ -113,6 +114,7 @@ const getMaxDateForMonth = (dateString) => {
 };
 
 const StructureView = () => {
+    const t = useTranslation();
     const { data: structureData, isLoading: loading, error: fetchError } = useGetStructureQuery();
 
     // Safely extract from structureData
@@ -407,9 +409,10 @@ const StructureView = () => {
                                                 }
                                                 // ---------------------------------------
 
+                                                const occStatusText = occStatus === 'checkedin' ? t.admin.structureView.checkedIn : t.admin.structureView.allocated;
                                                 const bedTitle = isOccupied
-                                                    ? `Occupied by: ${occupant.name} (${occupant.gender}) - Status: ${occStatus === 'checkedin' ? 'Checked In' : 'Allocated'}`
-                                                    : `Available (${roomGenderDisplay})`;
+                                                    ? `${t.admin.structureView.occupiedBy}${occupant.name} (${t.booking.genders?.[occupantGenderLower] || occupant.gender}) - ${t.admin.structureView.status}${occStatusText}`
+                                                    : `${t.admin.structureView.available} (${roomGenderDisplay})`;
 
                                                 return (
                                                     <div
@@ -423,7 +426,7 @@ const StructureView = () => {
                                                             {bed.name} {genderIcon}
                                                         </p>
                                                         <p className={`truncate ${textColor}`}>
-                                                            {isOccupied ? occupant.name : 'Available'}
+                                                            {isOccupied ? occupant.name : t.admin.structureView.available}
                                                         </p>
                                                     </div>
                                                 );

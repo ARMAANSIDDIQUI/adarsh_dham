@@ -6,8 +6,10 @@ import PhoneInput from '../common/PhoneInput.jsx';
 import api from '../../api/api.js';
 import { toast } from 'react-toastify';
 import { FaTimes, FaCalendarAlt, FaUser, FaSave } from 'react-icons/fa';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const EditBookingModal = ({ isOpen, booking, onClose, onUpdate }) => {
+    const t = useTranslation();
     const [formData, setFormData] = useState({});
     const [loading, setLoading] = useState(false);
     const [dateLimits, setDateLimits] = useState({ min: '', max: '' });
@@ -58,7 +60,7 @@ const EditBookingModal = ({ isOpen, booking, onClose, onUpdate }) => {
 
     const handleRemovePerson = (index) => {
         if (formData.people.length <= 1) {
-            toast.error("You cannot remove the last member.");
+            toast.error(t.booking.errors.removeLastMemberAdmin);
             return;
         }
 
@@ -69,7 +71,7 @@ const EditBookingModal = ({ isOpen, booking, onClose, onUpdate }) => {
         const remainingAdults = updatedPeople.filter(p => p.gender === 'male' || p.gender === 'female').length;
 
         if (remainingKids > 0 && remainingAdults === 0) {
-            toast.error("Children must be accompanied by at least one adult (male or female).");
+            toast.error(t.booking.errors.kidAdultRatio);
             return;
         }
 
@@ -236,7 +238,7 @@ const EditBookingModal = ({ isOpen, booking, onClose, onUpdate }) => {
                                                     className="text-white bg-red-500 hover:bg-red-600 rounded px-2 py-1 flex items-center shadow-sm"
                                                     title="Remove this member"
                                                 >
-                                                    <FaTimes className="mr-1" size={10} /> <span className="text-[10px]">Remove</span>
+                                                    <FaTimes className="mr-1" size={10} /> <span className="text-[10px]">{t.common?.remove || 'Remove'}</span>
                                                 </button>
                                             )}
                                         </div>

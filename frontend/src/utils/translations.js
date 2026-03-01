@@ -258,7 +258,8 @@ export const translations = {
         stayFrom: "Please note: You may opt for stay from 5 days before the event begins.",
         stayTo: "Please note: You may opt for stay up to 5 days after the event concludes.",
         yes: "Yes",
-        no: "No"
+        no: "No",
+        approvedEditNotice: "Editing an approved booking allows you to selectively CANCEL specific members from your stay. Adding members or changing dates is disabled to maintain allocations."
       },
       errors: {
         loadingEvent: "Loading...",
@@ -268,7 +269,10 @@ export const translations = {
         baijiRequired: "Baiji / Mahatma Ji's name and contact are mandatory.",
         contactLength: "Please enter a valid 10-digit contact number.",
         baijiContactLength: "Please enter a valid 10-digit Baiji / Mahatma Ji contact number.",
-        dateOrder: "Stay 'From' date cannot be after 'To' date."
+        dateOrder: "Stay 'From' date cannot be after 'To' date.",
+        removeLastMember: "You cannot remove the last member. To cancel the booking, please withdraw it from the dashboard.",
+        removeLastMemberAdmin: "You cannot remove the last member.",
+        kidAdultRatio: "Children must be accompanied by at least one adult (male or female)."
       },
       genders: {
         male: "Male",
@@ -384,6 +388,22 @@ export const translations = {
         error: "Failed to change password.",
         lengthError: "New password must be at least 6 characters long.",
         matchError: "New passwords do not match."
+      }
+    },
+    admin: {
+      structureView: {
+        checkedIn: "Checked In",
+        allocated: "Allocated",
+        occupiedBy: "Occupied by: ",
+        available: "Available",
+        status: "Status: "
+      },
+      manageAllocations: {
+        childLabel: "Child ≤4",
+        noBedNeededTitle: "No bed allocation needed for young child",
+        noBedNeededDesc: "Children aged 4 or below don't require a separate bed",
+        noBedAllocated: "No bed allocated (young child)",
+        buildingInfo: "Building {building}, Room {room}, Bed {bed}"
       }
     }
   },
@@ -638,7 +658,8 @@ export const translations = {
         stayFrom: "कृपया ध्यान दें: आप कार्यक्रम शुरू होने से 5 दिन पहले से रुकने का विकल्प चुन सकते हैं।",
         stayTo: "कृपया ध्यान दें: आप कार्यक्रम समाप्त होने के 5 दिन बाद तक रुकने का विकल्प चुन सकते हैं।",
         yes: "हाँ",
-        no: "नहीं"
+        no: "नहीं",
+        approvedEditNotice: "किसी स्वीकृत बुकिंग को संपादित करने से आप अपने प्रवास से विशिष्ट सदस्यों को चुनिंदा रूप से रद्द कर सकते हैं। आवंटन बनाए रखने के लिए सदस्यों को जोड़ना या तिथियां बदलना अक्षम है।"
       },
       errors: {
         loadingEvent: "लोड हो रहा है...",
@@ -648,7 +669,10 @@ export const translations = {
         baijiRequired: "बाईजी / महात्मा जी का नाम और संपर्क अनिवार्य है।",
         contactLength: "कृपया एक मान्य 10-अंकीय संपर्क नंबर दर्ज करें।",
         baijiContactLength: "कृपया एक मान्य 10-अंकीय बाईजी / महात्मा जी संपर्क नंबर दर्ज करें।",
-        dateOrder: "'से' तिथि 'तक' तिथि के बाद नहीं हो सकती।"
+        dateOrder: "'से' तिथि 'तक' तिथि के बाद नहीं हो सकती।",
+        removeLastMember: "आप अंतिम सदस्य को नहीं हटा सकते। बुकिंग रद्द करने के लिए, कृपया इसे डैशबोर्ड से वापस लें।",
+        removeLastMemberAdmin: "आप अंतिम सदस्य को नहीं हटा सकते।",
+        kidAdultRatio: "बच्चों के साथ कम से कम एक वयस्क (पुरुष या महिला) होना चाहिए।"
       },
       genders: {
         male: "पुरुष",
@@ -764,6 +788,22 @@ export const translations = {
         error: "पासवर्ड बदलने में विफल।",
         lengthError: "नया पासवर्ड कम से कम 6 अक्षरों का होना चाहिए।",
         matchError: "नए पासवर्ड मेल नहीं खाते।"
+      }
+    },
+    admin: {
+      structureView: {
+        checkedIn: "प्रवेशित (Checked In)",
+        allocated: "आवंटित",
+        occupiedBy: "द्वारा अधिकृत: ",
+        available: "उपलब्ध",
+        status: "स्थिति: "
+      },
+      manageAllocations: {
+        childLabel: "बच्चा ≤4",
+        noBedNeededTitle: "छोटे बच्चे के लिए बिस्तर आवंटन की आवश्यकता नहीं है",
+        noBedNeededDesc: "4 वर्ष या उससे कम उम्र के बच्चों के लिए अलग बिस्तर की आवश्यकता नहीं है",
+        noBedAllocated: "कोई बिस्तर आवंटित नहीं किया गया (छोटा बच्चा)",
+        buildingInfo: "भवन {building}, कमरा {room}, बिस्तर {bed}"
       }
     }
   }

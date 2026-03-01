@@ -105,7 +105,7 @@ const EditBookingModal = ({ booking, onClose, onUpdate }) => {
     if (!personToRemove) return;
 
     if (formData.people.length <= 1) {
-      toast.error("You cannot remove the last member. To cancel the booking, please withdraw it from the dashboard.");
+      toast.error(t.booking.errors.removeLastMember);
       return;
     }
 
@@ -116,7 +116,7 @@ const EditBookingModal = ({ booking, onClose, onUpdate }) => {
     const remainingAdults = remainingPeople.filter(p => p.gender === 'male' || p.gender === 'female').length;
 
     if (remainingKids > 0 && remainingAdults === 0) {
-      toast.error("Children must be accompanied by at least one adult (male or female).");
+      toast.error(t.booking.errors.kidAdultRatio);
       return;
     }
 
@@ -326,7 +326,7 @@ const EditBookingModal = ({ booking, onClose, onUpdate }) => {
                   </label>
                   {isApproved && (
                     <div className="mb-4 text-xs bg-yellow-100 text-yellow-800 p-2 rounded border border-yellow-200">
-                      Editing an approved booking allows you to selectively CANCEL specific members from your stay. Adding members or changing dates is disabled to maintain allocations.
+                      {t.booking.notices.approvedEditNotice}
                     </div>
                   )}
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

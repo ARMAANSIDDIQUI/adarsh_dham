@@ -13,6 +13,7 @@ import {
     useGetBuildingsQuery,
     useGetAllPeopleQuery,
 } from '../../redux/api/apiSlice';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const datesOverlap = (startA, endA, startB, endB) => {
     if (!startA || !endA || !startB || !endB) return false;
@@ -236,6 +237,7 @@ const AccordionItem = ({ title, children }) => {
     );
 };
 const BookingCard = ({ booking, onAction, onEdit, onReAllocate, allocations, handleAllocationChange, buildings, rooms, people, onShowRoomDetails, setError, readOnly = false }) => {
+    const t = useTranslation();
     const { formData = {}, userId = {}, status, _id: bookingId, bookingNumber, allocations: savedAllocations, eventId = {} } = booking || {};
     const pendingAllocations = allocations?.[bookingId] || [];
     const safeSavedAllocations = Array.isArray(savedAllocations) ? savedAllocations : [];
@@ -261,7 +263,7 @@ const BookingCard = ({ booking, onAction, onEdit, onReAllocate, allocations, han
     // Helper to check if person is a young child
     const isYoungChild = (person) => {
         return (person?.gender === 'boy' || person?.gender === 'girl') &&
-            parseInt(person?.age) <= 2;
+            parseInt(person?.age) < 4;
     };
 
     const allBedsAssigned = (formData.people?.length || 0) > 0 &&
@@ -466,8 +468,8 @@ const BookingCard = ({ booking, onAction, onEdit, onReAllocate, allocations, han
                                             // The zIndex is calculated to ensure each row stacks correctly
                                             const zIndex = (formData?.people?.length || 0) - index + 10;
 
-                                            // Check if person is a young child (≤2 years)
-                                            const isChildPerson = (person?.gender === 'boy' || person?.gender === 'girl') && parseInt(person?.age) <= 2;
+                                            // Check if person is a young child (< 4 years)
+                                            const isChildPerson = (person?.gender === 'boy' || person?.gender === 'girl') && parseInt(person?.age) < 4;
 
                                             return (
                                                 <div key={index} className={`p-4 bg-background/50 shadow-sm rounded-xl border border-primary/20 relative z-[${zIndex}] hover:border-primary/30 transition-colors`}>
@@ -477,7 +479,7 @@ const BookingCard = ({ booking, onAction, onEdit, onReAllocate, allocations, han
                                                             <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full capitalize font-body tracking-wider">({person?.gender || 'N/A'})</span>
                                                             {isChildPerson && (
                                                                 <span className="ml-2 text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200">
-                                                                    Child ≤2
+                                                                    {t.admin.manageAllocations.childLabel}
                                                                 </span>
                                                             )}
                                                         </p>
@@ -487,10 +489,10 @@ const BookingCard = ({ booking, onAction, onEdit, onReAllocate, allocations, han
                                                     {isChildPerson ? (
                                                         <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-center">
                                                             <p className="text-amber-700 font-medium text-sm">
-                                                                No bed allocation needed for young child
+                                                                {t.admin.manageAllocations.noBedNeededTitle}
                                                             </p>
                                                             <p className="text-amber-600 text-xs mt-1">
-                                                                Children aged 2 or below don't require a separate bed
+                                                                {t.admin.manageAllocations.noBedNeededDesc}
                                                             </p>
                                                         </div>
                                                     ) : (
@@ -573,7 +575,7 @@ const BookingCard = ({ booking, onAction, onEdit, onReAllocate, allocations, han
                                     <div className="space-y-3">
                                         {safeSavedAllocations.map((alloc, index) => {
                                             const person = formData?.people?.[index];
-                                            const isChildPerson = (person?.gender === 'boy' || person?.gender === 'girl') && parseInt(person?.age) <= 2;
+                                            const isChildPerson = (person?.gender === 'boy' || person?.gender === 'girl') && parseInt(person?.age) < 4;
 
                                             return (
                                                 <div key={index} className={`text-sm p-3 rounded-lg border ${isChildPerson ? 'bg-amber-50 border-amber-200' : 'bg-emerald-50 border-emerald-200'}`}>
@@ -581,15 +583,18 @@ const BookingCard = ({ booking, onAction, onEdit, onReAllocate, allocations, han
                                                         {person?.name || `Person ${index + 1}`}
                                                         {isChildPerson && (
                                                             <span className="ml-2 text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200">
-                                                                Child ≤2
+                                                                {t.admin.manageAllocations.childLabel}
                                                             </span>
                                                         )}:
                                                     </span>
                                                     {isChildPerson ? (
-                                                        <span className="text-amber-700 block sm:inline">No bed allocated (young child)</span>
+                                                        <span className="text-amber-700 block sm:inline">{t.admin.manageAllocations.noBedAllocated}</span>
                                                     ) : (
                                                         <span className="text-gray-600 block sm:inline">
-                                                            Building {alloc?.buildingId?.name || 'N/A'}, Room {alloc?.roomId?.roomNumber || 'N/A'}, Bed {alloc?.bedId?.name || 'N/A'}
+                                                            {t.admin.manageAllocations.buildingInfo
+                                                                .replace('{building}', alloc?.buildingId?.name || 'N/A')
+                                                                .replace('{room}', alloc?.roomId?.roomNumber || 'N/A')
+                                                                .replace('{bed}', alloc?.bedId?.name || 'N/A')}
                                                         </span>
                                                     )}
                                                 </div>
