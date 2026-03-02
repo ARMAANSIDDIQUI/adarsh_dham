@@ -263,7 +263,7 @@ const BookingCard = ({ booking, onAction, onEdit, onReAllocate, allocations, han
     // Helper to check if person is a young child
     const isYoungChild = (person) => {
         return (person?.gender === 'boy' || person?.gender === 'girl') &&
-            parseInt(person?.age) < 4;
+            parseInt(person?.age) <= 4;
     };
 
     const allBedsAssigned = (formData.people?.length || 0) > 0 &&
@@ -469,7 +469,7 @@ const BookingCard = ({ booking, onAction, onEdit, onReAllocate, allocations, han
                                             const zIndex = (formData?.people?.length || 0) - index + 10;
 
                                             // Check if person is a young child (< 4 years)
-                                            const isChildPerson = (person?.gender === 'boy' || person?.gender === 'girl') && parseInt(person?.age) < 4;
+                                            const isChildPerson = (person?.gender === 'boy' || person?.gender === 'girl') && parseInt(person?.age) <= 4;
 
                                             return (
                                                 <div key={index} className={`p-4 bg-background/50 shadow-sm rounded-xl border border-primary/20 relative z-[${zIndex}] hover:border-primary/30 transition-colors`}>
@@ -575,7 +575,7 @@ const BookingCard = ({ booking, onAction, onEdit, onReAllocate, allocations, han
                                     <div className="space-y-3">
                                         {safeSavedAllocations.map((alloc, index) => {
                                             const person = formData?.people?.[index];
-                                            const isChildPerson = (person?.gender === 'boy' || person?.gender === 'girl') && parseInt(person?.age) < 4;
+                                            const isChildPerson = (person?.gender === 'boy' || person?.gender === 'girl') && parseInt(person?.age) <= 4;
 
                                             return (
                                                 <div key={index} className={`text-sm p-3 rounded-lg border ${isChildPerson ? 'bg-amber-50 border-amber-200' : 'bg-emerald-50 border-emerald-200'}`}>

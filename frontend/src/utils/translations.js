@@ -404,6 +404,23 @@ export const translations = {
         noBedNeededDesc: "Children aged 4 or below don't require a separate bed",
         noBedAllocated: "No bed allocated (young child)",
         buildingInfo: "Building {building}, Room {room}, Bed {bed}"
+      },
+      reAllocateModal: {
+        title: "Re-Allocate Beds",
+        selectBuilding: "Select Building",
+        selectRoom: "Select Room",
+        selectBed: "Select Bed",
+        occupiedSelected: "(Occupied/Selected)",
+        pleaseSelectBed: "Please select a bed for:",
+        successMsg: "Allocations updated successfully",
+        failMsg: "Failed to update allocations",
+        person: "Person",
+        stay: "Stay",
+        saving: "Saving...",
+        saveAllocations: "Save Allocations",
+        searchPlaceholder: "Search...",
+        noOptions: "No options found.",
+        available: "available"
       }
     }
   },
@@ -804,6 +821,23 @@ export const translations = {
         noBedNeededDesc: "4 वर्ष या उससे कम उम्र के बच्चों के लिए अलग बिस्तर की आवश्यकता नहीं है",
         noBedAllocated: "कोई बिस्तर आवंटित नहीं किया गया (छोटा बच्चा)",
         buildingInfo: "भवन {building}, कमरा {room}, बिस्तर {bed}"
+      },
+      reAllocateModal: {
+        title: "बिस्तर पुनः आवंटित करें",
+        selectBuilding: "इमारत चुनें",
+        selectRoom: "कमरा चुनें",
+        selectBed: "बिस्तर चुनें",
+        occupiedSelected: "(अधिकृत/चयनित)",
+        pleaseSelectBed: "कृपया इनके लिए एक बिस्तर चुनें:",
+        successMsg: "आवंटन सफलतापूर्वक अपडेट किया गया",
+        failMsg: "आवंटन अपडेट करने में विफल",
+        person: "व्यक्ति",
+        stay: "प्रवास",
+        saving: "सहेजा जा रहा है...",
+        saveAllocations: "आवंटन सहेजें",
+        searchPlaceholder: "खोजें...",
+        noOptions: "कोई विकल्प नहीं मिला।",
+        available: "उपलब्ध"
       }
     }
   }

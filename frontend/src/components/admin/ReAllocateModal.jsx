@@ -4,9 +4,11 @@ import { FaTimes, FaSave, FaBed, FaChevronDown, FaSearch, FaInfoCircle } from 'r
 import Button from '../common/Button.jsx';
 import api from '../../api/api.js';
 import { toast } from 'react-toastify';
+import { useTranslation } from '../../hooks/useTranslation';
 
 // SearchableSelect borrowed from ManageAllocations to keep UI consistent
 const SearchableSelect = ({ options, value, onChange, placeholder, disabled = false }) => {
+    const t = useTranslation();
     const [searchTerm, setSearchTerm] = useState('');
     const [isOpen, setIsOpen] = useState(false);
     const wrapperRef = useRef(null);
@@ -75,7 +77,7 @@ const SearchableSelect = ({ options, value, onChange, placeholder, disabled = fa
                             <input
                                 ref={inputRef}
                                 type="text"
-                                placeholder="Search..."
+                                placeholder={t.admin.reAllocateModal.searchPlaceholder}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="w-full pl-8 pr-2 py-1 text-sm border-none focus:ring-0"
@@ -94,7 +96,7 @@ const SearchableSelect = ({ options, value, onChange, placeholder, disabled = fa
                                     </li>
                                 ))
                             ) : (
-                                <li className="p-2 text-sm text-gray-500 italic">No options found.</li>
+                                <li className="p-2 text-sm text-gray-500 italic">{t.admin.reAllocateModal.noOptions}</li>
                             )}
                         </ul>
                     </motion.div>
@@ -130,6 +132,7 @@ const datesOverlap = (startA, endA, startB, endB) => {
 };
 
 const ReAllocateModal = ({ isOpen, onClose, booking, buildings, rooms, people, onUpdate, onShowRoomDetails }) => {
+    const t = useTranslation();
     const [allocations, setAllocations] = useState([]);
     const [submitting, setSubmitting] = useState(false);
 
@@ -165,19 +168,51 @@ const ReAllocateModal = ({ isOpen, onClose, booking, buildings, rooms, people, o
         });
     };
 
-    const getBuildingOptions = (personData) => {
+    const getBuildingOptions = (personData, currentBooking) => {
         const safeBuildings = Array.isArray(buildings) ? buildings : [];
         let filteredBuildings = safeBuildings;
         if (personData && personData.gender) {
             filteredBuildings = safeBuildings.filter(b => !b.genderOption || b.genderOption === 'all' || b.genderOption.toLowerCase() === personData.gender.toLowerCase());
         }
-        return filteredBuildings.map(b => ({ value: b._id, label: b.name }));
+
+        const stayFrom = personData?.stayFrom || currentBooking?.formData?.stayFrom;
+        const stayTo = personData?.stayTo || currentBooking?.formData?.stayTo;
+
+        return filteredBuildings.map(b => {
+            const safeRooms = Array.isArray(rooms) ? rooms : [];
+            const bRooms = safeRooms.filter(r => String(r.buildingId?._id || r.buildingId) === String(b._id));
+
+            let totalBeds = 0;
+            let availableBedsCount = 0;
+
+            bRooms.forEach(r => {
+                const safeBeds = Array.isArray(r.beds) ? r.beds : [];
+                totalBeds += safeBeds.length;
+                safeBeds.forEach(bed => {
+                    const isBedOccupied = (people || []).some(person => {
+                        const bedIdStr = person.bedId?._id ? String(person.bedId._id) : String(person.bedId);
+                        if (bedIdStr !== String(bed._id)) return false;
+                        if (String(person.bookingId) === String(currentBooking?._id)) return false;
+                        return person.stayFrom && person.stayTo && datesOverlap(stayFrom, stayTo, person.stayFrom, person.checkOutTime || person.stayTo);
+                    });
+                    if (!isBedOccupied) availableBedsCount++;
+                });
+            });
+
+            return {
+                value: b._id,
+                label: `${b.name} (${availableBedsCount}/${totalBeds} ${t.admin.reAllocateModal.available})`
+            };
+        });
     };
 
-    const getRoomOptions = (currentAllocation, currentBooking) => {
+    const getRoomOptions = (currentAllocation, currentBooking, personData) => {
         if (!currentAllocation?.buildingId) return [];
         const safeRooms = Array.isArray(rooms) ? rooms : [];
         const buildingRooms = safeRooms.filter(r => String(r.buildingId?._id || r.buildingId) === String(currentAllocation.buildingId));
+
+        const stayFrom = personData?.stayFrom || currentBooking?.formData?.stayFrom;
+        const stayTo = personData?.stayTo || currentBooking?.formData?.stayTo;
 
         return buildingRooms.map(r => {
             const safeBeds = Array.isArray(r.beds) ? r.beds : [];
@@ -188,19 +223,19 @@ const ReAllocateModal = ({ isOpen, onClose, booking, buildings, rooms, people, o
                     const bedIdStr = person.bedId?._id ? String(person.bedId._id) : String(person.bedId);
                     if (bedIdStr !== String(bed._id)) return false;
                     if (String(person.bookingId) === String(currentBooking?._id)) return false; // Ignore current booking's own people
-                    return person.stayFrom && person.stayTo && datesOverlap(currentBooking?.formData?.stayFrom, currentBooking?.formData?.stayTo, person.stayFrom, person.checkOutTime || person.stayTo);
+                    return person.stayFrom && person.stayTo && datesOverlap(stayFrom, stayTo, person.stayFrom, person.checkOutTime || person.stayTo);
                 });
                 if (!isBedOccupied) availableBedsCount++;
             });
 
             return {
                 value: r._id,
-                label: `Room ${r.roomNumber} (${availableBedsCount} available)`
+                label: `Room ${r.roomNumber} (${availableBedsCount}/${safeBeds.length} ${t.admin.reAllocateModal.available})`
             };
         });
     };
 
-    const getBedOptions = (currentAllocation, currentBooking, personIndex) => {
+    const getBedOptions = (currentAllocation, currentBooking, personIndex, personData) => {
         if (!currentAllocation?.roomId) return [];
         const safeRooms = Array.isArray(rooms) ? rooms : [];
         const room = safeRooms.find(r => String(r._id) === String(currentAllocation.roomId));
@@ -212,26 +247,27 @@ const ReAllocateModal = ({ isOpen, onClose, booking, buildings, rooms, people, o
 
         const safeBeds = Array.isArray(room.beds) ? room.beds : [];
 
-        return safeBeds.map(bed => {
+        const stayFrom = personData?.stayFrom || currentBooking?.formData?.stayFrom;
+        const stayTo = personData?.stayTo || currentBooking?.formData?.stayTo;
+
+        const availableBeds = safeBeds.filter(bed => {
             const isBedGloballyOccupied = (people || []).some(person => {
                 const bedIdStr = person.bedId?._id ? String(person.bedId._id) : String(person.bedId);
                 if (bedIdStr !== String(bed._id)) return false;
                 if (String(person.bookingId) === String(currentBooking?._id)) return false;
-                return person.stayFrom && person.stayTo && datesOverlap(currentBooking?.formData?.stayFrom, currentBooking?.formData?.stayTo, person.stayFrom, person.checkOutTime || person.stayTo);
+                return person.stayFrom && person.stayTo && datesOverlap(stayFrom, stayTo, person.stayFrom, person.checkOutTime || person.stayTo);
             });
 
             const isSelectedByAnotherPersonInSameBooking = currentlySelectedBedIds.includes(String(bed._id));
             const isOccupied = isBedGloballyOccupied || isSelectedByAnotherPersonInSameBooking;
 
-            // Optional enhancement: disable occupied options or just label them
-            const label = isOccupied ? `${bed.name} (Occupied/Selected)` : bed.name;
-            return {
-                value: String(bed._id),
-                label: label,
-                // Add an actual disabled flag if we want SearchableSelect to gray it out
-                // For now, let's just let it show, but append "(Occupied/Selected)"
-            };
+            return !isOccupied; // Don't show occupied beds
         });
+
+        return availableBeds.map(bed => ({
+            value: String(bed._id),
+            label: bed.name
+        }));
     };
 
     const handleSave = async () => {
@@ -239,14 +275,14 @@ const ReAllocateModal = ({ isOpen, onClose, booking, buildings, rooms, people, o
         const formData = booking.formData;
         const missingBeds = [];
         formData.people.forEach((p, idx) => {
-            const isChild = (p.gender === 'boy' || p.gender === 'girl') && parseInt(p.age) <= 2;
+            const isChild = (p.gender === 'boy' || p.gender === 'girl') && parseInt(p.age) <= 4;
             if (!isChild && !allocations[idx]?.bedId) {
                 missingBeds.push(p.name);
             }
         });
 
         if (missingBeds.length > 0) {
-            toast.error(`Please select a bed for: ${missingBeds.join(', ')}`);
+            toast.error(`${t.admin.reAllocateModal.pleaseSelectBed} ${missingBeds.join(', ')}`);
             return;
         }
 
@@ -259,11 +295,11 @@ const ReAllocateModal = ({ isOpen, onClose, booking, buildings, rooms, people, o
                     notificationOption: 'dontSend'
                 }
             });
-            toast.success('Allocations updated successfully');
+            toast.success(t.admin.reAllocateModal.successMsg);
             onUpdate(res.data.booking || booking); // Assuming backend returns updated booking
             onClose();
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to update allocations');
+            toast.error(err.response?.data?.message || t.admin.reAllocateModal.failMsg);
         } finally {
             setSubmitting(false);
         }
@@ -282,7 +318,7 @@ const ReAllocateModal = ({ isOpen, onClose, booking, buildings, rooms, people, o
                     <div className="p-4 md:p-6 border-b flex justify-between items-center bg-background rounded-t-2xl">
                         <h3 className="text-xl md:text-2xl font-bold font-heading text-primaryDark flex items-center">
                             <FaBed className="mr-3 text-primary" />
-                            Re-Allocate Beds - {booking.bookingNumber}
+                            {t.admin.reAllocateModal.title} - {booking.bookingNumber}
                         </h3>
                         <button onClick={onClose} className="text-gray-500 hover:text-gray-700 p-2 border border-transparent hover:border-gray-200 rounded-lg transition-colors">
                             <FaTimes size={20} />
@@ -293,32 +329,32 @@ const ReAllocateModal = ({ isOpen, onClose, booking, buildings, rooms, people, o
                         <div className="space-y-4">
                             {(booking.formData?.people || []).map((person, index) => {
                                 const personAllocated = allocations[index] || {};
-                                const buildingOptions = getBuildingOptions(person);
-                                const roomOptions = getRoomOptions(personAllocated, booking);
-                                const bedOptions = getBedOptions(personAllocated, booking, index);
+                                const buildingOptions = getBuildingOptions(person, booking);
+                                const roomOptions = getRoomOptions(personAllocated, booking, person);
+                                const bedOptions = getBedOptions(personAllocated, booking, index, person);
                                 const zIndex = (booking.formData?.people?.length || 0) - index + 10;
-                                const isChildPerson = (person?.gender === 'boy' || person?.gender === 'girl') && parseInt(person?.age) <= 2;
+                                const isChildPerson = (person?.gender === 'boy' || person?.gender === 'girl') && parseInt(person?.age) <= 4;
 
                                 return (
                                     <div key={index} className={`p-4 bg-background/50 shadow-sm rounded-xl border border-primary/20 relative z-[${zIndex}] hover:border-primary/30 transition-colors`}>
                                         <div className="mb-3">
                                             <p className="font-bold text-primaryDark text-lg flex items-center gap-2">
-                                                {person?.name || `Person ${index + 1}`}
+                                                {person?.name || `${t.admin.reAllocateModal.person} ${index + 1}`}
                                                 <span className="text-xs font-medium text-gray-500 bg-background px-2 py-0.5 rounded-full capitalize">({person?.gender || 'N/A'})</span>
                                                 {isChildPerson && (
                                                     <span className="ml-2 text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200">
-                                                        Child ≤2
+                                                        {t.admin.manageAllocations.childLabel}
                                                     </span>
                                                 )}
                                             </p>
                                             <p className="text-xs font-semibold text-gray-500 mt-1 uppercase tracking-widest bg-background inline-block px-2 py-1 rounded-md">
-                                                Stay: <span className="text-gray-700">{formatDate(person.stayFrom)} - {formatDate(person.stayTo)}</span>
+                                                {t.admin.reAllocateModal.stay}: <span className="text-gray-700">{formatDate(person.stayFrom)} - {formatDate(person.stayTo)}</span>
                                             </p>
                                         </div>
 
                                         {isChildPerson ? (
                                             <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-center">
-                                                <p className="text-amber-700 font-medium text-sm">No bed allocation needed for young child</p>
+                                                <p className="text-amber-700 font-medium text-sm">{t.admin.manageAllocations.noBedNeededTitle}</p>
                                             </div>
                                         ) : (
                                             <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4">
@@ -326,7 +362,7 @@ const ReAllocateModal = ({ isOpen, onClose, booking, buildings, rooms, people, o
                                                     options={buildingOptions}
                                                     value={personAllocated.buildingId || ''}
                                                     onChange={(e) => handleAllocationChange(index, 'buildingId', e.target.value)}
-                                                    placeholder="Select Building"
+                                                    placeholder={t.admin.reAllocateModal.selectBuilding}
                                                 />
                                                 <div className="flex items-center space-x-2">
                                                     <div className="flex-1 min-w-0">
@@ -334,7 +370,7 @@ const ReAllocateModal = ({ isOpen, onClose, booking, buildings, rooms, people, o
                                                             options={roomOptions}
                                                             value={personAllocated.roomId || ''}
                                                             onChange={(e) => handleAllocationChange(index, 'roomId', e.target.value)}
-                                                            placeholder="Select Room"
+                                                            placeholder={t.admin.reAllocateModal.selectRoom}
                                                             disabled={!personAllocated.buildingId}
                                                         />
                                                     </div>
@@ -348,7 +384,7 @@ const ReAllocateModal = ({ isOpen, onClose, booking, buildings, rooms, people, o
                                                     options={bedOptions}
                                                     value={personAllocated.bedId || ''}
                                                     onChange={(e) => handleAllocationChange(index, 'bedId', e.target.value)}
-                                                    placeholder="Select Bed"
+                                                    placeholder={t.admin.reAllocateModal.selectBed}
                                                     disabled={!personAllocated.roomId}
                                                 />
                                             </div>
@@ -360,9 +396,9 @@ const ReAllocateModal = ({ isOpen, onClose, booking, buildings, rooms, people, o
                     </div>
 
                     <div className="p-4 border-t flex justify-end space-x-3 bg-background rounded-b-2xl">
-                        <Button onClick={onClose} className="bg-gray-300 hover:bg-gray-400 text-gray-800 min-w-[100px]">Cancel</Button>
+                        <Button onClick={onClose} className="bg-gray-300 hover:bg-gray-400 text-gray-800 min-w-[100px]">{t.common.cancel}</Button>
                         <Button onClick={handleSave} disabled={submitting} className="bg-primary hover:bg-primaryDark text-white min-w-[120px]">
-                            {submitting ? 'Saving...' : <><FaSave className="inline mr-2" /> Save Allocations</>}
+                            {submitting ? t.admin.reAllocateModal.saving : <><FaSave className="inline mr-2" /> {t.admin.reAllocateModal.saveAllocations}</>}
                         </Button>
                     </div>
                 </motion.div>

@@ -126,7 +126,7 @@ exports.approveOrDeclineBooking = async (req, res) => {
             // Helper to check if person is a young child (age < 4)
             const isYoungChild = (person) => {
                 return (person.gender === 'boy' || person.gender === 'girl') &&
-                    parseInt(person.age) < 4;
+                    parseInt(person.age) <= 4;
             };
 
             // Validate beds for non-children
@@ -134,7 +134,7 @@ exports.approveOrDeclineBooking = async (req, res) => {
                 const personData = booking.formData.people[i];
                 const allocation = allocations[i];
 
-                // Young children (≤2) don't require bed allocation
+                // Young children (≤4) don't require bed allocation
                 if (isYoungChild(personData)) {
                     continue; // Skip bed validation for young children
                 }
@@ -188,8 +188,10 @@ exports.approveOrDeclineBooking = async (req, res) => {
                 const isChildPerson = isYoungChild(personData);
                 return {
                     ...alloc,
+                    buildingId: alloc.buildingId || null,
+                    roomId: alloc.roomId || null,
                     isChild: isChildPerson,
-                    bedId: isChildPerson ? null : alloc.bedId
+                    bedId: isChildPerson ? null : (alloc.bedId || null)
                 };
             });
             booking.status = 'approved';
@@ -317,7 +319,7 @@ exports.updateBooking = async (req, res) => {
         // Helper to check if person is a young child (age < 4)
         const isYoungChild = (person) => {
             return (person.gender === 'boy' || person.gender === 'girl') &&
-                parseInt(person.age) < 4;
+                parseInt(person.age) <= 4;
         };
 
         // -------------------------------------------------------
