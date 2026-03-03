@@ -348,13 +348,70 @@ const OccupancyReport = () => {
                             className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-pink-500 focus:border-pink-500" />
                     </div>
 
-                    <DynamicDateInput
-                        label="From"
-                        name="startDate"
-                        value={filters.startDate}
-                        onChange={handleFilterChange}
-                        className="w-full"
-                    />
+                    <div className="space-y-2">
+                        <DynamicDateInput
+                            label="From"
+                            name="startDate"
+                            value={filters.startDate}
+                            onChange={handleFilterChange}
+                            className="w-full"
+                        />
+                        <div className="flex flex-wrap gap-2">
+                            <button
+                                onClick={() => {
+                                    const { firstDayOfMonth, lastDayOfMonth } = getIstDateBoundaries();
+                                    setFilters(prev => ({
+                                        ...prev,
+                                        startDate: formatDateForInput(firstDayOfMonth),
+                                        endDate: formatDateForInput(lastDayOfMonth)
+                                    }));
+                                }}
+                                className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded transition-colors"
+                            >
+                                This Month
+                            </button>
+                            <button
+                                onClick={() => {
+                                    const today = new Date();
+                                    const todayStr = today.toISOString().split('T')[0];
+                                    setFilters(prev => ({ ...prev, startDate: todayStr, endDate: todayStr }));
+                                }}
+                                className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded transition-colors"
+                            >
+                                Today
+                            </button>
+                            <button
+                                onClick={() => {
+                                    const start = new Date();
+                                    const end = new Date();
+                                    end.setDate(end.getDate() + 7);
+                                    setFilters(prev => ({
+                                        ...prev,
+                                        startDate: start.toISOString().split('T')[0],
+                                        endDate: end.toISOString().split('T')[0]
+                                    }));
+                                }}
+                                className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded transition-colors"
+                            >
+                                7 Days
+                            </button>
+                            <button
+                                onClick={() => {
+                                    const start = new Date();
+                                    const end = new Date();
+                                    end.setDate(end.getDate() + 30);
+                                    setFilters(prev => ({
+                                        ...prev,
+                                        startDate: start.toISOString().split('T')[0],
+                                        endDate: end.toISOString().split('T')[0]
+                                    }));
+                                }}
+                                className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded transition-colors"
+                            >
+                                30 Days
+                            </button>
+                        </div>
+                    </div>
 
                     <DynamicDateInput
                         label="To"
