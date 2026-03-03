@@ -8,11 +8,12 @@ import {
     FaBuilding, FaCheckCircle, FaTimesCircle, FaClock, FaFilePdf, FaPhone
 } from 'react-icons/fa';
 import DynamicDateInput from '../common/DynamicDateInput.jsx';
-import { useGetCheckinDataQuery } from '../../redux/api/apiSlice';
+import { useGetCheckinDataQuery, useGetEventsQuery } from '../../redux/api/apiSlice';
 
 // ── Helpers ───────────────────────────────────────────────────
-const todayISO = () => {
+const todayISO = (daysOffset = 0) => {
     const now = new Date();
+    if (daysOffset) now.setDate(now.getDate() + daysOffset);
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 };
 
@@ -268,7 +269,8 @@ const BookingCard = ({ booking, onPersonAction }) => {
 // ── Main Page ─────────────────────────────────────────────────
 const CheckInPage = () => {
     const [startDate, setStartDate] = useState(todayISO());
-    const [endDate, setEndDate] = useState(todayISO());
+    const [endDate, setEndDate] = useState(todayISO(3));
+    const [eventId, setEventId] = useState('');
     const [sortBy, setSortBy] = useState('date');
     const [sortOrder, setSortOrder] = useState('asc');
     const [searchTerm, setSearchTerm] = useState('');
@@ -284,12 +286,15 @@ const CheckInPage = () => {
     const queryParams = useMemo(() => ({
         startDate,
         endDate,
+        eventId,
         sortBy,
         sortOrder,
         searchTerm: debouncedSearch
-    }), [startDate, endDate, sortBy, sortOrder, debouncedSearch]);
+    }), [startDate, endDate, eventId, sortBy, sortOrder, debouncedSearch]);
 
     const { data: checkinData, isLoading: loading, isError, refetch } = useGetCheckinDataQuery(queryParams);
+    const { data: eventsData } = useGetEventsQuery();
+    const events = useMemo(() => eventsData || [], [eventsData]);
 
     useEffect(() => {
         if (checkinData?.bookings) {
@@ -297,15 +302,16 @@ const CheckInPage = () => {
         }
     }, [checkinData]);
 
+    const fetchData = useCallback(() => {
+        refetch();
+    }, [refetch]);
+
     useEffect(() => {
         if (isError) {
             toast.error('Failed to load check-in data.');
         }
     }, [isError]);
 
-    const fetchData = useCallback(() => {
-        refetch();
-    }, [refetch]);
 
     const handlePersonAction = async (personId, action) => {
         try {
@@ -386,18 +392,53 @@ const CheckInPage = () => {
                 <div className="flex flex-col gap-5">
                     {/* Top Row: Dates */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <DynamicDateInput
+                                label="From Date"
+                                name="startDate"
+                                value={startDate}
+                                onChange={e => setStartDate(e.target.value)}
+                            />
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => { setStartDate(todayISO()); setEndDate(todayISO()); }}
+                                    className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded transition-colors"
+                                >
+                                    Today
+                                </button>
+                                <button
+                                    onClick={() => { setStartDate(todayISO()); setEndDate(todayISO(3)); }}
+                                    className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded transition-colors"
+                                >
+                                    3 Days
+                                </button>
+                                <button
+                                    onClick={() => { setStartDate(todayISO()); setEndDate(todayISO(7)); }}
+                                    className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded transition-colors"
+                                >
+                                    7 Days
+                                </button>
+                            </div>
+                        </div>
                         <DynamicDateInput
-                            label="Check-in Date"
-                            name="startDate"
-                            value={startDate}
-                            onChange={e => setStartDate(e.target.value)}
-                        />
-                        <DynamicDateInput
-                            label="Check-out Date"
+                            label="To Date"
                             name="endDate"
                             value={endDate}
                             onChange={e => setEndDate(e.target.value)}
                         />
+                        <div className="w-full">
+                            <label className="text-sm font-semibold text-gray-700 mb-1 block">Filter by Event</label>
+                            <select
+                                value={eventId}
+                                onChange={e => setEventId(e.target.value)}
+                                className="w-full p-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary/20 outline-none h-[42px]"
+                            >
+                                <option value="">All Events</option>
+                                {events.map(ev => (
+                                    <option key={ev._id} value={ev._id}>{ev.name}</option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
 
                     {/* Bottom Row: Search & Sort */}

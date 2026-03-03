@@ -66,6 +66,7 @@ const ManageSatsang = () => {
 
     const [newLink, setNewLink] = useState({ name: '', url: '', youtubeEmbedUrl: '', liveFrom: '', liveTo: '' });
     const [error, setError] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
     const [editingLink, setEditingLink] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalData, setModalData] = useState({
@@ -84,6 +85,15 @@ const ManageSatsang = () => {
     const fetchLiveLinks = () => {
         refetch();
     };
+
+    const filteredLiveLinks = React.useMemo(() => {
+        if (!searchTerm.trim()) return liveLinks;
+        const lowSearch = searchTerm.toLowerCase();
+        return liveLinks.filter(link =>
+            link.name.toLowerCase().includes(lowSearch) ||
+            (link.url && link.url.toLowerCase().includes(lowSearch))
+        );
+    }, [liveLinks, searchTerm]);
 
     const handleAddLink = async (e) => {
         e.preventDefault();
@@ -239,7 +249,18 @@ const ManageSatsang = () => {
 
             {/* Existing Links Table */}
             <div className="bg-card shadow-soft rounded-2xl overflow-x-auto">
-                <h3 className="text-xl font-semibold font-heading p-4 text-primaryDark border-b border-background">Existing Live Links</h3>
+                <div className="p-4 border-b border-background flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <h3 className="text-xl font-semibold font-heading text-primaryDark">Existing Live Links ({filteredLiveLinks.length})</h3>
+                    <div className="relative w-full md:w-64">
+                        <input
+                            type="text"
+                            placeholder="Search satsangs..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full pl-3 pr-10 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                        />
+                    </div>
+                </div>
                 <table className="min-w-full divide-y divide-background">
                     <thead className="bg-background/50">
                         <tr>
@@ -251,7 +272,7 @@ const ManageSatsang = () => {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-background">
-                        {(Array.isArray(liveLinks) ? liveLinks : []).map(link => (
+                        {filteredLiveLinks.map(link => (
                             <tr key={link._id} className="hover:bg-background transition-colors">
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{link.name}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -278,9 +299,11 @@ const ManageSatsang = () => {
                                 </td>
                             </tr>
                         ))}
-                        {liveLinks.length === 0 && (
+                        {filteredLiveLinks.length === 0 && (
                             <tr className="border-b-0">
-                                <td colSpan="5" className="px-6 py-8 text-center text-gray-500">No live links have been set up yet.</td>
+                                <td colSpan="5" className="px-6 py-8 text-center text-gray-500">
+                                    {searchTerm ? 'No live links matching your search.' : 'No live links have been set up yet.'}
+                                </td>
                             </tr>
                         )}
                     </tbody>

@@ -16,6 +16,7 @@ const ManageShortLinks = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [currentId, setCurrentId] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
     const [linkToDelete, setLinkToDelete] = useState(null);
 
     useEffect(() => {
@@ -34,6 +35,16 @@ const ManageShortLinks = () => {
             setLoading(false);
         }
     };
+
+    const filteredLinks = React.useMemo(() => {
+        if (!searchTerm.trim()) return links;
+        const lowSearch = searchTerm.toLowerCase();
+        return links.filter(link =>
+            link.slug.toLowerCase().includes(lowSearch) ||
+            (link.targetUrl && link.targetUrl.toLowerCase().includes(lowSearch)) ||
+            (link.description && link.description.toLowerCase().includes(lowSearch))
+        );
+    }, [links, searchTerm]);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -166,7 +177,18 @@ const ManageShortLinks = () => {
 
             {/* List */}
             <div className="bg-card shadow-soft rounded-2xl overflow-x-auto mb-6">
-                <h3 className="text-xl font-semibold font-heading p-4 text-primaryDark border-b border-background">Existing Links</h3>
+                <div className="p-4 border-b border-background flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <h3 className="text-xl font-semibold font-heading text-primaryDark">Existing Links ({filteredLinks.length})</h3>
+                    <div className="relative w-full md:w-64">
+                        <input
+                            type="text"
+                            placeholder="Search links..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full pl-3 pr-10 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                        />
+                    </div>
+                </div>
                 <table className="min-w-full divide-y divide-background">
                     <thead className="bg-background/50">
                         <tr>
@@ -177,12 +199,14 @@ const ManageShortLinks = () => {
                         </tr>
                     </thead>
                     <tbody className="bg-card divide-y divide-background">
-                        {links.length === 0 ? (
+                        {filteredLinks.length === 0 ? (
                             <tr>
-                                <td colSpan="4" className="text-center py-6 text-gray-500">No custom links created yet.</td>
+                                <td colSpan="4" className="text-center py-6 text-gray-500">
+                                    {searchTerm ? 'No links matching your search.' : 'No custom links created yet.'}
+                                </td>
                             </tr>
                         ) : (
-                            links.map((link) => (
+                            filteredLinks.map((link) => (
                                 <tr key={link._id} className="hover:bg-background transition-colors">
                                     <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-primaryDark">
                                         <div className="flex items-center space-x-2">

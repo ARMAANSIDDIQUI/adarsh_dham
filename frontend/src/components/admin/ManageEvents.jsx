@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import api from '../../api/api.js';
 import Button from '../common/Button.jsx';
@@ -66,6 +66,7 @@ const ManageEvents = () => {
     const [editingEvent, setEditingEvent] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalData, setModalData] = useState({ title: '', message: '', onConfirm: () => { }, onCancel: () => { }, confirmText: '', isAlert: false });
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         if (isError) setError('Failed to fetch events.');
@@ -74,6 +75,15 @@ const ManageEvents = () => {
     const fetchEvents = () => {
         refetch();
     };
+
+    const filteredEventsList = useMemo(() => {
+        if (!searchTerm.trim()) return events;
+        const lowSearch = searchTerm.toLowerCase();
+        return events.filter(ev =>
+            ev.name.toLowerCase().includes(lowSearch) ||
+            (ev.location && ev.location.toLowerCase().includes(lowSearch))
+        );
+    }, [events, searchTerm]);
 
     const validateDates = (eventData) => {
         const { startDate, endDate, bookingStartDate, bookingEndDate } = eventData;
@@ -172,16 +182,47 @@ const ManageEvents = () => {
         setIsModalOpen(true);
     };
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Normalize today to start of day for consistent comparison
+
+    const { finishedEvents, ongoingEvents, upcomingEvents } = useMemo(() => {
+        const finished = [];
+        const ongoing = [];
+        const upcoming = [];
+
+        filteredEventsList.forEach(event => {
+            const startDate = new Date(event.startDate);
+            const endDate = new Date(event.endDate);
+            endDate.setHours(23, 59, 59, 999); // Normalize end date to end of day
+
+            if (endDate < today) {
+                finished.push(event);
+            } else if (startDate <= today && endDate >= today) {
+                ongoing.push(event);
+            } else {
+                upcoming.push(event);
+            }
+        });
+        return { finishedEvents: finished, ongoingEvents: ongoing, upcomingEvents: upcoming };
+    }, [filteredEventsList, today]);
+
     if (loading) return <div className="text-center mt-10 text-xl text-primary font-body"><FaSpinner className="animate-spin inline mr-2" /> Loading Events...</div>;
 
-    const today = new Date();
-    const finishedEvents = Array.isArray(events) ? events.filter(e => new Date(e.endDate) < today) : [];
-    const ongoingEvents = Array.isArray(events) ? events.filter(e => new Date(e.startDate) <= today && new Date(e.endDate) >= today) : [];
-    const upcomingEvents = Array.isArray(events) ? events.filter(e => new Date(e.startDate) > today) : [];
 
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-8 bg-neutral min-h-screen font-body">
-            <h2 className="text-3xl md:text-4xl font-bold text-primaryDark font-heading mb-6 border-b-2 border-primary pb-2">Manage Events</h2>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                <h2 className="text-3xl md:text-4xl font-bold font-heading text-primaryDark border-b-2 border-primary pb-2 flex-grow">Manage Events</h2>
+                <div className="relative w-full md:w-64">
+                    <input
+                        type="text"
+                        placeholder="Search events..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full pl-3 pr-10 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                    />
+                </div>
+            </div>
             {error && <div className="bg-red-100 text-red-700 p-3 rounded-xl mb-6 text-center shadow-md">{error}</div>}
 
             <div className="bg-card p-6 rounded-2xl shadow-soft mb-8">

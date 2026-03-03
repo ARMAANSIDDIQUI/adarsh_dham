@@ -79,7 +79,7 @@ exports.undoCheckIn = async (req, res) => {
 // ──────────────────────────────────────────────────────────────
 exports.getCheckInData = async (req, res) => {
     try {
-        const { startDate, endDate, searchTerm = '', eventId = '' } = req.query;
+        const { startDate, endDate, searchTerm = '', eventId = '', sortBy = 'date', sortOrder = 'asc' } = req.query;
 
         // Default to today if no dates supplied
         const today = new Date();
@@ -91,7 +91,7 @@ exports.getCheckInData = async (req, res) => {
         const dayEnd = new Date(end);
         dayEnd.setUTCHours(23, 59, 59, 999);
 
-        // Guests whose stay overlaps with the selected date range
+        // Match stage for basic filters
         const matchStage = {
             stayFrom: { $lte: dayEnd },
             stayTo: { $gte: dayStart },
@@ -101,29 +101,41 @@ exports.getCheckInData = async (req, res) => {
             matchStage.eventId = new mongoose.Types.ObjectId(eventId);
         }
 
+        const pipeline = [
+            { $match: matchStage },
+            // Join with User (booking creator)
+            { $lookup: { from: 'users', localField: 'userId', foreignField: '_id', as: 'user' } },
+            { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
+            // Join with Event
+            { $lookup: { from: 'events', localField: 'eventId', foreignField: '_id', as: 'event' } },
+            { $unwind: { path: '$event', preserveNullAndEmptyArrays: true } },
+            // Join with Bed/Room/Building for detailed info
+            { $lookup: { from: 'beds', localField: 'bedId', foreignField: '_id', as: 'bed' } },
+            { $unwind: { path: '$bed', preserveNullAndEmptyArrays: true } },
+            { $lookup: { from: 'rooms', localField: 'bed.roomId', foreignField: '_id', as: 'room' } },
+            { $unwind: { path: '$room', preserveNullAndEmptyArrays: true } },
+            { $lookup: { from: 'buildings', localField: 'room.buildingId', foreignField: '_id', as: 'building' } },
+            { $unwind: { path: '$building', preserveNullAndEmptyArrays: true } },
+        ];
+
+        // Search match stage
         if (searchTerm) {
-            matchStage.$or = [
-                { name: { $regex: searchTerm, $options: 'i' } },
-                { bookingNumber: { $regex: searchTerm, $options: 'i' } },
-                { ashramName: { $regex: searchTerm, $options: 'i' } },
-                { city: { $regex: searchTerm, $options: 'i' } },
-            ];
+            pipeline.push({
+                $match: {
+                    $or: [
+                        { name: { $regex: searchTerm, $options: 'i' } },
+                        { bookingNumber: { $regex: searchTerm, $options: 'i' } },
+                        { ashramName: { $regex: searchTerm, $options: 'i' } },
+                        { city: { $regex: searchTerm, $options: 'i' } },
+                        { 'user.name': { $regex: searchTerm, $options: 'i' } },
+                        { 'user.email': { $regex: searchTerm, $options: 'i' } },
+                        { 'user.phone': { $regex: searchTerm, $options: 'i' } }
+                    ]
+                }
+            });
         }
 
-        const people = await Person.find(matchStage)
-            .populate({
-                path: 'bedId',
-                select: 'name',
-                populate: {
-                    path: 'roomId',
-                    select: 'roomNumber gender',
-                    populate: { path: 'buildingId', select: 'name' }
-                }
-            })
-            .populate('eventId', 'name')
-            .populate('checkInBy', 'name')
-            .populate('checkOutBy', 'name')
-            .lean();
+        const people = await Person.aggregate(pipeline);
 
         // Group by bookingId
         const grouped = {};
@@ -136,18 +148,31 @@ exports.getCheckInData = async (req, res) => {
                     ashramName: person.ashramName,
                     contactNumber: person.contactNumber,
                     city: person.city,
-                    eventName: person.eventId?.name || '',
+                    eventName: person.event?.name || '',
                     stayFrom: person.stayFrom,
                     stayTo: person.stayTo,
-                    members: []
+                    members: [],
+                    // Keep user info for reference if needed
+                    creator: person.user ? { name: person.user.name, phone: person.user.phone } : null
                 };
             }
-            grouped[key].members.push(person);
+
+            // Shape the member data to match what the frontend expects (bedId with populated path)
+            const shapedMember = {
+                ...person,
+                bedId: person.bed ? {
+                    ...person.bed,
+                    roomId: person.room ? {
+                        ...person.room,
+                        buildingId: person.building
+                    } : null
+                } : null
+            };
+            grouped[key].members.push(shapedMember);
         }
 
         // Convert to array and Sort
         let bookingsArr = Object.values(grouped);
-        const { sortBy = 'date', sortOrder = 'asc' } = req.query;
         const order = sortOrder === 'desc' ? -1 : 1;
 
         bookingsArr.sort((a, b) => {
@@ -272,6 +297,8 @@ exports.getPeoplePaginated = async (req, res) => {
                 { bookingNumber: { $regex: searchTerm, $options: 'i' } },
                 { city: { $regex: searchTerm, $options: 'i' } },
                 { 'user.name': { $regex: searchTerm, $options: 'i' } },
+                { 'user.email': { $regex: searchTerm, $options: 'i' } },
+                { 'user.phone': { $regex: searchTerm, $options: 'i' } },
                 { 'building.name': { $regex: searchTerm, $options: 'i' } },
                 { 'room.roomNumber': { $regex: searchTerm, $options: 'i' } },
                 { 'bed.name': { $regex: searchTerm, $options: 'i' } },
