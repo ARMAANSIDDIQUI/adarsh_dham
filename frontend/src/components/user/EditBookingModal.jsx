@@ -50,7 +50,7 @@ const EditBookingModal = ({ booking, onClose, onUpdate }) => {
   const [submitLoading, setSubmitLoading] = useState(false);
   const [error, setError] = useState('');
   const [validationError, setValidationError] = useState(null);
-  useGetEventByIdQuery(booking?.eventId, {
+  const { data: event } = useGetEventByIdQuery(booking?.eventId, {
     skip: !booking?.eventId,
   });
 

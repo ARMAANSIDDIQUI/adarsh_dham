@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../api/api.js';
 import DynamicDateInput from '../common/DynamicDateInput.jsx';
@@ -12,6 +12,7 @@ import {
     useGetRoomsQuery,
     useGetBuildingsQuery,
     useGetAllPeopleQuery,
+    useGetEventByIdQuery,
 } from '../../redux/api/apiSlice';
 import { useTranslation } from '../../hooks/useTranslation';
 
@@ -239,6 +240,7 @@ const AccordionItem = ({ title, children }) => {
 const BookingCard = ({ booking, onAction, onEdit, onReAllocate, allocations, handleAllocationChange, buildings, rooms, people, onShowRoomDetails, setError, readOnly = false }) => {
     const t = useTranslation();
     const { formData = {}, userId = {}, status, _id: bookingId, bookingNumber, allocations: savedAllocations } = booking || {};
+    const { data: event } = useGetEventByIdQuery(booking?.eventId);
     const pendingAllocations = allocations?.[bookingId] || [];
     const safeSavedAllocations = Array.isArray(savedAllocations) ? savedAllocations : [];
     const [notificationOption, setNotificationOption] = useState('dontSend');
@@ -422,7 +424,7 @@ const BookingCard = ({ booking, onAction, onEdit, onReAllocate, allocations, han
                                     <p><strong>Booked On:</strong> {formatDate(booking.createdAt)}</p>
                                     <p><strong>Group:</strong> {(formData?.people?.length) || 0} People</p>
                                     <p className="col-span-full"><strong>Stay:</strong> {formatDate(formData?.stayFrom)} to {formatDate(formData?.stayTo)}</p>
-                                    <p className="col-span-full"><strong>Event:</strong> {booking.eventId?.name || 'N/A'}</p>
+                                    <p className="col-span-full"><strong>Event:</strong> {event?.name || 'N/A'}</p>
                                 </div>
 
                                 <AccordionItem title="Members">
