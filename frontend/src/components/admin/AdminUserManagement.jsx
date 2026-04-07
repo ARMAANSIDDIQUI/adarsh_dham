@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../api/api.js';
 import Button from '../common/Button.jsx';
-import { FaSpinner, FaLock, FaUser, FaCheck, FaTimes, FaKey, FaSearch, FaEye, FaEyeSlash, FaEdit, FaSave, FaTrash } from 'react-icons/fa'; // Added FaEdit, FaSave, FaTrash
+import { FaSpinner, FaLock, FaUser, FaCheck, FaTimes, FaKey, FaSearch, FaEye, FaEyeSlash, FaEdit, FaSave, FaTrash, FaCheckCircle, FaTimesCircle } from 'react-icons/fa'; // Added FaEdit, FaSave, FaTrash, FaCheckCircle, FaTimesCircle
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-toastify';
 import PhoneInput, { validatePhoneNumber } from '../common/PhoneInput.jsx';
@@ -418,7 +418,16 @@ const AdminUserManagement = () => {
                         {filteredUsers.length > 0 ? filteredUsers.map(user => (
                             <tr key={user._id} className="hover:bg-background transition-colors">
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-700">{user.name}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.email || '-'}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 flex items-center space-x-2">
+                                    <span>{user.email || '-'}</span>
+                                    {user.email && (
+                                        user.isEmailVerified ? (
+                                            <FaCheckCircle className="text-green-500" title="Verified" />
+                                        ) : (
+                                            <FaTimesCircle className="text-red-500" title="Unverified" />
+                                        )
+                                    )}
+                                </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.phone}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm capitalize text-gray-700">{user.roles ? user.roles.join(', ') : 'User'}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm flex space-x-2">

@@ -12,8 +12,8 @@ const EmailVerificationNag = () => {
     useEffect(() => {
         if (!isAuthenticated || !user) return;
 
-        // Check if user has email
-        if (user.email) return;
+        // Check if user has verified email
+        if (user.email && user.isEmailVerified) return;
 
         // Check last nag time
         const checkAndShow = () => {

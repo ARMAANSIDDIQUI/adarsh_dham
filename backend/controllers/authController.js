@@ -44,6 +44,7 @@ exports.register = async (req, res) => {
       name,
       phone,
       email,
+      isEmailVerified: true,
       passwordHash,
       roles: ['user']
     });
@@ -123,6 +124,7 @@ exports.login = async (req, res) => {
         name: user.name,
         phone: user.phone,
         email: user.email,
+        isEmailVerified: user.isEmailVerified,
         roles: user.roles
       }
     });
@@ -154,6 +156,7 @@ exports.getMe = async (req, res) => {
         name: user.name,
         phone: user.phone,
         email: user.email,
+        isEmailVerified: user.isEmailVerified,
         roles: user.roles
       },
       bookings: user.bookings.filter(b => b.eventId)
@@ -249,7 +252,7 @@ exports.checkRecoveryMethod = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    if (user.email) {
+    if (user.email && user.isEmailVerified) {
       // Mask email
       const [local, domain] = user.email.split('@');
       const maskedLocal = local.length > 2 ? local[0] + '***' + local[local.length - 1] : local + '***';

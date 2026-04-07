@@ -16,6 +16,10 @@ const userSchema = new Schema({
     unique: true,
     sparse: true
   },
+  isEmailVerified: {
+    type: Boolean,
+    default: false
+  },
   passwordHash: {
     type: String,
     required: true
