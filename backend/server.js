@@ -49,12 +49,10 @@ webpush.setVapidDetails(
 //SECURE CORS CONFIGURATION
 const allowedOrigins = [
   'http://localhost:3000',
-  'http://localhost:5000',
   'http://localhost:5173',
-  'https://adarsh-dham-backend.onrender.com',
-  'https://adarsh-dham-9vio.vercel.app',
   'https://adarsh-dham-frontend.vercel.app',
   'https://adarshdham.com',
+  'https://adarshdham.vercel.app',
   // Vercel single deployment — all *.vercel.app subdomains
   process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
   process.env.FRONTEND_URL || null,
