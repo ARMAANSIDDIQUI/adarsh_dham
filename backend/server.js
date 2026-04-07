@@ -37,7 +37,7 @@ const emailRoutes = require('./routes/emailRoutes');
 const { createAndSaveNotification } = require('./utils/notificationHelper');
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 // Set VAPID details for web-push
 webpush.setVapidDetails(
@@ -48,13 +48,17 @@ webpush.setVapidDetails(
 
 //SECURE CORS CONFIGURATION
 const allowedOrigins = [
+  'http://localhost:3000',
   'http://localhost:5000',
   'http://localhost:5173',
   'https://adarsh-dham-backend.onrender.com',
   'https://adarsh-dham-9vio.vercel.app',
   'https://adarsh-dham-frontend.vercel.app',
-  'https://adarshdham.com'
-];
+  'https://adarshdham.com',
+  // Vercel single deployment — all *.vercel.app subdomains
+  process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
+  process.env.FRONTEND_URL || null,
+].filter(Boolean);
 
 const corsOptions = {
   origin: (origin, callback) => {
@@ -239,19 +243,24 @@ app.use('/api/email', emailRoutes);
 const shortLinkRoutes = require('./routes/shortLinkRoutes');
 app.use('/api/admin/short-links', shortLinkRoutes);
 
-// --- SERVE FRONTEND ---
-// 1. Serve static files from the 'build' folder
-app.use(express.static(path.join(__dirname, 'build')));
+// --- SERVE FRONTEND (disabled on Vercel — handled by experimentalServices) ---
+// app.use(express.static(path.join(__dirname, 'build')));
+// app.get('*', (req, res) => {
+//   res.sendFile(path.join(__dirname, 'build', 'index.html'));
+// });
 
 // --- SHORT LINK REDIRECT HANDLER ---
+// Note: On Vercel single deployment the frontend handles routing,
+// so this only catches /:slug requests that reach the backend service.
 const { handleRedirect } = require('./controllers/shortLinkController');
-app.get('/:slug', handleRedirect); // Server-side redirect
+app.get('/:slug', handleRedirect);
 
-// 2. Handle React routing, return all non-API requests to index.html
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'build', 'index.html'));
-});
+// Export app for Vercel serverless handler
+module.exports = app;
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// Start server only when running directly (not imported by Vercel)
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
