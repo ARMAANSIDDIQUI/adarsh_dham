@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // On Vercel single deployment the backend is served at /_/backend
 // REACT_APP_API_BASE_URL overrides this for local dev or external backends
-const API_URL = process.env.REACT_APP_API_BASE_URL || '/_/backend';
+const API_URL = process.env.REACT_APP_API_BASE_URL || (window.location.hostname === 'localhost' ? 'http://localhost:5000' : '/_/backend');
 
 const api = axios.create({
     baseURL: `${API_URL}/api`,
