@@ -1,12 +1,11 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
 import UpdateProfileForm from './UpdateProfileForm';
 import ChangePasswordForm from './ChangePasswordForm';
 import { useTranslation } from '../../hooks/useTranslation';
 
 const UserProfile = () => {
-    const { user } = useSelector((state) => state.auth);
+
     const t = useTranslation();
 
     return (

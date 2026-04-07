@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import api from '../../api/api.js';
+import { useDispatch, useSelector } from 'react-redux';
+
 import NotificationsList from '../shared/NotificationsList.jsx';
 import { FaSpinner } from 'react-icons/fa';
-import { useDispatch, useSelector } from 'react-redux';
 import { markAllAsRead } from '../../redux/slices/notificationSlice.js';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useGetNotificationsQuery, apiSlice } from '../../redux/api/apiSlice';
@@ -12,7 +12,7 @@ const UserNotifications = () => {
     const t = useTranslation();
     const token = useSelector((state) => state.auth.token);
     const [notifications, setNotifications] = useState([]);
-    const [loading, setLoading] = useState(true);
+
     const [error, setError] = useState(null);
     const [isMarkingAll, setIsMarkingAll] = useState(false);
     const dispatch = useDispatch();

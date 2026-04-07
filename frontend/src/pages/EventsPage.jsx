@@ -161,8 +161,8 @@ input[type="date"]:focus {
 
 const EventsPage = () => {
   const t = useTranslation();
-  const { data: rawEvents, isLoading: loading, isError } = useGetEventsQuery();
-  const events = Array.isArray(rawEvents) ? rawEvents : [];
+  const { data: rawEvents, isLoading, isError } = useGetEventsQuery();
+  const events = useMemo(() => Array.isArray(rawEvents) ? rawEvents : [], [rawEvents]);
   const error = isError ? t.events.error : null;
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -189,11 +189,11 @@ const EventsPage = () => {
   }, [selectedDate]);
 
   useEffect(() => {
-    if (!loading && date && events.length > 0) {
+    if (!isLoading && date && events.length > 0) {
       scrollToEvents(date);
       setViewMode("list");
     }
-  }, [loading, date, events]);
+  }, [isLoading, date, events]);
 
   const scrollToEvents = (dateString) => {
     if (!eventListRef.current) return;
@@ -362,7 +362,7 @@ const EventsPage = () => {
     return null;
   };
 
-  if (loading)
+  if (isLoading)
     return (
       <div className="text-center p-10 flex justify-center items-center min-h-screen bg-neutral font-body">
         <FaSpinner className="animate-spin mr-3 text-primary text-4xl" />

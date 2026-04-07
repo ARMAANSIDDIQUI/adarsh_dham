@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { motion } from 'framer-motion';
+
 import BookingForm from '../components/user/BookingForm';
 import api from '../api/api';
 import SuccessModal from '../components/common/SuccessModal';

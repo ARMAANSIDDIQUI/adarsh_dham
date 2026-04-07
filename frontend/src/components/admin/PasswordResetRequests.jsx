@@ -8,7 +8,7 @@ import { toast } from 'react-toastify';
 import { useGetPendingPasswordRequestsQuery } from '../../redux/api/apiSlice';
 
 const PasswordResetRequests = () => {
-    const { data: rawRequests, isLoading: loading, isError, refetch } = useGetPendingPasswordRequestsQuery();
+    const { data: rawRequests, isLoading, isError } = useGetPendingPasswordRequestsQuery();
     const [requests, setRequests] = useState([]);
     const [error, setError] = useState('');
 
@@ -46,7 +46,7 @@ const PasswordResetRequests = () => {
                 <p className="mt-2">You can reset passwords from the <Link to="/admin/user-management" className="font-semibold underline hover:text-primaryDark">User Management</Link> page.</p>
             </div>
 
-            {loading ? (
+            {isLoading ? (
                 <div className="flex justify-center p-8"><FaSpinner className="animate-spin text-primary text-4xl" /></div>
             ) : error ? (
                 <p className="text-highlight bg-highlight/10 p-3 rounded-xl text-center shadow-soft">{error}</p>

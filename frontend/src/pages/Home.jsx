@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { } from "react-redux";
 import axios from "axios";
 import { useTranslation } from "../hooks/useTranslation";
 import { usePWA } from "../context/PWAContext";
@@ -244,7 +244,7 @@ const Home = () => {
   const [direction, setDirection] = useState(1);
 
   // Define carousel images inside component to use translations
-  const carouselImages = [
+  const carouselImages = React.useMemo(() => [
     {
       id: 1,
       src: "/VM401196.JPG",
@@ -263,9 +263,10 @@ const Home = () => {
       title: t.home.carousel.slide3.title,
       subtitle: t.home.carousel.slide3.subtitle,
     },
-  ];
+  ], [t]);
 
   const numSlides = carouselImages.length;
+  const numSlidesMemo = numSlides; // for dependency array
 
   // Preload images
   useEffect(() => {
@@ -311,7 +312,7 @@ const Home = () => {
     };
 
     loadAllImages();
-  }, []);
+  }, [carouselImages]);
 
   // Handle Event Modal Opening after Welcome is done
   useEffect(() => {
@@ -387,6 +388,11 @@ const Home = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const slide = React.useCallback((dir) => {
+    setDirection(dir);
+    setCurrentSlide((prev) => (prev + dir + numSlidesMemo) % numSlidesMemo);
+  }, [numSlidesMemo]);
+
   // Auto-slide every 10 seconds — disabled if live video exists
   useEffect(() => {
     if (!imagesLoaded) return;
@@ -396,12 +402,7 @@ const Home = () => {
 
     const interval = setInterval(() => slide(1), 10000);
     return () => clearInterval(interval);
-  }, [currentSlide, imagesLoaded, liveLinks]);
-
-  const slide = (dir) => {
-    setDirection(dir);
-    setCurrentSlide((prev) => (prev + dir + numSlides) % numSlides);
-  };
+  }, [imagesLoaded, liveLinks, slide]);
 
   const variants = {
     enter: (dir) => ({

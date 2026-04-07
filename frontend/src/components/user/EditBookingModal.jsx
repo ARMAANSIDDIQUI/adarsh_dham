@@ -74,7 +74,7 @@ const EditBookingModal = ({ booking, onClose, onUpdate }) => {
         stayTo: booking.formData.stayTo ? new Date(booking.formData.stayTo).toISOString().split('T')[0] : '',
       });
     }
-  }, [booking?.formData, booking?._id]);
+  }, [booking, booking?.formData, booking?._id]);
 
   const handleGroupChange = e => {
     const { name, value } = e.target;
@@ -214,7 +214,6 @@ const EditBookingModal = ({ booking, onClose, onUpdate }) => {
       .map((p, i) => ({ p, i }))
       .filter(({ p }) => p.gender === gender)
       .map(({ p, i }, idx) => {
-        const todayIST = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
         return (
           <div key={i} className="grid grid-cols-2 gap-4 pt-4 border-b-2 border-background pb-4 last:border-b-0 relative group">
             <div className="col-span-2 flex justify-between items-center">
@@ -265,8 +264,8 @@ const EditBookingModal = ({ booking, onClose, onUpdate }) => {
             <div>
               <h3 className="text-xl font-semibold font-heading text-primaryDark mb-4 border-b border-background pb-2">{t.booking.sections.stay}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <ThemedInput label={t.booking.fields.from} name="stayFrom" value={formData.stayFrom} onChange={handleChange} required type="date" icon={<FaCalendarAlt />} min={new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }) || minStay} max={maxStay} disabled={isApproved} />
-                <ThemedInput label={t.booking.fields.to} name="stayTo" value={formData.stayTo} onChange={handleChange} required type="date" icon={<FaCalendarAlt />} min={formData.stayFrom || new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }) || minStay} max={maxStay} disabled={isApproved} />
+                <ThemedInput label={t.booking.fields.from} name="stayFrom" value={formData.stayFrom} onChange={handleChange} required type="date" icon={<FaCalendarAlt />} min={minStay} max={maxStay} disabled={isApproved} />
+                <ThemedInput label={t.booking.fields.to} name="stayTo" value={formData.stayTo} onChange={handleChange} required type="date" icon={<FaCalendarAlt />} min={formData.stayFrom || minStay} max={maxStay} disabled={isApproved} />
               </div>
             </div>
 

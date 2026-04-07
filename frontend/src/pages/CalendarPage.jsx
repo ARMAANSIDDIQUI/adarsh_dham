@@ -133,8 +133,8 @@ input[type="date"]:focus {
 
 const CalendarPage = () => {
     const t = useTranslation();
-    const { data: rawEvents, isLoading: loading, isError } = useGetEventsQuery();
-    const events = Array.isArray(rawEvents) ? rawEvents : [];
+    const { data: rawEvents, isLoading, isError } = useGetEventsQuery();
+    const events = useMemo(() => Array.isArray(rawEvents) ? rawEvents : [], [rawEvents]);
     const error = isError ? t.events.error : null;
 
     const [selectedDate, setSelectedDate] = useState(new Date());
@@ -207,7 +207,7 @@ const CalendarPage = () => {
         }
     };
 
-    if (loading) {
+    if (isLoading) {
         return (
             <div className="flex justify-center items-center h-screen bg-neutral font-body">
                 <FaSpinner className="animate-spin mr-3 text-primary text-4xl" />

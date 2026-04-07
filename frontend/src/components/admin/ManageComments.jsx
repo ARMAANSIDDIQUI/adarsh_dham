@@ -27,7 +27,7 @@ const StatusBadge = ({ status }) => {
 
 
 const ManageComments = () => {
-    const { data: rawComments, isLoading: loading, isError, refetch } = useGetAllCommentsQuery();
+    const { data: rawComments, isLoading, isError } = useGetAllCommentsQuery();
     const [comments, setComments] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [dateRange, setDateRange] = useState({ startDate: '', endDate: '' });
@@ -171,7 +171,7 @@ const ManageComments = () => {
                 <Button onClick={clearFilters} className="bg-gray-500 hover:bg-gray-600 text-white md:col-span-5">Clear Filters</Button>
             </div>
 
-            {loading ? (
+            {isLoading ? (
                 <div className="flex justify-center items-center h-64"><FaSpinner className="animate-spin text-primary text-4xl" /></div>
             ) : error ? (
                 <p className="text-highlight bg-highlight/10 p-3 rounded-xl text-center shadow-soft">{error}</p>

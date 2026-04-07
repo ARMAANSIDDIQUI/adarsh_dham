@@ -143,27 +143,28 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
     }));
   }, [eventDates]);
 
+  const { numMales, numFemales, numBoys, numGirls, people, stayFrom, stayTo } = formData;
   useEffect(() => {
     if (isEditing) return;
     const genderCounts = {
-      male: parseInt(formData.numMales) || 0,
-      female: parseInt(formData.numFemales) || 0,
-      boy: parseInt(formData.numBoys) || 0,
-      girl: parseInt(formData.numGirls) || 0,
+      male: parseInt(numMales) || 0,
+      female: parseInt(numFemales) || 0,
+      boy: parseInt(numBoys) || 0,
+      girl: parseInt(numGirls) || 0,
     };
     let newPeopleArray = [];
     for (const gender of ["male", "female", "boy", "girl"]) {
-      const currentCount = formData.people.filter(p => p.gender === gender).length;
+      const currentCount = people.filter(p => p.gender === gender).length;
       const targetCount = genderCounts[gender];
-      let existingPeople = formData.people.filter(p => p.gender === gender);
+      let existingPeople = people.filter(p => p.gender === gender);
       if (targetCount > currentCount) {
         for (let i = 0; i < targetCount - currentCount; i++) {
           existingPeople.push({
             name: "",
             age: "",
             gender,
-            stayFrom: formData.stayFrom || "",
-            stayTo: formData.stayTo || ""
+            stayFrom: stayFrom || "",
+            stayTo: stayTo || ""
           });
         }
       } else if (targetCount < currentCount) {
@@ -174,16 +175,19 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
 
     // Preserve existing dates if switching back to individual dates, or initializing
     newPeopleArray = newPeopleArray.map((p, i) => {
-      const existingPerson = formData.people[i];
+      const existingPerson = people[i];
       return {
         ...p,
-        stayFrom: existingPerson?.stayFrom || formData.stayFrom || "",
-        stayTo: existingPerson?.stayTo || formData.stayTo || ""
+        stayFrom: existingPerson?.stayFrom || stayFrom || "",
+        stayTo: existingPerson?.stayTo || stayTo || ""
       };
     });
 
-    setFormData(prev => ({ ...prev, people: newPeopleArray }));
-  }, [formData.numMales, formData.numFemales, formData.numBoys, formData.numGirls, isEditing]);
+    // Only update if something actually changed to avoid infinite loops
+    if (JSON.stringify(newPeopleArray) !== JSON.stringify(people)) {
+      setFormData(prev => ({ ...prev, people: newPeopleArray }));
+    }
+  }, [numMales, numFemales, numBoys, numGirls, isEditing, people, stayFrom, stayTo]);
 
   const handleGroupChange = e => {
     const { name, value } = e.target;
