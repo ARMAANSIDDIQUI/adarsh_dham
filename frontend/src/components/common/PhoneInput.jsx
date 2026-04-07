@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { FaChevronDown } from 'react-icons/fa';
 
 export const COUNTRY_CODES = [
     { code: '+91', country: 'IN', flag: '🇮🇳', digits: 10 },

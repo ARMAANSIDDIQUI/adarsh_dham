@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaUser } from 'react-icons/fa'; // Example icon
+
 
 const ThemedInput = ({ label, name, value, onChange, required, type = "text", icon, disabled, min, max, colSpan = "" }) => (
     <div className={`${colSpan} font-body`}>

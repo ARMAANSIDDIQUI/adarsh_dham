@@ -113,7 +113,7 @@ const MyBookings = () => {
     const t = useTranslation();
     const token = useSelector((state) => state.auth.token);
     const { data: rawBookings, isLoading: loading, isError, refetch } = useGetMyBookingsQuery(undefined, { skip: !token });
-    const bookings = Array.isArray(rawBookings) ? rawBookings : [];
+    const bookings = useMemo(() => Array.isArray(rawBookings) ? rawBookings : [], [rawBookings]);
     const error = isError ? t.myBookings.actions.fetchFail : null;
 
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);

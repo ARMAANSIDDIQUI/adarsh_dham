@@ -238,7 +238,7 @@ const DeleteUserModal = ({
 
 
 const AdminUserManagement = () => {
-    const { data: rawUsers, isLoading: loading, isError, refetch } = useGetAllUsersQuery();
+    const { data: rawUsers, isLoading: loading, isError } = useGetAllUsersQuery();
     const [deleteUserMutation] = useDeleteUserMutation();
     const [users, setUsers] = useState([]);
 

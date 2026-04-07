@@ -120,28 +120,28 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
     fetchEvent();
   }, [eventId]);
 
-  useEffect(() => {
-    if (!event) return; // Guard against null event
-
+  const eventDates = useMemo(() => {
+    if (!event) return null;
     const todayIST = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
     const today = new Date(todayIST);
-
     const start = new Date(event.startDate);
     const end = new Date(event.endDate);
     const minStayDate = new Date(start);
     minStayDate.setDate(minStayDate.getDate() - 5);
     const maxStayDate = new Date(end);
     maxStayDate.setDate(maxStayDate.getDate() + 5);
-
-    // Ensure minStayDate is not before today if the stay hasn't started yet
     const effectiveMinDate = new Date(Math.max(today, minStayDate)).toISOString().split("T")[0];
+    return { effectiveMinDate, maxStayDate: maxStayDate.toISOString().split("T")[0] };
+  }, [event]);
 
+  useEffect(() => {
+    if (!eventDates) return;
     setFormData(prev => ({
       ...prev,
-      stayFrom: prev.stayFrom || effectiveMinDate,
-      stayTo: prev.stayTo || maxStayDate.toISOString().split("T")[0],
+      stayFrom: prev.stayFrom || eventDates.effectiveMinDate,
+      stayTo: prev.stayTo || eventDates.maxStayDate,
     }));
-  }, [event]);
+  }, [eventDates]);
 
   useEffect(() => {
     if (isEditing) return;
@@ -264,7 +264,6 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
           personMinDate = new Date(Math.max(today, minD)).toISOString().split("T")[0];
           personMaxDate = maxD.toISOString().split("T")[0];
         }
-
         return (
           <div key={i} className="grid grid-cols-2 gap-4 pt-4 border-b-2 border-background pb-4 last:border-b-0">
             <h4 className="col-span-2 font-bold capitalize text-primaryDark">

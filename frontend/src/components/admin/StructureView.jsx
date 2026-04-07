@@ -1,7 +1,7 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 // api.js is no longer needed here since we use RTK Query
-import { FaBuilding, FaBed, FaMale, FaFemale, FaCheckCircle, FaTimesCircle, FaSearch, FaSync, FaExclamationCircle, FaSpinner, FaUserCheck, FaUserMinus, FaTimes, FaHashtag, FaHome, FaCity, FaPhone, FaUserTag, FaClock, FaInfoCircle, FaSignInAlt } from 'react-icons/fa';
+import { FaBuilding, FaBed, FaMale, FaFemale, FaCheckCircle, FaSearch, FaSpinner, FaUserCheck, FaUserMinus, FaTimes, FaHashtag, FaHome, FaCity, FaPhone, FaUserTag, FaClock, FaInfoCircle, FaSignInAlt } from 'react-icons/fa';
 // Removed unused Button and RoomOccupantsModal imports that caused build errors
 import { useGetStructureQuery } from '../../redux/api/apiSlice'; // RTK Query hook
 import { useTranslation } from '../../hooks/useTranslation';
@@ -118,8 +118,8 @@ const StructureView = () => {
     const { data: structureData, isLoading: loading, error: fetchError } = useGetStructureQuery();
 
     // Safely extract from structureData
-    const buildings = structureData?.buildings || [];
-    const people = structureData?.people || [];
+    const buildings = useMemo(() => structureData?.buildings || [], [structureData]);
+    const people = useMemo(() => structureData?.people || [], [structureData]);
 
     // Convert fetch error to string if exists
     const error = fetchError ? 'Failed to fetch structure data. Please ensure the API is running and accessible.' : null;

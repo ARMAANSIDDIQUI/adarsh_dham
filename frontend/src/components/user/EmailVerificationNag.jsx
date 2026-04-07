@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaExclamationTriangle, FaTimes, FaUserShield } from 'react-icons/fa';
+import { FaTimes, FaUserShield } from 'react-icons/fa';
 
 const EmailVerificationNag = () => {
     const { user, isAuthenticated } = useSelector((state) => state.auth);

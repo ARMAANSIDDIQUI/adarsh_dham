@@ -39,9 +39,7 @@ const ManageComments = () => {
 
     const error = isError ? 'Failed to fetch comments.' : '';
 
-    const fetchAllComments = () => {
-        refetch();
-    };
+
 
     // --- CORRECTED FUNCTION ---
     const handleAction = async (commentId, action) => {

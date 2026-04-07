@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import api from '../../api/api.js';
 import Button from '../common/Button.jsx';
-import { FaEdit, FaTrashAlt, FaPlus, FaSpinner, FaBuilding, FaTimes, FaBed, FaUserCheck, FaUserMinus, FaSearch } from 'react-icons/fa';
+import { FaEdit, FaTrashAlt, FaPlus, FaSpinner, FaBuilding, FaBed, FaUserCheck, FaUserMinus, FaSearch } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { useGetBuildingsQuery } from '../../redux/api/apiSlice';
 
@@ -37,7 +37,7 @@ const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel, confir
 
 const ManageBuildings = () => {
     const { data: rawBuildings, isLoading: loading, isError, refetch } = useGetBuildingsQuery();
-    const buildings = Array.isArray(rawBuildings) ? rawBuildings : [];
+    const buildings = useMemo(() => Array.isArray(rawBuildings) ? rawBuildings : [], [rawBuildings]);
     const error = isError ? 'Failed to fetch buildings.' : null;
 
     const [newBuilding, setNewBuilding] = useState({ name: '', gender: '' });

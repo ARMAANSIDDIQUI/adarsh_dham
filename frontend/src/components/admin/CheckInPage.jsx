@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import {
     FaClipboardCheck, FaSignInAlt, FaSignOutAlt, FaUndo,
     FaSpinner, FaSearch, FaFilter, FaUser, FaBed,
-    FaBuilding, FaCheckCircle, FaTimesCircle, FaClock, FaFilePdf, FaPhone
+    FaBuilding, FaCheckCircle, FaClock, FaFilePdf, FaPhone
 } from 'react-icons/fa';
 import DynamicDateInput from '../common/DynamicDateInput.jsx';
 import { useGetCheckinDataQuery, useGetEventsQuery } from '../../redux/api/apiSlice';
@@ -174,7 +174,7 @@ const PersonRow = ({ person, onAction }) => {
 
 const BookingCard = ({ booking, onPersonAction }) => {
     const [open, setOpen] = useState(true);
-    const { bookingId, bookingNumber, ashramName, contactNumber, city, eventName, stayFrom, stayTo, members, status } = booking;
+    const { bookingId, bookingNumber, ashramName, contactNumber, city, eventName, stayFrom, stayTo, members } = booking;
 
     const handleDownloadPdf = async (e) => {
         e.stopPropagation();

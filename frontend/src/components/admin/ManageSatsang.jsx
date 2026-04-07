@@ -62,7 +62,7 @@ const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel, confir
 
 const ManageSatsang = () => {
     const { data: rawLiveLinks, isLoading: loading, isError, refetch } = useGetLiveLinksQuery();
-    const liveLinks = Array.isArray(rawLiveLinks) ? rawLiveLinks : [];
+    const liveLinks = useMemo(() => Array.isArray(rawLiveLinks) ? rawLiveLinks : [], [rawLiveLinks]);
 
     const [newLink, setNewLink] = useState({ name: '', url: '', youtubeEmbedUrl: '', liveFrom: '', liveTo: '' });
     const [error, setError] = useState(null);

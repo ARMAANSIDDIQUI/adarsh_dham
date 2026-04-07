@@ -50,7 +50,7 @@ const EditBookingModal = ({ booking, onClose, onUpdate }) => {
   const [submitLoading, setSubmitLoading] = useState(false);
   const [error, setError] = useState('');
   const [validationError, setValidationError] = useState(null);
-  const { data: event } = useGetEventByIdQuery(booking?.eventId, {
+  useGetEventByIdQuery(booking?.eventId, {
     skip: !booking?.eventId,
   });
 
@@ -74,7 +74,7 @@ const EditBookingModal = ({ booking, onClose, onUpdate }) => {
         stayTo: booking.formData.stayTo ? new Date(booking.formData.stayTo).toISOString().split('T')[0] : '',
       });
     }
-  }, [booking]);
+  }, [booking?.formData, booking?._id]);
 
   const handleGroupChange = e => {
     const { name, value } = e.target;

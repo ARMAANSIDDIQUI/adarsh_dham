@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../api/api.js';
 import DynamicDateInput from '../common/DynamicDateInput.jsx';
@@ -238,7 +238,7 @@ const AccordionItem = ({ title, children }) => {
 };
 const BookingCard = ({ booking, onAction, onEdit, onReAllocate, allocations, handleAllocationChange, buildings, rooms, people, onShowRoomDetails, setError, readOnly = false }) => {
     const t = useTranslation();
-    const { formData = {}, userId = {}, status, _id: bookingId, bookingNumber, allocations: savedAllocations, eventId = {} } = booking || {};
+    const { formData = {}, userId = {}, status, _id: bookingId, bookingNumber, allocations: savedAllocations } = booking || {};
     const pendingAllocations = allocations?.[bookingId] || [];
     const safeSavedAllocations = Array.isArray(savedAllocations) ? savedAllocations : [];
     const [notificationOption, setNotificationOption] = useState('dontSend');

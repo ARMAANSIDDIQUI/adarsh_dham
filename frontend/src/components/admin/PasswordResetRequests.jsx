@@ -20,9 +20,7 @@ const PasswordResetRequests = () => {
         if (isError) setError('Failed to fetch password requests.');
     }, [isError]);
 
-    const fetchRequests = () => {
-        refetch();
-    };
+
 
     const handleResolve = async (requestId) => {
         try {

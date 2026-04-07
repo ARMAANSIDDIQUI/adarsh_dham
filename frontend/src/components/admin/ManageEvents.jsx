@@ -59,7 +59,7 @@ const EventTable = ({ events, handleEdit, handleDelete }) => (
 const ManageEvents = () => {
     const navigate = useNavigate();
     const { data: rawEvents, isLoading: loading, isError, refetch } = useGetEventsQuery();
-    const events = Array.isArray(rawEvents) ? rawEvents : [];
+    const events = useMemo(() => Array.isArray(rawEvents) ? rawEvents : [], [rawEvents]);
 
     const [newEvent, setNewEvent] = useState({ name: '', description: '', location: '', startDate: '', endDate: '', bookingStartDate: '', bookingEndDate: '', isBookingOpen: true, bookingClosedMessage: 'Bookings closed' });
     const [error, setError] = useState(null);
@@ -182,10 +182,10 @@ const ManageEvents = () => {
         setIsModalOpen(true);
     };
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Normalize today to start of day for consistent comparison
-
     const { finishedEvents, ongoingEvents, upcomingEvents } = useMemo(() => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Normalize today to start of day for consistent comparison
+
         const finished = [];
         const ongoing = [];
         const upcoming = [];
@@ -204,7 +204,7 @@ const ManageEvents = () => {
             }
         });
         return { finishedEvents: finished, ongoingEvents: ongoing, upcomingEvents: upcoming };
-    }, [filteredEventsList, today]);
+    }, [filteredEventsList]);
 
     if (loading) return <div className="text-center mt-10 text-xl text-primary font-body"><FaSpinner className="animate-spin inline mr-2" /> Loading Events...</div>;
 

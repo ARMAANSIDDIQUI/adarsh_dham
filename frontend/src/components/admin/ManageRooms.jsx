@@ -122,8 +122,7 @@ const ManageRooms = () => {
 
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedBuilding, setSelectedBuilding] = useState('');
-    const [buildingFilterSearch, setBuildingFilterSearch] = useState('');
-    const [buildingCreateSearch, setBuildingCreateSearch] = useState('');
+
 
     const fetchAllData = async () => {
         try {
@@ -199,7 +198,7 @@ const ManageRooms = () => {
         try {
             await api.post('/rooms', newRoomData);
             setNewRoomData({ roomNumber: '', buildingId: '', beds: [{ name: '', type: 'single' }] });
-            setBuildingCreateSearch('');
+
             await fetchAllData();
             toast.success("Room created successfully");
         } catch (err) {
