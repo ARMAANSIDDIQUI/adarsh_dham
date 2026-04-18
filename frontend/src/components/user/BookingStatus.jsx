@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import Button from '../common/Button.jsx';
 import { FaFilePdf, FaTrashAlt, FaBed, FaBuilding, FaDoorOpen, FaTimesCircle, FaCheckCircle } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import { API_URL } from '../../api/api';
 
 // Confirmation Modal component
 const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel }) => {
@@ -56,7 +57,7 @@ const BookingStatus = ({ bookings, onDelete }) => {
     };
 
     const handleDownloadPdf = (bookingId) => {
-        const backendUrl = process.env.REACT_APP_API_BASE_URL || '';
+        const backendUrl = API_URL;
         window.open(`${backendUrl}/api/bookings/pdf/${bookingId}`, '_blank');
     };
 

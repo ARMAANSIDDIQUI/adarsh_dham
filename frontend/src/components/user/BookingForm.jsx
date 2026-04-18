@@ -17,6 +17,7 @@ import { useParams } from "react-router-dom";
 import { toast } from 'react-toastify';
 import { useTranslation } from "../../hooks/useTranslation";
 import PhoneInput, { validatePhoneNumber } from "../common/PhoneInput.jsx";
+import { API_URL } from "../../api/api.js";
 
 const ThemedInput = ({
   label,
@@ -101,7 +102,7 @@ const BookingForm = ({ onSubmit, loading, error, initialData = null, isEditing =
       setIsLoading(true);
       setEventError(null);
       try {
-        const baseUrl = process.env.REACT_APP_API_BASE_URL || '';
+        const baseUrl = API_URL;
         const res = await fetch(`${baseUrl}/api/events/${eventId}`);
         if (!res.ok) {
           const errorData = await res.json();

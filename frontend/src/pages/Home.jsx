@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { } from "react-redux";
 import axios from "axios";
+import { API_URL } from "../api/api";
 import { useTranslation } from "../hooks/useTranslation";
 import { usePWA } from "../context/PWAContext";
 import {
@@ -329,7 +330,7 @@ const Home = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const apiUrl = process.env.REACT_APP_API_BASE_URL || '';
+        const apiUrl = API_URL;
 
         // 1. Fetch Live Links
         const liveRes = await axios.get(`${apiUrl}/api/satsang/live-links/active`);
@@ -378,7 +379,7 @@ const Home = () => {
     const interval = setInterval(() => {
       const fetchLive = async () => {
         try {
-          const apiUrl = process.env.REACT_APP_API_BASE_URL || '';
+          const apiUrl = API_URL;
           const liveRes = await axios.get(`${apiUrl}/api/satsang/live-links/active`);
           setLiveLinks(Array.isArray(liveRes.data) ? liveRes.data : []);
         } catch (e) { console.error(e); }

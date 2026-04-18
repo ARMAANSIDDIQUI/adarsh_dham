@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import Button from '../common/Button.jsx';
 import { FaDownload, FaSpinner } from 'react-icons/fa';
 import ExportWorker from '../../workers/export.worker.js';
+import { API_URL } from '../../api/api.js';
 
 const ExportData = () => {
   const [status, setStatus] = useState('');
@@ -13,7 +14,7 @@ const ExportData = () => {
     setStatus('Exporting data...');
 
     const worker = new ExportWorker();
-    worker.postMessage({ type: 'export_bookings', url: process.env.REACT_APP_API_BASE_URL || '' });
+    worker.postMessage({ type: 'export_bookings', url: API_URL });
 
     worker.onmessage = (event) => {
       const { type, data } = event.data;

@@ -1,6 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { API_URL } from '../../api/api';
 
-const API_URL = process.env.REACT_APP_API_BASE_URL || (window.location.hostname === 'localhost' ? 'http://localhost:5000' : '/_/backend');
+// use API_URL imported from api.js
 
 const baseQuery = fetchBaseQuery({
     baseUrl: `${API_URL}/api`,

@@ -29,5 +29,11 @@ self.addEventListener('notificationclick', event => {
 
 // PWA Requirement: Functional fetch handler
 self.addEventListener('fetch', (event) => {
-    event.respondWith(fetch(event.request));
+    event.respondWith(
+        fetch(event.request).catch((err) => {
+            console.error('Service Worker Fetch Failed:', err);
+            // Throw to allow browser to handle the network error natively
+            throw err;
+        })
+    );
 });
